@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <!--
+    <record model="ir.ui.view" id="zacasocios.list">
+      <field name="name">zacasocios list</field>
+      <field name="model">zacasocios.zacasocios</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+    -->
+
+    <!-- actions opening views on models -->
+    <!--
+    <record model="ir.actions.act_window" id="zacasocios.action_window">
+      <field name="name">zacasocios window</field>
+      <field name="res_model">zacasocios.zacasocios</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    -->
+
+    <!-- server action to the one above -->
+    <!--
+    <record model="ir.actions.server" id="zacasocios.action_server">
+      <field name="name">zacasocios server</field>
+      <field name="model_id" ref="model_zacasocios_zacasocios"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": self._name,
+        }
+      </field>
+    </record>
+    -->
+
+    <!-- Top menu item -->
+    <!--
+    <menuitem name="zacasocios" id="zacasocios.menu_root"/>
+    -->
+    <!-- menu categories -->
+    <!--
+    <menuitem name="Menu 1" id="zacasocios.menu_1" parent="zacasocios.menu_root"/>
+    <menuitem name="Menu 2" id="zacasocios.menu_2" parent="zacasocios.menu_root"/>
+    -->
+    <!-- actions -->
+    <!--
+    <menuitem name="List" id="zacasocios.menu_1_list" parent="zacasocios.menu_1"
+              action="zacasocios.action_window"/>
+    <menuitem name="Server to list" id="zacasocios" parent="zacasocios.menu_2"
+              action="zacasocios.action_server"/>
+    -->
+  </data>
+</odoo>
