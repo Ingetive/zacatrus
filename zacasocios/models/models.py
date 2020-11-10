@@ -24,12 +24,17 @@ class Fichas():
 		response = requests.post(self.url + 'integration/admin/token', json=data, headers={})
 		return response.json()
 
-	def _getData(self, url):
-		hed = {'Authorization': 'Bearer ' + self._getToken()}
-
-		#url = 'https://api.xy.com'
-		response = requests.get(self.url + url, json={}, headers=hed)
-		return response.json()
+	def _getData(self, url, postParams=False):
+		token = self._getToken()
+		if token:
+			hed = {'Authorization': 'Bearer ' + token}
+			if postParams:
+				response = requests.post(self.url + url, headers=hed, json=postParams)
+			else:
+				response = requests.get(self.url + url, headers=hed)
+			return response.json()
+		else:
+			return False
 
 	def _postData(self, url, data):
 		hed = {'Authorization': 'Bearer ' + self._getToken()}
