@@ -259,28 +259,17 @@ class Zacasocios(models.Model):
 		totalOrderPoints = 0
 
 		_orderInfo = json.loads(orderInfo)
-		
-		# Log action
-		file = open("/tmp/zacasocios.log","a")  
-		file.write(orderInfo) 
-		file.write("\n") 
- 	
 
 		for line in json.loads(orderInfo):
-			file.write(str(line)) 
-			file.write("\n") 
 			if line['barcode']:
 				rule = client.getRule()
-				qty = line["price"] * rule["amount"]/rule["spent_amount"] * line['quantity']
+				totalOrderPoints += line["price"] * rule["amount"]/rule["spent_amount"] * line['quantity']
 				#_product = self.findProductByBarcode(line['barcode'])
 				#if _product:
 				#	points = client.getProductPoints(_product['x_sku'])
 				#	if points:
 				#		totalOrderPoints = totalOrderPoints + (points * line['quantity'])
 
-		file.write("[1] Setting balance for %s: %s \n" % (email, totalOrderPoints))
-		file.close() 
-	
 		#client.setBalance(email, totalOrderPoints, "[Odoo] Pedido de tienda")
 		mCustomer = client.getCustomerByEmail(email)
 		client.add(mCustomer["id"], totalOrderPoints, "Compra en tienda.", 365, "moneyspent")
