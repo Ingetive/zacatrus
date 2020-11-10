@@ -278,5 +278,5 @@ class Zacasocios(models.Model):
 	
 		#client.setBalance(email, totalOrderPoints, "[Odoo] Pedido de tienda")
 		mCustomer = client.getCustomerByEmail(email)
-		client.add(self, mCustomer["id"], totalOrderPoints, "Compra en tienda.", 365, "moneyspent")
+		client.add(mCustomer["id"], totalOrderPoints, "Compra en tienda.", 365, "moneyspent")
 		
