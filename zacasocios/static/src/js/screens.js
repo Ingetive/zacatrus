@@ -252,7 +252,7 @@ screens.PaymentScreenWidget.include({
                     }
                 }
                 else {
-                    var orderInfoLine = {"barcode": orderlines[i].product.barcode, "quantity": orderlines[i].get_quantity()};
+                    var orderInfoLine = {"barcode": orderlines[i].product.barcode, "quantity": orderlines[i].get_quantity(), "price": orderlines[i].get_price_with_tax()};
                     orderInfo.push(orderInfoLine);
                 }
             }

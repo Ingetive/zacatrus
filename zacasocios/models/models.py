@@ -38,6 +38,56 @@ class Fichas():
 		response = requests.post(self.url + url, json=data, headers=hed)
 		return response.json()
 
+
+
+	# New methods (Amasty reward extension)
+	def getCustomerByEmail(self, email):
+		sCriteria = "searchCriteria[filterGroups][0][filters][0][field]=email"
+		sCriteria += "&" + "searchCriteria[filterGroups][0][filters][0][value]="+email
+
+		customers = self._getData('customers/search?'+ sCriteria)
+		for customer in customers["items"]:
+			return customer
+
+		return None
+
+	def getPoints(self, customerId):
+		res = self._getData('rewards/mine/balance?customer_id='+ str(customerId))
+
+		return res
+
+	def add(self, customerId, qty, comment="Añadidos por el administrador", expire=365, action="admin"):
+		#https://amasty.com/knowledge-base/what-amasty-magento-2-plugins-support-api.html#reward
+		data = {
+			"customer_id": customerId, 
+			"amount": qty,
+			"comment": comment,
+			"action": action,
+			"expire": {"expire": True, "days": expire}
+		}
+		res = self._getData('rewards/management/points/add', data)
+		
+		return res
+
+	def deduct(self, customerId, qty):
+		data = {
+			"customer_id": customerId, 
+			"amount": qty,
+			"comment": "Eliminados por el administrador",
+			"action": "admin"
+		}
+		res = self._getData('rewards/management/points/deduct', data)
+		
+		return res
+		
+	def getRule(self, ruleId = 9):
+		return self._getData('rewards/management/rule?rule_id=' + ruleId)
+	# END: New methods (Amasty reward extension)
+
+
+
+
+
 	def getBalance(self, email):
 		res = self._getData('mwRewardpoints/getBalanceByEmail/'+email+'/0')
 
@@ -91,7 +141,10 @@ class Fichas():
 		}
 		res = self._postData('customers', customer)
 		#print(res)
-		self.setBalance(email, 75, 'Registered in Odoo POS');
+
+		#self.setBalance(email, 75, 'Registered in Odoo POS');
+		mCustomer = self.getCustomerByEmail(email)
+		self.add(self, mCustomer["id"], 75, "Registro en tienda.")
 
 		return res
 
@@ -160,7 +213,9 @@ class Zacasocios(models.Model):
 			magento_client.createCustomer(email, _customer['name'], posName)
 
 		if not self._isEmployee( email ):
-			fichas = magento_client.getBalance( email )
+			#fichas = magento_client.getBalance( email )
+			mCustomer = magento_client.getCustomerByEmail(email)
+			fichas = magento_client.getPoints( mCustomer["id"] )
 		else:
 			fichas = 0
 
@@ -181,7 +236,9 @@ class Zacasocios(models.Model):
 			file.write("Setting balance for %s: %s, %s \n" % (email, qty, msg))
 			file.close() 
 
-			fichas = client.setBalance(email, qty, msg)
+			#fichas = client.setBalance(email, qty, msg)
+			mCustomer = client.getCustomerByEmail(email)
+			client.add(self, mCustomer["id"], qty, msg, 365, "moneyspent")
 
 	def findProductByBarcode(self, barcode):
 		product_obj = self.env['product.product']
@@ -208,14 +265,18 @@ class Zacasocios(models.Model):
 			file.write(str(line)) 
 			file.write("\n") 
 			if line['barcode']:
-				_product = self.findProductByBarcode(line['barcode'])
-				if _product:
-					points = client.getProductPoints(_product['x_sku'])
-					if points:
-						totalOrderPoints = totalOrderPoints + (points * line['quantity'])
+				rule = client.getRule()
+				qty = line["price"] * rule["amount"]/rule["spent_amount"] * line['quantity']
+				#_product = self.findProductByBarcode(line['barcode'])
+				#if _product:
+				#	points = client.getProductPoints(_product['x_sku'])
+				#	if points:
+				#		totalOrderPoints = totalOrderPoints + (points * line['quantity'])
 
 		file.write("[1] Setting balance for %s: %s \n" % (email, totalOrderPoints))
 		file.close() 
 	
-		client.setBalance(email, totalOrderPoints, "[Odoo] Pedido de tienda")
+		#client.setBalance(email, totalOrderPoints, "[Odoo] Pedido de tienda")
+		mCustomer = client.getCustomerByEmail(email)
+		client.add(self, mCustomer["id"], totalOrderPoints, "Compra en tienda.", 365, "moneyspent")
 		
