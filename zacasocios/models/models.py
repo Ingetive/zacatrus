@@ -5,7 +5,7 @@ import string
 import random
 import sys
 
-url = 'https://zacatrus.es/rest/V1/'
+url = 'https://stage.zacatrus.es/rest/V1/' #TODO:Change for production
 apiuser = 'odoo'
 apipass = 'p9U4Lap0vF'
 
