@@ -222,7 +222,7 @@ function earnByOrder( email, orderInfo ) {
             args: [email, JSON.stringify(orderInfo)],
         })
         .then(function(){
-            //alert("Fichas added")
+            console.log("Fichas added");
         },function(type,err){
             var error_body = 'Your Internet connection is probably down.';
             if (err.data) {
