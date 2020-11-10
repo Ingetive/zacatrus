@@ -74,12 +74,12 @@ class Fichas():
 		
 		return res
 
-	def deduct(self, customerId, qty):
+	def deduct(self, customerId, qty, comment="Eliminados por el administrador", action="admin"):
 		data = {
 			"customer_id": customerId, 
 			"amount": qty,
-			"comment": "Eliminados por el administrador",
-			"action": "admin"
+			"comment": comment,
+			"action": action
 		}
 		res = self._getData('rewards/management/points/deduct', data)
 		
@@ -236,14 +236,12 @@ class Zacasocios(models.Model):
 		if not self._isEmployee(email):
 			client = Fichas(url, apiuser, apipass)
 
-			# Log action
-			file = open("/tmp/zacasocios.log","a")  
-			file.write("Setting balance for %s: %s, %s \n" % (email, qty, msg))
-			file.close() 
-
 			#fichas = client.setBalance(email, qty, msg)
 			mCustomer = client.getCustomerByEmail(email)
-			client.add(self, mCustomer["id"], qty, msg, 365, "moneyspent")
+			if qty < 0:
+				client.deduct(mCustomer["id"], qty, msg, "admin")
+			else:
+				client.add(mCustomer["id"], qty, msg, 365, "moneyspent")
 
 	def findProductByBarcode(self, barcode):
 		product_obj = self.env['product.product']
