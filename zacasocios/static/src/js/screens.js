@@ -203,6 +203,7 @@ function setBalance( email, qty ) {
             args: [email, qty, "[Odoo] Canjeadas en tienda"],
         })
         .then(function(){
+            console.log("Substracted "+ qty + " Fichas");
             //alert("Substracted "+ qty + " Fichas")
         },function(type,err){
             var error_body = 'Your Internet connection is probably down.';
