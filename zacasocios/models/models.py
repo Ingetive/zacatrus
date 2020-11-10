@@ -239,7 +239,7 @@ class Zacasocios(models.Model):
 			#fichas = client.setBalance(email, qty, msg)
 			mCustomer = client.getCustomerByEmail(email)
 			if qty < 0:
-				client.deduct(mCustomer["id"], qty, msg, "admin")
+				client.deduct(mCustomer["id"], qty*(-1), msg, "admin")
 			else:
 				client.add(mCustomer["id"], qty, msg, 365, "moneyspent")
 
