@@ -226,15 +226,15 @@ class Zacasocios(models.Model):
 			client = Fichas(url, apiuser, apipass)
 
 			#fichas = client.setBalance(email, qty, msg)
-			_logger.debug("Deducting poitns")
+			_logger.info("Deducting poitns")
 			mCustomer = client.getCustomerByEmail(email)
-			_logger.debug("Customer id: "+ str(mCustomer["id"]))
+			_logger.info("Customer id: "+ str(mCustomer["id"]))
 			if qty < 0:
 				ret = client.deduct(mCustomer["id"], qty*(-1), msg, "admin")
 			else:
 				ret = client.add(mCustomer["id"], qty, msg, 365, "moneyspent")
 
-			_logger.debug("ret: "+ json.dumps(ret))
+			_logger.info("ret: "+ json.dumps(ret))
 
 	def findProductByBarcode(self, barcode):
 		product_obj = self.env['product.product']
