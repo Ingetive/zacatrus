@@ -4,6 +4,8 @@ import requests
 import string
 import random
 import sys
+import logging
+_logger = logging.getLogger(__name__)
 
 url = 'https://stage.zacatrus.es/rest/V1/' #TODO:Change for production
 apiuser = 'odoo'
@@ -157,11 +159,7 @@ class Fichas():
 		res = self._getData('mwRewardpoints/getProductRewardPoints/'+sku)
 		m = re.search('^Product SKU \(([^\)]*)\) has ([0-9]*) reward points', res)
 
-		if m == None:			
-			file = open("/tmp/zacasocios.log","a")  
-			file.write("ERROR: Cannot get product points (sku: %s) from magento.\n" % (sku))
-			file.close() 
-
+		if m == None:
 			points = 0
 		else:
 			points = int(m.group(2))
@@ -208,10 +206,6 @@ class Zacasocios(models.Model):
 
 	@api.model
 	def getBalance( self, email, posName ):
-		file = open("/tmp/zacasocios.log","a")  
-		file.write("Getting balance 1 for %s \n" % (email))
-		file.close() 
-
 		magento_client = Fichas(url, apiuser, apipass)
 		if not magento_client.searchCustomer( email ):
 			_customer = self._getCustomer(email)
@@ -224,11 +218,6 @@ class Zacasocios(models.Model):
 		else:
 			fichas = 0
 
-		# Log action
-		file = open("/tmp/zacasocios.log","a")  
-		file.write("Getting balance for %s: %s \n" % (email, fichas))
-		file.close() 
-
 		return fichas
 
 	@api.model
@@ -237,11 +226,15 @@ class Zacasocios(models.Model):
 			client = Fichas(url, apiuser, apipass)
 
 			#fichas = client.setBalance(email, qty, msg)
+			_logger.debug("Deducting poitns")
 			mCustomer = client.getCustomerByEmail(email)
+			_logger.debug("Customer id: "+ str(mCustomer["id"]))
 			if qty < 0:
-				client.deduct(mCustomer["id"], qty*(-1), msg, "admin")
+				ret = client.deduct(mCustomer["id"], qty*(-1), msg, "admin")
 			else:
-				client.add(mCustomer["id"], qty, msg, 365, "moneyspent")
+				ret = client.add(mCustomer["id"], qty, msg, 365, "moneyspent")
+
+			_logger.debug("ret: "+ json.dumps(ret))
 
 	def findProductByBarcode(self, barcode):
 		product_obj = self.env['product.product']
