@@ -226,7 +226,7 @@ class Zacasocios(models.Model):
 			client = Fichas(url, apiuser, apipass)
 
 			#fichas = client.setBalance(email, qty, msg)
-			#_logger.info("Deducting poitns")
+			_logger.info("Deducting points")
 			mCustomer = client.getCustomerByEmail(email)
 			#_logger.info("Customer id: "+ str(mCustomer["id"]))
 			if qty < 0:
