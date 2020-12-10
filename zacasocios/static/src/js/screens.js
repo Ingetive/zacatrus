@@ -92,15 +92,13 @@ function addFichasToOrder ( order ) {
     var modified = false;
     for(var i = 0, len = orderlines.length; i < len; i++){
         if (orderlines[i].product && orderlines[i].product.barcode == FICHAS_BARCODE){
-            //order.remove_orderline(orderlines[i]);
-            //order.select_orderline(orderlines[i]);
             orderlines[i].set_quantity(-1*val);
             modified = true;
         }
     }
     if (fichas && fichas >= 100 && !modified){
         var fichasProduct = m_db.get_product_by_barcode(FICHAS_BARCODE);
-        //order.add_product(fichasProduct, { quantity: -1*val });
+        order.add_product(fichasProduct, { "quantity": -1*val });
     }
     addingPoints = false;
 }
