@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import requests
 import sys
 import re
@@ -102,12 +105,12 @@ class Fichas():
 
 
 
-magento_client = Fichas('http://stage2.zacatrus.es', 'admin', 'ssecret1')
-magento_client.setBalance('sergio@infovit.net', -1000)
+magento_client = Fichas('https://zacatrus.es', 'odoo', 'p9U4Lap0vF')
+magento_client.setBalance('sergio@infovit.net', 1000)
 number = magento_client.getBalance('sergio@infovit.net')
 print(number)
 number = magento_client.searchCustomer('sergio@infovit.net')
 print(number)
-number = magento_client.getProductPoints("ZAC003")
+number = magento_client.getProductPoints("ZAC006")
 print(number)
 magento_client.createCustomer("unoinventado4@infovit.net", "uno", "Sevilla")

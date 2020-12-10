@@ -124,6 +124,8 @@ function calculateNumberOfFichas( order ){
         ret = parseInt(ret / 100) * 100;
     }
 
+    console.log("calculateNumberOfFichas, ret="+ret);
+
     return ret;
 }
 
