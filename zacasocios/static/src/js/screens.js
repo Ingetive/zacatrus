@@ -99,7 +99,7 @@ function addFichasToOrder ( order ) {
     if (fichas && fichas >= 100 && !modified){
         var fichasProduct = m_db.get_product_by_barcode(FICHAS_BARCODE);
         console.log( { quantity: -1*val } );
-        //order.add_product(fichasProduct, { quantity: -1*val });
+        order.add_product(fichasProduct, { quantity: -1*val });
     }
     addingPoints = false;
 }
