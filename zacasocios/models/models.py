@@ -7,7 +7,7 @@ import sys
 import logging
 _logger = logging.getLogger(__name__)
 
-url = 'https://stage.zacatrus.es/rest/V1/' #TODO:Change for production
+url = 'https://zacatrus.es/rest/V1/'
 apiuser = 'odoo'
 apipass = 'p9U4Lap0vF'
 
