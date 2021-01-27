@@ -204,6 +204,7 @@ function setBalance( email, qty ) {
             args: [email, qty, "[Odoo] Canjeadas en tienda"],
         })
         .then(function(){
+            console.log("Substracted "+ qty + " Fichas");
             //alert("Substracted "+ qty + " Fichas")
         },function(type,err){
             var error_body = 'Your Internet connection is probably down.';
@@ -223,7 +224,7 @@ function earnByOrder( email, orderInfo ) {
             args: [email, JSON.stringify(orderInfo)],
         })
         .then(function(){
-            //alert("Fichas added")
+            console.log("Fichas added");
         },function(type,err){
             var error_body = 'Your Internet connection is probably down.';
             if (err.data) {
@@ -253,7 +254,7 @@ screens.PaymentScreenWidget.include({
                     }
                 }
                 else {
-                    var orderInfoLine = {"barcode": orderlines[i].product.barcode, "quantity": orderlines[i].get_quantity()};
+                    var orderInfoLine = {"barcode": orderlines[i].product.barcode, "quantity": orderlines[i].get_quantity(), "price": orderlines[i].get_price_with_tax()};
                     orderInfo.push(orderInfoLine);
                 }
             }
