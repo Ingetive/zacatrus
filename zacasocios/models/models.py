@@ -87,7 +87,7 @@ class Fichas():
 		
 		return res
 		
-	def getRule(self, ruleId = 9):
+	def getRule(self, ruleId = 8):
 		return self._getData('rewards/management/rule?rule_id=' + str(ruleId))
 	# END: New methods (Amasty reward extension)
 
