@@ -9,9 +9,9 @@ import hmac, base64, struct, hashlib, time, os
 
 _logger = logging.getLogger(__name__)
 
-url = 'https://zacatrus.es/rest/V1/'
-apiuser = 'odoo'
-apipass = 'p9U4Lap0vF'
+url = 'https://zacatrus.es/rest/all/V1/'
+apiuser = 'zaca24'
+apipass = 'carracacosa1'
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 	return ''.join(random.choice(chars) for _ in range(size))
@@ -53,9 +53,9 @@ class Fichas():
 
 	def _getToken(self):
 		data = {"username":self.username,"password": self.password, 'otp': get_totp_token()}
-		print(data)
 
-		response = requests.post(self.url + 'integration/admin/token', json=data, headers={})
+		response = requests.post(self.url + 'tfa/provider/google/authenticate', json=data, headers={})
+
 		return response.json()
 
 	def _getData(self, url, postParams=False):
@@ -298,4 +298,3 @@ class Zacasocios(models.Model):
 		client.add(mCustomer["id"], totalOrderPoints, "Compra en tienda.", 365, "moneyspent")
 		
 
-		
