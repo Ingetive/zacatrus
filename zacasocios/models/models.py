@@ -5,14 +5,45 @@ import string
 import random
 import sys
 import logging
+import hmac, base64, struct, hashlib, time, os
+
 _logger = logging.getLogger(__name__)
 
-url = 'https://stage.zacatrus.es/rest/V1/' #TODO:Change for production
+url = 'https://zacatrus.es/rest/V1/'
 apiuser = 'odoo'
 apipass = 'p9U4Lap0vF'
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 	return ''.join(random.choice(chars) for _ in range(size))
+
+def normalize(key):
+	"""Normalizes secret by removing spaces and padding with = to a multiple of 8"""
+	k2 = key.strip().replace(' ','')
+	# k2 = k2.upper()	# skipped b/c b32decode has a foldcase argument
+	if len(k2)%8 != 0:
+		k2 += '='*(8-len(k2)%8)
+	return k2
+
+def get_hotp_token(secret, intervals_no):
+	"""This is where the magic happens."""
+	key = base64.b32decode(normalize(secret), True) # True is to fold lower into uppercase
+	msg = struct.pack(">Q", intervals_no)
+	h = bytearray(hmac.new(key, msg, hashlib.sha1).digest())
+	o = h[19] & 15
+	h = str((struct.unpack(">I", h[o:o+4])[0] & 0x7fffffff) % 1000000)
+	return prefix0(h)
+
+def get_totp_token():
+	secret = 'KPX24GQ2O553RI3OIBHEVIKQUYNH4YJ523WNFYL72AHNLUBNL5X7JJQDUXIOYIDBN3PHKAWZAFYNM6QNIPOION6BZHCK3Q3EWUCESKBS22WN5NLLDY2YCRUGTPZ56Q3WJUUQLPUNY2VEZQSU6ASOZDAF4EMBOBCUWZEXHXGCUEW3I5ZXV2WHY46GJAOFBZU7XD2C756M2KBHM'
+
+	"""The TOTP token is just a HOTP token seeded with every 30 seconds."""
+	return get_hotp_token(secret, intervals_no=int(time.time())//30)
+
+def prefix0(h):
+	"""Prefixes code with leading zeros if missing."""
+	if len(h) < 6:
+		h = '0'*(6-len(h)) + h
+	return h
 
 class Fichas():
 	def __init__(self, url, username, password):
@@ -21,7 +52,8 @@ class Fichas():
 		self.url = url
 
 	def _getToken(self):
-		data = {"username":self.username,"password": self.password}
+		data = {"username":self.username,"password": self.password, 'otp': get_totp_token()}
+		print(data)
 
 		response = requests.post(self.url + 'integration/admin/token', json=data, headers={})
 		return response.json()
@@ -87,7 +119,7 @@ class Fichas():
 		
 		return res
 		
-	def getRule(self, ruleId = 9):
+	def getRule(self, ruleId = 8):
 		return self._getData('rewards/management/rule?rule_id=' + str(ruleId))
 	# END: New methods (Amasty reward extension)
 
@@ -264,4 +296,6 @@ class Zacasocios(models.Model):
 		#client.setBalance(email, totalOrderPoints, "[Odoo] Pedido de tienda")
 		mCustomer = client.getCustomerByEmail(email)
 		client.add(mCustomer["id"], totalOrderPoints, "Compra en tienda.", 365, "moneyspent")
+		
+
 		
