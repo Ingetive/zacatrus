@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="Fichas" owl="1">
+        <span class="control-button js_discount">
+            <i class="fa fa-user"></i>
+            <span> </span>
+            <span id="fichas_button">Canjear Fichas</span>
+        </span>
+    </t>
+
+</templates>
