@@ -25,7 +25,8 @@
         'base',
         'product',
         'sale',
-        'point_of_sale'
+        'point_of_sale',
+        'account',
     ],
 
     # always loaded
@@ -33,6 +34,7 @@
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/point_of_sale.xml',
+        'views/account_move.xml',
         #'views/templates.xml',
     ],
     # only loaded in demonstration mode
