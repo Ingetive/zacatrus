@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="view_pos_pos_form_zacatrus">
+        <field name="name">pos.order.form.zacatrus</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="model">pos.order</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='full_product_name']" position="replace">
+				<field name="display_name"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
