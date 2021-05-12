@@ -259,7 +259,8 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                     zacasocio = true;
                     console.log(client.property_product_pricelist[0]);
                 }
-                if (zacasocio){ 
+                if (zacasocio){
+                    console.log("getting Fichas...");
                     rpc.query({
                         model: 'zacasocios.zacasocios',
                         method: 'getBalance',
