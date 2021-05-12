@@ -124,16 +124,16 @@ class Zacasocios(models.Model):
 
 	@api.model
 	def getBalance( self, email, posName ):
-		magento_client = Fichas(url, apiuser, apipass)
-
-		fichas = 0
-		if not self._isEmployee( email ) and not self._clientAlreadySpent(email):
-			#fichas = magento_client.getBalance( email )
-			mCustomer = magento_client.getCustomerByEmail(email)
-			if mCustomer:
-				fichas = magento_client.getPoints( mCustomer["id"] )
-
-		return fichas
-
+		#magento_client = Fichas(url, apiuser, apipass)
+#
+#		fichas = 0
+#		if not self._isEmployee( email ) and not self._clientAlreadySpent(email):
+#			#fichas = magento_client.getBalance( email )
+#			mCustomer = magento_client.getCustomerByEmail(email)
+#			if mCustomer:
+#				fichas = magento_client.getPoints( mCustomer["id"] )
+#
+#		return fichas
+		return 15000
 		
 
