@@ -7,3 +7,4 @@ class Picking(models.Model):
     _inherit = 'stock.picking'
 
     x_tracking = fields.Char("Numero de tracking de la mensajeria")
+    x_status = fields.Integer('Estado de sincronización')
