@@ -35,6 +35,8 @@
         'views/views.xml',
         'views/point_of_sale.xml',
         'views/account_move.xml',
+        'report/etiqueta_vit.xml',
+        'report/zacatrus_views.xml'
         #'views/templates.xml',
     ],
     # only loaded in demonstration mode
