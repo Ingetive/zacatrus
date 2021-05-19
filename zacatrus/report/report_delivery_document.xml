@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_document_zacatrus" inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[1]" position="replace">
+        </xpath> 
+        <xpath expr="//div[hasclass('page')]" position="replace">
+            <div class="page">
+                <div class="row col-xs-4 pull-right" style="margin-bottom:24px; margin-right: 75px;">
+                    <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+                        <span><strong>Dirección del cliente:</strong></span>
+                        <div t-field="o.sale_id.partner_invoice_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True}"/>
+                        <span><strong>Referencia:</strong></span>
+                        <span t-field="o.sale_id.client_order_ref"/>
+                    </div>
+                </div>
+                <h2 t-if="o.sale_id.partner_invoice_id.id != 5661">
+                    Albarán <span t-field="o.name"/>
+                </h2>
+                <h2 t-if="o.sale_id.partner_invoice_id.id == 5661">
+                    Albarán <span t-field="o.sale_id.origin"/>
+                </h2>
+                <div style="margin-bottom:24px">
+	                <div t-if="o.sale_id.partner_invoice_id.id != 5661 and o.move_lines and o.move_lines[0].partner_id" name="partner_header" style="margin-bottom:12px">
+	                    <div t-field="o.move_lines[0].partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True}"/>
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id != 5661 and not (o.move_lines and o.move_lines[0].partner_id) and o.partner_id" name="partner_header" style="margin-bottom:12px">
+	                    <div t-field="o.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True}"/>
+	                </div>
+
+	                <div>
+	                    <span t-field="o.origin"/>
+	                </div>
+	                <div t-if="o.partner_id.id == 5759">
+	                    N. proveedor: 3001194
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+	                    N. proveedor: 0010997
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+	                    Departamento: 831
+	                </div>
+	                <div>
+	                    N. pedido: <span t-field="o.sale_id.client_order_ref"/>
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+	                    N. albarán: <span t-field="o.sale_id.origin" />
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+	                    Entrega: <span t-field="o.sale_id.partner_shipping_id.name"/>
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+	                    Destino: <span t-field="o.sale_id.partner_id.name"/>
+	                </div>
+	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+	                    Agencia: Transloan
+	                </div>
+	                <div>
+	                    Fecha: <span t-field="o.date" t-field-options='{"format": "d/MM/y"}'/>
+	                </div>
+	                <div>
+	                    Bulto: ___/___
+	                </div>
+                </div>
+                <table class="table table-condensed mt48" t-if="o.state!='done'">
+                    <thead>
+                        <tr>
+                            <th><strong>Product</strong></th>
+                            <th><strong>Quantity</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                        <tr t-foreach="lines" t-as="move">
+                            <td>
+                                <span t-field="move.product_id"/>
+                                <p t-if="o.picking_type_code == 'outgoing'">
+                                    <span t-field="move.product_id.sudo().description_pickingout"/>
+                                </p>
+                                <p t-if="o.picking_type_code == 'incoming'">
+                                    <span t-field="move.product_id.sudo().description_pickingin"/>
+                                </p>
+                            </td>
+                            <td>
+                                <span t-field="move.product_uom_qty"/>
+                                <span t-field="move.product_uom"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-condensed mt48" t-if="o.move_line_ids and o.state=='done'">
+                    <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')" groups="stock.group_production_lot"/>
+                    <thead>
+                        <tr>
+                            <th><strong>Producto</strong></th>
+                            <th name="lot_serial" t-if="has_serial_number">
+                                Lot/Serial Number
+                            </th>
+                            <th class="text-center"><strong>Cantidad</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.move_line_ids" t-as="move_line">
+                            <td>
+                                <span t-field="move_line.product_id"/>
+                                <p t-if="o.picking_type_code == 'outgoing'">
+                                    <span t-field="move_line.product_id.sudo().description_pickingout"/>
+                                </p>
+                                <p t-if="o.picking_type_code == 'incoming'">
+                                    <span t-field="move_line.product_id.sudo().description_pickingin"/>
+                                </p>
+                            </td>
+                            <t t-if="has_serial_number">
+                               <td>
+                                    <table width="100%">
+                                        <tr>
+                                            <td>
+                                                 <span t-field="move_line.lot_id"/>
+                                                 <t t-if="not move_line.lot_id">
+                                                     <span t-field="move_line.lot_name"/>
+                                                 </t>
+                                             </td>
+                                             <td name="lot_qty">
+                                                 <t t-if="move_line.product_qty"> 
+                                                    <span t-field="move_line.product_qty"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </table>
+                              </td>
+                            </t>
+                            <td class="text-center">
+                                <span t-field="move_line.qty_done"/>
+                                <span t-field="move_line.product_uom_id"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p t-if="o.backorder_id">
+                    This shipment is a backorder of <t t-esc="o.backorder_id.name"/>.
+                </p>
+                <p>
+                    <t t-if="o.search([('backorder_id', '=', o.id), ('state', 'not in', ['cancel', 'done'])])">
+                        All items couldn't be shipped, the remaining ones will be shipped as soon as they become available.
+                    </t>
+                </p>
+            </div>
+        </xpath>
+    </template>
+</odoo>
