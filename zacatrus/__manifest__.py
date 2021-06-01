@@ -35,6 +35,7 @@
         'views/views.xml',
         'views/point_of_sale.xml',
         'views/account_move.xml',
+        'views/stock_picking.xml',
         'report/etiqueta_vit.xml',
         'report/zacatrus_views.xml',
         'report/report_delivery_document.xml'
