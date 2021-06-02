@@ -27,6 +27,7 @@
         'sale',
         'point_of_sale',
         'account',
+        'stock_barcode'
     ],
 
     # always loaded
