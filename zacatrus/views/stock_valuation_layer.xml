@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="stock_valuation_layer_tree_zacatrus">
+        <field name="name">stock.valuation.layer.treezacatrus</field>
+        <field name="inherit_id" ref="stock_account.stock_valuation_layer_tree"/>
+        <field name="model">stock.valuation.layer</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+				<field name="almacen"/>
+                <field name="ubicacion_origen"/>
+                <field name="ubicacion_destino"/>
+            </xpath>
+        </field>
+    </record>    
+</odoo>
