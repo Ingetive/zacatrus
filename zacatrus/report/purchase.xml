@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_purchasequotation_document" inherit_id="purchase.report_purchasequotation_document">
+        <xpath expr="//th[@name='th_expected_date']" position="attributes">
+            <attribute name="style">display:none</attribute>
+        </xpath>
+        
+        <xpath expr="//t[@t-foreach='o.order_line']/tr/t/td[2]" position="attributes">
+            <attribute name="style">display:none</attribute>
+        </xpath>
+        
+        <xpath expr="//th[@name='th_expected_date']" position="after">
+            <th><strong>Referencia interna (SKU)</strong></th>
+            <th><strong>Código de Barras</strong></th>
+        </xpath>
+        
+        <xpath expr="//td[@id='product']" position="after">
+            <td>
+                <span t-field="order_line.product_id.default_code"/>
+            </td>
+            <td>
+                <span t-field="order_line.product_barcode"/>
+            </td>
+        </xpath>
+        
+        <xpath expr="//th[@name='th_quantity']" position="after">
+            <th class="text-right"><strong>Precio</strong></th>
+        </xpath>
+        
+        <xpath expr="//t[@t-if='not order_line.display_type']" position="inside">
+            <td class="text-right">
+                <span t-field="order_line.price_subtotal"/>
+            </td>
+        </xpath>
+    </template>
+</odoo>

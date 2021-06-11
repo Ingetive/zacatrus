@@ -34,6 +34,7 @@
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'report/purchase.xml',
         'views/views.xml',
         'views/point_of_sale.xml',
         'views/account_move.xml',
