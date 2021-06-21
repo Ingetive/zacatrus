@@ -10,4 +10,25 @@
             </xpath>
         </field>
     </record>
+    
+    <record model="ir.ui.view" id="view_pos_session_form_zacatrus">
+        <field name="name">pos.session.form.view.zacatrus</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="model">pos.session</field>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook[1]" position="inside">
+				<page name="pagos" string="Pagos">
+                    <field name="payment_ids" nolabel="1">
+                        <tree create="0" edit="0">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="payment_date"/>
+                            <field name="payment_method_id"/>
+                            <field name="pos_order_id"/>
+                            <field name="amount" sum="Total"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
 </odoo>
