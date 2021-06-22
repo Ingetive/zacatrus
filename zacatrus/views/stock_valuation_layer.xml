@@ -11,5 +11,34 @@
                 <field name="ubicacion_destino"/>
             </xpath>
         </field>
-    </record>    
+    </record>  
+    
+    <record model="ir.ui.view" id="stock_valuation_layer_pivot_zacatrus">
+        <field name="name">stock.valuation.layer.pivotzacatrus</field>
+        <field name="model">stock.valuation.layer</field>
+        <field name="arch" type="xml">
+            <pivot string="Inventory">
+                <field name="product_id" type="row"/>
+                <field name="create_date" interval="year" type="col"/>
+                <field name="quantity" type="measure"/>
+                <field name="value" type="measure"/>
+            </pivot>
+        </field>
+    </record>  
+    
+    <record id="stock_valuation_layer_action" model="ir.actions.act_window">
+        <field name="name">Stock Valuation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">stock.valuation.layer</field>
+        <field name="view_mode">tree,form,pivot</field>
+        <field name="view_id" ref="stock_account.stock_valuation_layer_tree"/>
+        <field name="domain">[('product_id.type', '=', 'product')]</field>
+        <field name="context">{'search_default_group_by_product_id': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face"/>
+            <p>
+                There is no valuation layers. Valuation layers are created when some product moves should impact the valuation of the stock.
+            </p>
+        </field>
+    </record>
 </odoo>

@@ -28,7 +28,8 @@
         'product',
         'purchase',
         'sale',
-        'stock_barcode'
+        'stock_barcode',
+        'stock_account'
     ],
 
     # always loaded
