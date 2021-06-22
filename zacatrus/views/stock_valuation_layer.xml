@@ -26,7 +26,7 @@
         </field>
     </record>  
     
-    <record id="stock_valuation_layer_action" model="ir.actions.act_window">
+    <record id="stock_account.stock_valuation_layer_action" model="ir.actions.act_window">
         <field name="name">Stock Valuation</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">stock.valuation.layer</field>
