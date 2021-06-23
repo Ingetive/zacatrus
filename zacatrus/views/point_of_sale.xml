@@ -16,18 +16,15 @@
         <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
         <field name="model">pos.session</field>
         <field name="arch" type="xml">
-            <xpath expr="//notebook[1]" position="inside">
-				<page name="pagos" string="Pagos">
-                    <field name="payment_ids" nolabel="1">
-                        <tree create="0" edit="0">
-                            <field name="currency_id" invisible="1"/>
-                            <field name="payment_date"/>
+            <xpath expr="//notebook[1]" position="before">
+				<separator string="Resumen por métodos de pago"/>
+                    <field name="payment_group_method_ids" readonly="1">
+                        <tree>
                             <field name="payment_method_id"/>
-                            <field name="pos_order_id"/>
-                            <field name="amount" sum="Total"/>
+                            <field name="importe" sum="Total"/>
+                            <field name="currency_id" invisible="1"/>
                         </tree>
                     </field>
-                </page>
             </xpath>
         </field>
     </record>

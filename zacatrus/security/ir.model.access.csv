@@ -1,2 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_zacatrus_zacatrus,zacatrus.zacatrus,model_zacatrus_zacatrus,base.group_user,1,1,1,1
+access_pos_payment_group_method,access_pos_payment_group_method,model_pos_payment_group_method,base.group_user,1,1,1,1
