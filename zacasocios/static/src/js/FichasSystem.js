@@ -84,7 +84,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             }
             console.log("current:"+current);
             console.log("max:"+max);
-            if (current > max){
+            if (current > max && max > 0){
                 this._addFichasToOrder();
                 this.showPopup('ErrorPopup', {
                     title: this.env._t('Fichas'),
