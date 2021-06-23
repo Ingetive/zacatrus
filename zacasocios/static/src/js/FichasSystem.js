@@ -127,7 +127,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                             this.showPopup('ErrorPopup', {
                                 title: this.env._t('Fichas'),
                                 body: this.env._t(
-                                    "Sin saldo suficiente."
+                                    "Sin saldo suficiente o no es la primera compra de hoy."
                                 ),
                             });
                         }
