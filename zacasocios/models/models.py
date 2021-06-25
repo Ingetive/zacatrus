@@ -108,7 +108,8 @@ class Zacasocios(models.Model):
 		product_obj = self.env['product.product']
 		cursor = client_obj.search_read([('email', '=', email)])
 		for _client in cursor:
-		    args = [('state', '<>', "done" ),('partner_id', '=', _client["id"] )]
+		    #args = [('state', '<>', "done" ),('partner_id', '=', _client["id"] )]
+		    args = [('state', 'not in', ['done', 'invoiced']),('partner_id', '=', _client["id"] )]
 		    pos = pos_obj.search_read(args)
 		    for po in pos:            
 		        iargs = [("order_id", "=", po['id'])]
