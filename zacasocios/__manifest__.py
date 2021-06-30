@@ -29,6 +29,7 @@
     ],
     'qweb': [
         'static/src/xml/Fichas.xml',
+        'static/src/xml/Tarjezaca.xml',
     ],
     'installable': True,
     # only loaded in demonstration mode
