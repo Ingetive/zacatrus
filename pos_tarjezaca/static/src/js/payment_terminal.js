@@ -55,7 +55,7 @@ odoo.define("pos_tarjezaca.payment", function (require) {
             }).then(({ confirmed, payload: code }) => {
                     if (confirmed) {
                         console.log(code, 'payload')
-                        console.log("We are going to redeem "+ pay_line.amount +" from "+code+" card.");
+                        console.log("We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
                         return false; //TODO:
                     } else {
                         return false;
