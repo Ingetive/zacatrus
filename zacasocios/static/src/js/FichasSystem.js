@@ -315,7 +315,7 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
         }
         async onClick() {
             console.log("Tarjezaca clicked");
-/*
+
             var self = this;
             const { confirmed, payload } = await this.showPopup('TextInputPopup', {
                title: this.env._t('Activar Tarjezaca'),
@@ -324,7 +324,7 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
             if (confirmed) {
                console.log(payload, 'payload')
             }
-*/
+
         }
     }
 
