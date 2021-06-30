@@ -301,6 +301,7 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
 
     const PosComponent = require('point_of_sale.PosComponent');
     const ProductScreen = require('point_of_sale.ProductScreen');
+    const PaymentScreen = require('point_of_sale.PaymentScreen');
     const { useListener } = require('web.custom_hooks');
     const Registries = require('point_of_sale.Registries');
     //var models = require('point_of_sale.models');
@@ -343,7 +344,7 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
     var screens = require('point_of_sale.screens');
     var PaymentScreenWidget = screens.PaymentScreenWidget;
 
-    PaymentScreenWidget.include({
+    PaymentScreen.include({
 
         validate_order: function(force_validation) {
             console.log('We should validate Tarjezacas here.');
