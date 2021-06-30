@@ -338,20 +338,6 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
         },
     });
 
-    console.log("registering Tarjezaca controls...");
-    Registries.Component.add(TarjezacaSystem);
-
-    //var screens = require('point_of_sale.screens');
-    var PaymentScreenWidget = PaymentScreen.PaymentScreenWidget;
-
-    PaymentScreenWidget.include({
-
-        validate_order: function(force_validation) {
-            console.log('We should validate Tarjezacas here.');
-            this._super(force_validation);
-        },
-
-    });
 
     return TarjezacaSystem;
 });
