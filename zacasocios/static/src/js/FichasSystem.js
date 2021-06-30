@@ -331,13 +331,15 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
 
     TarjezacaSystem.template = 'Tarjezaca';
 
+// TODO: uncomment to activate TZ button
+/*
     ProductScreen.addControlButton({
         component: TarjezacaSystem,
         condition: function() {
             return true;
         },
     });
-
+*/
 
     return TarjezacaSystem;
 });
