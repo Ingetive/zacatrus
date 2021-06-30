@@ -24,11 +24,6 @@
               <script type="text/javascript" src="/zacasocios/static/src/js/FichasSystem.js"></script>
             </xpath>
         </template>
-        <template id="zassets" name="point_of_sale assets" inherit_id="point_of_sale.assets">
-            <xpath expr="." position="inside">
-              <script type="text/javascript" src="/zacasocios/static/src/js/TarjezacaSystem.js"></script>
-            </xpath>
-        </template>
 
     </data>
 </odoo>
