@@ -341,7 +341,10 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
     console.log("registering Tarjezaca controls...");
     Registries.Component.add(TarjezacaSystem);
 
-    PaymentScreen.include({
+    //var screens = require('point_of_sale.screens');
+    var PaymentScreenWidget = PaymentScreen.PaymentScreenWidget;
+
+    PaymentScreenWidget.include({
 
         validate_order: function(force_validation) {
             console.log('We should validate Tarjezacas here.');
