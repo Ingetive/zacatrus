@@ -99,6 +99,8 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             this.env.pos.off('change:selectedOrder', null, this);
         }
         async onClick() {
+            console.log(this.el)
+
             var order = this.env.pos.get_order();
             
             if (this.el.querySelector('#fichas_button').textContent.includes("Canjear")){
