@@ -16,13 +16,24 @@ odoo.define('zacasocios.TarjezacaSystem', function(require) {
             useListener('click', this.onClick);
         }
         async onClick() {
+            console.log("Tarjezaca clicked");
+/*
+            var self = this;
+            const { confirmed, payload } = await this.showPopup('TextInputPopup', {
+               title: this.env._t('Activar Tarjezaca'),
+               body: this.env._t('Introduce el código.'),
+            });
+            if (confirmed) {
+               console.log(payload, 'payload')
+            }
+*/
         }
     }
 
     TarjezacaSystem.template = 'Tarjezaca';
 
     ProductScreen.addControlButton({
-        component: Tarjezaca,
+        component: TarjezacaSystem,
         condition: function() {
             return true;
         },
