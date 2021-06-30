@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * pos_tarjetaza
+# * pos_tarjezaca
 #
 # Translators:
 # OCA Transbot <transbot@odoo-community.org>, 2017
@@ -20,77 +20,77 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 3.10\n"
 
-#. module: pos_tarjetaza
+#. module: pos_tarjezaca
 #. openerp-web
-#: code:addons/pos_tarjetaza/static/src/js/payment_terminal.js:0
+#: code:addons/pos_tarjezaca/static/src/js/payment_terminal.js:0
 #, python-format
 msgid "Cannot process transactions with zero or negative amount."
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields.selection,name:pos_tarjetaza.selection__pos_payment_method__oca_payment_terminal_mode__card
+#. module: pos_tarjezaca
+#: model:ir.model.fields.selection,name:pos_tarjezaca.selection__pos_payment_method__oca_payment_terminal_mode__card
 msgid "Card"
 msgstr "Tarjeta"
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields.selection,name:pos_tarjetaza.selection__pos_payment_method__oca_payment_terminal_mode__check
+#. module: pos_tarjezaca
+#: model:ir.model.fields.selection,name:pos_tarjezaca.selection__pos_payment_method__oca_payment_terminal_mode__check
 msgid "Check"
 msgstr "Talón"
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields,field_description:pos_tarjetaza.field_pos_payment_method__display_name
+#. module: pos_tarjezaca
+#: model:ir.model.fields,field_description:pos_tarjezaca.field_pos_payment_method__display_name
 msgid "Display Name"
 msgstr ""
 
-#. module: pos_tarjetaza
+#. module: pos_tarjezaca
 #. openerp-web
-#: code:addons/pos_tarjetaza/static/src/js/payment_terminal.js:0
+#: code:addons/pos_tarjezaca/static/src/js/payment_terminal.js:0
 #, python-format
 msgid ""
 "Failed to send the amount to pay to the payment terminal. Press the red "
 "button on the payment terminal and try again."
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields,field_description:pos_tarjetaza.field_pos_payment_method__id
+#. module: pos_tarjezaca
+#: model:ir.model.fields,field_description:pos_tarjezaca.field_pos_payment_method__id
 msgid "ID"
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields,field_description:pos_tarjetaza.field_pos_payment_method____last_update
+#. module: pos_tarjezaca
+#: model:ir.model.fields,field_description:pos_tarjezaca.field_pos_payment_method____last_update
 msgid "Last Modified on"
 msgstr ""
 
-#. module: pos_tarjetaza
-#: code:addons/pos_tarjetaza/models/pos_payment_method.py:0
+#. module: pos_tarjezaca
+#: code:addons/pos_tarjezaca/models/pos_payment_method.py:0
 #, python-format
 msgid "Tarjezaca"
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields,field_description:pos_tarjetaza.field_pos_payment_method__oca_payment_terminal_mode
+#. module: pos_tarjezaca
+#: model:ir.model.fields,field_description:pos_tarjezaca.field_pos_payment_method__oca_payment_terminal_mode
 msgid "Payment Mode"
 msgstr ""
 
-#. module: pos_tarjetaza
+#. module: pos_tarjezaca
 #. openerp-web
-#: code:addons/pos_tarjetaza/static/src/js/payment_terminal.js:0
+#: code:addons/pos_tarjezaca/static/src/js/payment_terminal.js:0
 #, python-format
 msgid "Payment Terminal Error"
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model,name:pos_tarjetaza.model_pos_payment_method
+#. module: pos_tarjezaca
+#: model:ir.model,name:pos_tarjezaca.model_pos_payment_method
 msgid "Point of Sale Payment Methods"
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields,field_description:pos_tarjetaza.field_pos_payment_method__oca_payment_terminal_id
+#. module: pos_tarjezaca
+#: model:ir.model.fields,field_description:pos_tarjezaca.field_pos_payment_method__oca_payment_terminal_id
 msgid "Terminal identifier"
 msgstr ""
 
-#. module: pos_tarjetaza
-#: model:ir.model.fields,help:pos_tarjetaza.field_pos_payment_method__oca_payment_terminal_id
+#. module: pos_tarjezaca
+#: model:ir.model.fields,help:pos_tarjezaca.field_pos_payment_method__oca_payment_terminal_id
 msgid ""
 "The identifier of the terminal as known by the hardware proxy. Leave empty "
 "if the proxy has only one terminal connected."
