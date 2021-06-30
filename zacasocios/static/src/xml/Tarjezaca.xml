@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="Tarjezaca" owl="1">
+        <span class="control-button js_discount">
+            <i class="fa fa-user"></i>
+            <span> </span>
+            <span id="tarjezaca_button">t</span>
+        </span>
+    </t>
+
+</templates>
