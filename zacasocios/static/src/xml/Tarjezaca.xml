@@ -3,7 +3,7 @@
 
     <t t-name="Tarjezaca" owl="1">
         <span class="control-button js_discount">
-            <i class="fa fa-user"></i>
+            <i class="fa fa-credit-card"></i>
             <span> </span>
             <span id="tarjezaca_button">TZ</span>
         </span>
