@@ -10,8 +10,8 @@ odoo.define("pos_tarjezaca.payment", function (require) {
 
     var core = require("web.core");
     var PaymentInterface = require("point_of_sale.PaymentInterface");
-    const PosComponent = require('point_of_sale.PosComponent');
     const {Gui} = require("point_of_sale.Gui");
+    var rpc = require('web.rpc');
 
     var _t = core._t;
 
@@ -38,122 +38,42 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                 );
                 return Promise.resolve();
             }
-            var data = {
-                amount: pay_line.amount,
-                currency_iso: currency.name,
-                currency_decimals: currency.decimals,
-                payment_mode: this.payment_method.oca_payment_terminal_mode,
-                payment_id: pay_line.cid,
-                order_id: order.name,
-            };
 
             var self = this;
 
-            Gui.showPopup('TextInputPopup', {
-               title: 'Pagar con Tarjezaca',
-               body: 'Introduce el código.',
-            }).then(({ confirmed, payload: code }) => {
-                    if (confirmed) {
-                        console.log(code, 'payload')
-                        console.log("We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
-                        return false; //TODO:
-                    } else {
-                        return false;
-                    }
-                }
-            );
-
-            return false;
-        },
-/*
-        _oca_poll_for_transaction_status: function (pay_line, resolve, reject) {
-            var timerId = setInterval(() => {
-                // Query the driver status more frequently than the regular POS
-                // proxy, to get faster feedback when the transaction is
-                // complete on the terminal.
-                var status_params = {};
-                if (this.payment_method.oca_payment_terminal_id) {
-                    status_params.terminal_id = this.payment_method.oca_payment_terminal_id;
-                }
-                this.pos.proxy.connection
-                    .rpc("/hw_proxy/status_json", status_params, {
-                        shadow: true,
-                        timeout: 1000,
-                    })
-                    .then((drivers_status) => {
-                        for (var driver_name in drivers_status) {
-                            // Look for a driver that is a payment terminal and has
-                            // transactions.
-                            var driver = drivers_status[driver_name];
-                            if (!driver.is_terminal || !("transactions" in driver)) {
-                                continue;
-                            }
-                            for (var transaction_id in driver.transactions) {
-                                var transaction = driver.transactions[transaction_id];
-                                if (
-                                    transaction.transaction_id ===
-                                    pay_line.terminal_transaction_id
-                                ) {
-                                    // Look for the transaction corresponding to
-                                    // the payment line.
-                                    this._oca_update_payment_line_terminal_transaction_status(
-                                        pay_line,
-                                        transaction
-                                    );
-                                    if (
-                                        pay_line.terminal_transaction_success !== null
-                                    ) {
-                                        resolve(pay_line.terminal_transaction_success);
-                                        // Stop the loop
-                                        clearInterval(timerId);
-                                    }
+            return Gui.showPopup('TextInputPopup', {
+                   title: 'Pagar con Tarjezaca',
+                   body: 'Introduce el código.',
+                }).then(({ confirmed, payload: code }) => {
+                        if (confirmed) {
+                            console.log(code, 'payload')
+                            console.log("We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
+                            
+                            return rpc.query({
+                                model: 'pos.payment.method',
+                                method: 'redeem',
+                                args: [code, pay_line.amount],
+                            })
+                            .then(function(ret){                            
+                                console.log("redeem done: "+JSON.stringify(ret));
+                                if (!ret["ok"]) {
+                                    Gui.showPopup("ErrorPopup", {title: "Error", body: ret["cause"],});
                                 }
-                            }
+                                else {
+                                    return true;
+                                }
+                                return false;
+                            },function(type, err){
+                                Gui.showPopup("ErrorPopup", {title: "Error 20 ", body: "No puedo canjear esa tarjezaca.",});
+                                return false;
+                            });
                         }
-                    })
-                    .catch(() => {
-                        console.error("Error querying terminal driver status");
-                        // We could not query the transaction status so we
-                        // won't know the transaction result: we let the user
-                        // enter the outcome manually. This is done by
-                        // rejecting the promise as explained in the
-                        // send_payment_request() documentation.
-                        pay_line.set_payment_status("force_done");
-                        reject();
-                        // Stop the loop
-                        clearInterval(timerId);
-                    });
-            }, 1000);
+                        else {
+                            return false;
+                        }
+                    }
+                );
         },
-
-        _oca_update_payment_line_terminal_transaction_status: function (
-            pay_line,
-            transaction
-        ) {
-            pay_line.terminal_transaction_id = transaction.transaction_id;
-            pay_line.terminal_transaction_success = transaction.success;
-            pay_line.terminal_transaction_status = transaction.status;
-            pay_line.terminal_transaction_status_details = transaction.status_details;
-            // Payment transaction reference, for accounting reconciliation purposes.
-            pay_line.transaction_id = transaction.reference;
-        },
-*/
-/*
-        _oca_payment_terminal_proxy_request: function (data) {
-            return this.pos.proxy
-                .message("payment_terminal_transaction_start", {
-                    payment_info: JSON.stringify(data),
-                })
-                .then((response) => {
-                    return response;
-                })
-                .catch(() => {
-                    console.error("Error starting payment transaction");
-                    return false;
-                });
-        },
-*/
-
         _show_error: function (msg, title) {
             Gui.showPopup("ErrorPopup", {
                 title: title || _t("Payment Terminal Error"),
