@@ -1,7 +1,3 @@
-# Copyrght 2020 Akretion France (http://www.akretion.com/)
-# @author: Alexis de Lattre <alexis.delattre@akretion.com>
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-
 from odoo import _, fields, models, api
 import hmac, base64, struct, hashlib, time, os
 import requests
@@ -92,7 +88,7 @@ class PosPaymentMethod(models.Model):
 
     def _get_payment_terminal_selection(self):
         res = super()._get_payment_terminal_selection()
-        res.append(("oca_payment_terminal", _("Tarjezaca")))
+        res.append(("tarjezaca_payment", _("Tarjezaca")))
         return res
 
     @api.model
@@ -123,13 +119,3 @@ class PosPaymentMethod(models.Model):
 
         return {"ok": ok, "cause": cause}
 
-    oca_payment_terminal_mode = fields.Selection(
-        [("card", "Card"), ("check", "Check")], string="Payment Mode", default="card"
-    )
-    oca_payment_terminal_id = fields.Char(
-        string="Terminal identifier",
-        help=(
-            "The identifier of the terminal as known by the hardware proxy. "
-            "Leave empty if the proxy has only one terminal connected."
-        ),
-    )

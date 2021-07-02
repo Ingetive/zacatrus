@@ -1,9 +1,4 @@
-/*
-    Copyright 2020 Akretion France (http://www.akretion.com/)
-    @author: Alexis de Lattre <alexis.delattre@akretion.com>
-    @author: Stéphane Bidoul <stephane.bidoul@acsone.eu>
-    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-*/
+TARJEZACA_BARCODE = "TZ"
 
 odoo.define("pos_tarjezaca.payment", function (require) {
     "use strict";
@@ -15,7 +10,7 @@ odoo.define("pos_tarjezaca.payment", function (require) {
 
     var _t = core._t;
 
-    var OCAPaymentTerminal = PaymentInterface.extend({
+    var TarjezacaPayment = PaymentInterface.extend({
         init: function () {
             console.log("init payment terminal");
             this._super.apply(this, arguments);
@@ -24,19 +19,29 @@ odoo.define("pos_tarjezaca.payment", function (require) {
         send_payment_request: function () {
             console.log("Send payment");
             this._super.apply(this, arguments);
-            return this._oca_payment_terminal_pay();
+            return this._tarjezaca_pay();
         },
 
-        _oca_payment_terminal_pay: function () {
+        _tarjezaca_pay: function () {
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
             var currency = this.pos.currency;
             if (pay_line.amount <= 0) {
                 // TODO check if it's possible or not
                 this._show_error(
-                    _t("Cannot process transactions with zero or negative amount.")
+                    _t("No podemos procesar pagos con importe negativo.")
                 );
                 return Promise.resolve();
+            }
+
+            var orderlines = order.get_orderlines();
+            for(var i = 0, len = orderlines.length; i < len; i++){
+                if (orderlines[i].product && orderlines[i].product.barcode == TARJEZACA_BARCODE){
+                    this._show_error(
+                        _t("No podemos pagar una tarjeta regalo con otra tarjeta regalo.")
+                    );
+                    return Promise.resolve();
+                }
             }
 
             var self = this;
@@ -81,5 +86,5 @@ odoo.define("pos_tarjezaca.payment", function (require) {
             });
         },
     });
-    return OCAPaymentTerminal;
+    return TarjezacaPayment;
 });
