@@ -22,9 +22,9 @@ class ResConfigSettings(models.TransientModel):
 
         cardProductId = None
         fichasProductId = None
-        if self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.card_product_id').isnumeric():
+        if self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.card_product_id') and self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.card_product_id').isnumeric():
             cardProductId = int(self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.card_product_id'))
-        if self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.fichas_product_id').isnumeric():
+        if self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.fichas_product_id') and self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.fichas_product_id').isnumeric():
             fichasProductId = int(self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.fichas_product_id'))
         res.update(
             magento_url = self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.magento_url'),
