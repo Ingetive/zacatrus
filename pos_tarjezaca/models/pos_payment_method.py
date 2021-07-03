@@ -1,11 +1,8 @@
 from odoo import _, fields, models, api
 import hmac, base64, struct, hashlib, time, os
 import requests
-
-url = 'https://dummy.zacatrus.es/rest/all/V1/'
-apiuser = 'zaca24'
-apipass = 'carracacosa1'
-test = True
+import logging
+_logger = logging.getLogger(__name__)   
 
 def normalize(key):
     """Normalizes secret by removing spaces and padding with = to a multiple of 8"""
@@ -41,13 +38,12 @@ class GiftCard():
         self.username = username
         self.password = password
         self.url = url
-        self.test = test
 
     def _getToken(self):
         data = {"username": self.username, "password": self.password, "otp": get_totp_token()}
         #print(data)
 
-        if self.test:
+        if "dummy" in self.url:
           url = self.url + "integration/admin/token"
         else:
           url = self.url + "tfa/provider/google/authenticate"
@@ -55,10 +51,12 @@ class GiftCard():
         try:
             response = requests.post(url, json=data)
             self.gtoken = response.json()
-            return self.gtoken
+            if response.status_code == 200:
+                return self.gtoken
         except Exception as e:
             print ("Cannot access.\n")
-            return False
+            
+        return False
 
     def _getData(self, url, postParams=False, method = False):
         token = self._getToken()
@@ -93,7 +91,15 @@ class PosPaymentMethod(models.Model):
 
     @api.model
     def redeem(self, code, amount):
-        magento_client = GiftCard(url, apiuser, apipass)
+        magento_url = self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.magento_url')
+        magento_user = self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.magento_user')
+        magento_password = self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.magento_password')
+
+        magento_client = GiftCard(
+            magento_url, 
+            magento_user, 
+            magento_password
+        )
         mCards = magento_client.getGiftCardByCode(code)
         ok = False
         cause = None

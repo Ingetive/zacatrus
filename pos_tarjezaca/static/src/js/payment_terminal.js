@@ -1,5 +1,3 @@
-TARJEZACA_BARCODE = "TZ"
-
 odoo.define("pos_tarjezaca.payment", function (require) {
     "use strict";
 
@@ -34,16 +32,6 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                 return Promise.resolve();
             }
 
-            var orderlines = order.get_orderlines();
-            for(var i = 0, len = orderlines.length; i < len; i++){
-                if (orderlines[i].product && orderlines[i].product.barcode == TARJEZACA_BARCODE){
-                    this._show_error(
-                        _t("No podemos pagar una tarjeta regalo con otra tarjeta regalo.")
-                    );
-                    return Promise.resolve();
-                }
-            }
-
             var self = this;
 
             return Gui.showPopup('TextInputPopup', {
@@ -55,22 +43,42 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                             console.log("We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
                             
                             return rpc.query({
-                                model: 'pos.payment.method',
-                                method: 'redeem',
-                                args: [code, pay_line.amount],
+                                model: 'ir.config_parameter',
+                                method: 'search_read',
+                                args: [[['key', '=', 'pos_tarjezaca.card_product_id']], ['key', 'value']],
                             })
-                            .then(function(ret){                            
-                                console.log("redeem done: "+JSON.stringify(ret));
-                                if (!ret["ok"]) {
-                                    Gui.showPopup("ErrorPopup", {title: "Error", body: ret["cause"],});
+                            .then(function(ret){
+                                //console.log(JSON.stringify(ret));
+                                if (ret.length != 1){
+                                    Gui.showPopup("ErrorPopup", {title: "Error", body: "Error de conexión. Por favor, inténtalo más tarde.",});
+                                    return false;
                                 }
-                                else {
-                                    return true;
+                                var cardId = ret[0]['value']
+                                var orderlines = order.get_orderlines();
+                                for(var i = 0, len = orderlines.length; i < len; i++){
+                                    if (orderlines[i].product && orderlines[i].product.id == cardId){
+                                        Gui.showPopup("ErrorPopup", {title: "Error", body: "No podemos pagar una tarjeta regalo con otra tarjeta regalo.",});
+                                        return Promise.resolve();
+                                    }
                                 }
-                                return false;
-                            },function(type, err){
-                                Gui.showPopup("ErrorPopup", {title: "Error 20 ", body: "No puedo canjear esa tarjezaca.",});
-                                return false;
+                                return rpc.query({
+                                    model: 'pos.payment.method',
+                                    method: 'redeem',
+                                    args: [code, pay_line.amount],
+                                })
+                                .then(function(ret){                            
+                                    console.log("redeem done: "+JSON.stringify(ret));
+                                    if (!ret["ok"]) {
+                                        Gui.showPopup("ErrorPopup", {title: "Error", body: ret["cause"],});
+                                    }
+                                    else {
+                                        return true;
+                                    }
+                                    return false;
+                                },function(type, err){
+                                    Gui.showPopup("ErrorPopup", {title: "Error 20 ", body: "No puedo canjear esa tarjezaca.",});
+                                    return false;
+                                });
                             });
                         }
                         else {
