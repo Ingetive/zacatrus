@@ -18,7 +18,7 @@ class ResConfigSettings(models.TransientModel):
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
-        _logger.warning("_TZ: card:"+(self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.fichas_product_id')))
+        #_logger.warning("_TZ: card:"+(self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.fichas_product_id')))
 
         cardProductId = None
         fichasProductId = None
