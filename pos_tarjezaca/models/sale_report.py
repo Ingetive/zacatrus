@@ -6,7 +6,7 @@ from odoo import models, fields, api
 class SaleReport(models.Model):
     _inherit = 'sale.report'
 
-    x_box = fields.Integer('Productos por caja')
+    x_box = fields.Integer('Productos por caja', readonly=True)
 
     def _query(self, with_clause='', fields={}, groupby='', from_clause=''):
         with_ = ("WITH %s" % with_clause) if with_clause else ""
@@ -35,7 +35,7 @@ class SaleReport(models.Model):
             s.source_id as source_id,
             extract(epoch from avg(date_trunc('day',s.date_order)-date_trunc('day',s.create_date)))/(24*60*60)::decimal(16,2) as delay,
             t.categ_id as categ_id,
-            t.x_box as x_box
+            t.x_box as x_box,
             s.pricelist_id as pricelist_id,
             s.analytic_account_id as analytic_account_id,
             s.team_id as team_id,
