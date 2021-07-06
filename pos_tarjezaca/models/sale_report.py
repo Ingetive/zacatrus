@@ -6,6 +6,7 @@ from odoo import models, fields, api
 class SaleReport(models.Model):
     _inherit = 'sale.report'
 
+    x_box = fields.Integer('Productos por caja')
 
     def _query(self, with_clause='', fields={}, groupby='', from_clause=''):
         with_ = ("WITH %s" % with_clause) if with_clause else ""
