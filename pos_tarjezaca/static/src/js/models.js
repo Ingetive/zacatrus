@@ -1,24 +1,11 @@
-/*
-    POS Payment Terminal module for Odoo
-    Copyright (C) 2014-2020 Aurélien DUMAINE
-    Copyright (C) 2014-2020 Akretion (www.akretion.com)
-    @author: Aurélien DUMAINE
-    @author: Alexis de Lattre <alexis.delattre@akretion.com>
-    @author: Denis Roussel <denis.roussel@acsone.eu>
-    @author: Stéphane Bidoul <stephane.bidoul@acsone.eu>
-    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-*/
-
 odoo.define("pos_tarjezaca.models", function (require) {
     "use strict";
 
     var models = require("point_of_sale.models");
 
-    var OCAPaymentTerminal = require("pos_tarjezaca.payment");
-    models.register_payment_method("oca_payment_terminal", OCAPaymentTerminal);
+    var TarjezacaPayment = require("pos_tarjezaca.payment");
+    models.register_payment_method("tarjezaca_payment", TarjezacaPayment);
     models.load_fields("pos.payment.method", [
-        "oca_payment_terminal_mode",
-        "oca_payment_terminal_id",
     ]);
 
     var _posmodelproto = models.PosModel.prototype;
@@ -26,7 +13,7 @@ odoo.define("pos_tarjezaca.models", function (require) {
         after_load_server_data: function () {
             for (var payment_method_id in this.payment_methods) {
                 var payment_method = this.payment_methods[payment_method_id];
-                if (payment_method.use_payment_terminal == "oca_payment_terminal") {
+                if (payment_method.use_payment_terminal == "tarjezaca_payment") {
                     this.config.use_proxy = false;
                 }
             }

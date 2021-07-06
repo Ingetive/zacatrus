@@ -1,10 +1,3 @@
-/*
-    Copyright 2020 Akretion France (http://www.akretion.com/)
-    @author: Alexis de Lattre <alexis.delattre@akretion.com>
-    @author: Stéphane Bidoul <stephane.bidoul@acsone.eu>
-    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-*/
-
 odoo.define("pos_tarjezaca.payment", function (require) {
     "use strict";
 
@@ -15,7 +8,7 @@ odoo.define("pos_tarjezaca.payment", function (require) {
 
     var _t = core._t;
 
-    var OCAPaymentTerminal = PaymentInterface.extend({
+    var TarjezacaPayment = PaymentInterface.extend({
         init: function () {
             console.log("init payment terminal");
             this._super.apply(this, arguments);
@@ -24,17 +17,17 @@ odoo.define("pos_tarjezaca.payment", function (require) {
         send_payment_request: function () {
             console.log("Send payment");
             this._super.apply(this, arguments);
-            return this._oca_payment_terminal_pay();
+            return this._tarjezaca_pay();
         },
 
-        _oca_payment_terminal_pay: function () {
+        _tarjezaca_pay: function () {
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
             var currency = this.pos.currency;
             if (pay_line.amount <= 0) {
                 // TODO check if it's possible or not
                 this._show_error(
-                    _t("Cannot process transactions with zero or negative amount.")
+                    _t("No podemos procesar pagos con importe negativo.")
                 );
                 return Promise.resolve();
             }
@@ -50,22 +43,42 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                             console.log("We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
                             
                             return rpc.query({
-                                model: 'pos.payment.method',
-                                method: 'redeem',
-                                args: [code, pay_line.amount],
+                                model: 'ir.config_parameter',
+                                method: 'search_read',
+                                args: [[['key', '=', 'pos_tarjezaca.card_product_id']], ['key', 'value']],
                             })
-                            .then(function(ret){                            
-                                console.log("redeem done: "+JSON.stringify(ret));
-                                if (!ret["ok"]) {
-                                    Gui.showPopup("ErrorPopup", {title: "Error", body: ret["cause"],});
+                            .then(function(ret){
+                                //console.log(JSON.stringify(ret));
+                                if (ret.length != 1){
+                                    Gui.showPopup("ErrorPopup", {title: "Error", body: "Error de conexión. Por favor, inténtalo más tarde.",});
+                                    return false;
                                 }
-                                else {
-                                    return true;
+                                var cardId = ret[0]['value']
+                                var orderlines = order.get_orderlines();
+                                for(var i = 0, len = orderlines.length; i < len; i++){
+                                    if (orderlines[i].product && orderlines[i].product.id == cardId){
+                                        Gui.showPopup("ErrorPopup", {title: "Error", body: "No podemos pagar una tarjeta regalo con otra tarjeta regalo.",});
+                                        return Promise.resolve();
+                                    }
                                 }
-                                return false;
-                            },function(type, err){
-                                Gui.showPopup("ErrorPopup", {title: "Error 20 ", body: "No puedo canjear esa tarjezaca.",});
-                                return false;
+                                return rpc.query({
+                                    model: 'pos.payment.method',
+                                    method: 'redeem',
+                                    args: [code, pay_line.amount],
+                                })
+                                .then(function(ret){                            
+                                    console.log("redeem done: "+JSON.stringify(ret));
+                                    if (!ret["ok"]) {
+                                        Gui.showPopup("ErrorPopup", {title: "Error", body: ret["cause"],});
+                                    }
+                                    else {
+                                        return true;
+                                    }
+                                    return false;
+                                },function(type, err){
+                                    Gui.showPopup("ErrorPopup", {title: "Error 20 ", body: "No puedo canjear esa tarjezaca.",});
+                                    return false;
+                                });
                             });
                         }
                         else {
@@ -81,5 +94,5 @@ odoo.define("pos_tarjezaca.payment", function (require) {
             });
         },
     });
-    return OCAPaymentTerminal;
+    return TarjezacaPayment;
 });
