@@ -8,7 +8,7 @@ class SaleReport(models.Model):
 
     x_box = fields.Integer('Productos por caja', readonly=True)
 
-    def _query(self, with_clause='', fields={}, groupby='', from_clause=''):
+    def _queryz(self, with_clause='', fields={}, groupby='', from_clause=''):
         with_ = ("WITH %s" % with_clause) if with_clause else ""
 
         select_ = """
@@ -92,3 +92,8 @@ class SaleReport(models.Model):
         """ % (groupby)
 
         return '%s (SELECT %s FROM %s GROUP BY %s)' % (with_, select_, from_, groupby_)
+
+    def init(self):
+        # self._table = sale_report
+        tools.drop_view_if_exists(self.env.cr, self._table)
+        self.env.cr.execute("""CREATE or REPLACE VIEW %s as (%s)""" % (self._table, self._queryz()))
