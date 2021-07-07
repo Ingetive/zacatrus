@@ -9,9 +9,8 @@ _logger = logging.getLogger(__name__)
 class SaleReport(models.Model):
     _inherit = 'sale.report'
 
-    x_box = fields.Integer('Productos por caja', readonly=True)
-    x_magento_category = fields.Integer('Categoría en magento', readonly=True)
-    x_magento_ocasiones = fields.Boolean('Ocasiones', readonly=True)
+    x_mage_category = fields.Char('Categoría en magento', readonly=True)
+    x_mage_ocasiones = fields.Char('Ocasiones', readonly=True)
 
     def _queryz(self, with_clause='', fields={}, groupby='', from_clause=''):
         _logger.warning("P_TZ: _queryz")
@@ -42,7 +41,6 @@ class SaleReport(models.Model):
             s.source_id as source_id,
             extract(epoch from avg(date_trunc('day',s.date_order)-date_trunc('day',s.create_date)))/(24*60*60)::decimal(16,2) as delay,
             t.categ_id as categ_id,
-            t.x_box as x_box,
             t.x_magento_ocasiones as x_magento_ocasiones,
             t.x_magento_category as x_magento_category,
             s.pricelist_id as pricelist_id,
@@ -79,7 +77,6 @@ class SaleReport(models.Model):
             l.order_id,
             t.uom_id,
             t.categ_id,
-            t.x_box,
             t.x_magento_category,
             t.x_magento_ocasiones,
             s.name,
