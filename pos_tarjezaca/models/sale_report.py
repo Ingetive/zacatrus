@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+from odoo import tools
+import logging
+_logger = logging.getLogger(__name__)  
 
 
 class SaleReport(models.Model):
     _inherit = 'sale.report'
 
     x_box = fields.Integer('Productos por caja', readonly=True)
+    x_magento_category = fields.Integer('Categoría en magento', readonly=True)
+    x_magento_ocasiones = fields.Boolean('Ocasiones', readonly=True)
 
     def _queryz(self, with_clause='', fields={}, groupby='', from_clause=''):
+        _logger.warning("P_TZ: _queryz")
+
         with_ = ("WITH %s" % with_clause) if with_clause else ""
 
         select_ = """
@@ -36,6 +43,8 @@ class SaleReport(models.Model):
             extract(epoch from avg(date_trunc('day',s.date_order)-date_trunc('day',s.create_date)))/(24*60*60)::decimal(16,2) as delay,
             t.categ_id as categ_id,
             t.x_box as x_box,
+            t.x_magento_ocasiones as x_magento_ocasiones,
+            t.x_magento_category as x_magento_category,
             s.pricelist_id as pricelist_id,
             s.analytic_account_id as analytic_account_id,
             s.team_id as team_id,
@@ -71,6 +80,8 @@ class SaleReport(models.Model):
             t.uom_id,
             t.categ_id,
             t.x_box,
+            t.x_magento_category,
+            t.x_magento_ocasiones,
             s.name,
             s.date_order,
             s.partner_id,
@@ -94,6 +105,8 @@ class SaleReport(models.Model):
         return '%s (SELECT %s FROM %s GROUP BY %s)' % (with_, select_, from_, groupby_)
 
     def init(self):
+        _logger.warning("P_TZ: init sale_report")
+
         # self._table = sale_report
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""CREATE or REPLACE VIEW %s as (%s)""" % (self._table, self._queryz()))
