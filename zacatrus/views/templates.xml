@@ -1,5 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <template id="point_of_sale_assets" inherit_id="point_of_sale.assets" name="point_of_sale assets Zacatrus">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" href="/zacatrus/static/src/css/pos_receipts.css"/>
+        </xpath>
+    </template>
 <!--
         <template id="listing">
           <ul>
@@ -20,5 +25,4 @@
           </dl>
         </template>
 -->
-    </data>
 </odoo>
