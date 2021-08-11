@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_sale" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.delivery.nacex.sale</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='shipping_setting_container']" position="inside">
+                <div class="col-12 col-lg-6 o_setting_box" id="nacex">
+                    <div class="o_setting_left_pane">
+                        <field name="module_delivery_nacex" widget="upgrade_boolean"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="module_delivery_nacex"/>
+                        <div class="text-muted">
+                            Compute shipping costs and ship with Nacex
+                        </div>
+                        <div class="content-group">
+                            <div id="sale_delivery_nacex"/>
+                            <div class="content-group">
+                                <div class="mt8" attrs="{'invisible': [('module_delivery_nacex', '=', False)]}">
+                                    <button name="%(delivery.action_delivery_carrier_form)d" 
+                                            icon="fa-arrow-right" 
+                                            type="action" 
+                                            string="Método de envío Nacex" 
+                                            class="btn-link" 
+                                            context="{'search_default_delivery_type': 'nacex'}"/>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+             </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_stock" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.delivery.stock</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='product_setting_container']" position="inside">
+                <div class="col-12 col-lg-6 o_setting_box" id="compute_shipping_costs_nacex">
+                    <div class="o_setting_left_pane">
+                        <field name="module_delivery_nacex" widget="upgrade_boolean"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="module_delivery_nacex"/>
+                        <div class="text-muted">
+                            Compute shipping costs and ship with Nacex
+                        </div>
+                        <div class="content-group">
+                            <div class="mt8" attrs="{'invisible': [('module_delivery_nacex', '=', False)]}">
+                                <button name="%(delivery.action_delivery_carrier_form)d" 
+                                        icon="fa-arrow-right" 
+                                        type="action" 
+                                        string="Método de envío Nacex" 
+                                        class="btn-link" 
+                                        context="{'search_default_delivery_type': 'nacex'}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

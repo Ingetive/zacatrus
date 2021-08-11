@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="nacex_packaging_NACEX_BOX" model="product.packaging">
+        <field name="name">NACEX_BOX</field>
+        <field name="shipper_package_code">NACEX_BOX</field>
+        <field name="package_carrier_type">nacex</field>
+        <field name="max_weight">9.07</field>
+    </record>
+    
+    <record id="product_product_delivery_nacex" model="product.product">
+        <field name="name">Nacex</field>
+        <field name="default_code">delivery_nacex</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="delivery.product_category_deliveries"/>
+        <field name="sale_ok" eval="False"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="list_price">0.0</field>
+        <field name="invoice_policy">order</field>
+    </record>
+    
+    <record id="delivery_carrier_nacex" model="delivery.carrier">
+        <field name="name">Nacex</field>
+        <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
+        <field name="delivery_type">nacex</field>
+        <field name="nacex_user">4002.ZACATRUSWS</field>
+        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
+    </record>
+</odoo>
