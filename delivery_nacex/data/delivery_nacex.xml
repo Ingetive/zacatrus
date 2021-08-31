@@ -22,7 +22,13 @@
         <field name="name">Nacex</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
-        <field name="nacex_user">4002.ZACATRUSWS</field>
-        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
+        <field name="nacex_user">TEST_SERMANCOMPUTERSL</field>
+        <field name="nacex_password">17AE486F84AD68CF7085CB7C839F3FFF</field>
+        <field name="nacex_tipo_servicio">peninsula</field>
+        <field name="nacex_tipo_servicio_peninsula">01</field>
+        <field name="nacex_envase_peninsula">2</field>
+        <field name="nacex_vehiculo">C</field>
+        <field name="nacex_delegacion_cliente">2804</field>
+        <field name="nacex_code_cliente">40103</field>
     </record>
 </odoo>

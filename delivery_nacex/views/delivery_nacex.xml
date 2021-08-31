@@ -12,9 +12,22 @@
                         <group>
                             <field name="nacex_user" attrs="{'required': [('delivery_type', '=', 'nacex')]}"/>
                             <field name="nacex_password" attrs="{'required': [('delivery_type', '=', 'nacex')]}"/>
+                            <field name="nacex_tipo_servicio"/>
+                            <field name="nacex_tipo_cobro"/>
                             <field name="nacex_delegacion_cliente"/>
                             <field name="nacex_code_cliente"/>
+                            <field name="nacex_vehiculo"/>
                         </group>
+                    </group>
+                    
+                    <group attrs="{'invisible': [('nacex_tipo_servicio', '!=', 'peninsula')]}">
+                        <field name="nacex_tipo_servicio_peninsula" string="Servicio"/>
+                        <field name="nacex_envase_peninsula" string="Envase"/>
+                    </group>
+                    
+                    <group attrs="{'invisible': [('nacex_tipo_servicio', '!=', 'internacional')]}">
+                        <field name="nacex_tipo_servicio_internacional" string="Servicio"/>
+                        <field name="nacex_envase_internacional" string="Envase"/>
                     </group>
                 </page>
             </xpath>
