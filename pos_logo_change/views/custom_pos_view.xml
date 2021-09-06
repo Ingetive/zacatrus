@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	<!-- Add custom js for POS Logo Change -->	    
+        <template id="assets_for_pos_logo" inherit_id="point_of_sale.assets">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/pos_logo_change/static/src/js/pos_logo_change.js"/>
+                <script type="text/javascript" src="/pos_logo_change/static/src/js/jquery-barcode.js"/>
+            </xpath>
+        </template>
+        
+    
+
+		<!-- POS Logo Change -->
+		<record id="inherit_view_pos_logo_change_form" model="ir.ui.view">
+			<field name="name">inherit_bi_pos_logo_change</field>
+			<field name="model">pos.config</field>
+			<field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//div[@id='title']" position="before">
+                    <field name="pos_logo" widget="image" class="oe_avatar" />
+                    <br/><br/><br/><br/>
+            	</xpath>
+            	<xpath expr="//div[3]" position="after">
+            		<h2>Display Barcode in Receipt </h2>
+					<div class="row mt16 o_settings_container" id="session_config">
+						<div id="barcode_div" class="col-xs-12 col-md-6 o_setting_box">
+							<div class="o_setting_left_pane">
+								<field name="show_barcode"/>
+							</div>
+							<div class="o_setting_right_pane">
+								<label for="show_barcode" string='Show Barcode in Receipt'/>
+							</div>
+						</div>		
+					</div>
+					<br/>
+            	</xpath>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="pos_order_barcode">
+			<field name="name">pos.order.barcode.form</field>
+			<field name="model">pos.order</field>
+			<field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+			<field name="arch" type="xml">
+				<field name="pos_reference" position="after">
+					<field string="Barcode" name="barcode_number"/>
+				</field>
+			</field>
+		</record>		
+    </data>
+</openerp>
