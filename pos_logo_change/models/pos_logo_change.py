@@ -20,5 +20,5 @@ class pos_order_inherit(models.Model):
 	@api.model
 	def _order_fields(self, ui_order):
 		res = super(pos_order_inherit, self)._order_fields(ui_order)
-		res['barcode_number'] = ui_order['barcode']
+#		res['barcode_number'] = ui_order['barcode']
 		return res	
