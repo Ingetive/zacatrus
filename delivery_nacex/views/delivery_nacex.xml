@@ -17,6 +17,7 @@
                             <field name="nacex_delegacion_cliente"/>
                             <field name="nacex_code_cliente"/>
                             <field name="nacex_vehiculo"/>
+                            <field name="nacex_etiqueta"/>
                         </group>
                     </group>
                     

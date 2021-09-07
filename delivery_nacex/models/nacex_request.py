@@ -25,10 +25,17 @@ class NacexRequest():
     def send_shipping(self, picking, carrier):
         shipping_weight_in_kg = 0.0
         num_bultos = 0
-        for move in picking.move_lines:
-            shipping_weight_in_kg += move.product_qty * move.product_id.weight
-            num_bultos += int(move.product_qty)
-            
+        
+        #si hay paquetes
+        if picking.package_ids:
+            for paquete in picking.package_ids:
+                shipping_weight_in_kg += paquete.weight
+                num_bultos += 1        
+        else:
+            num_bultos += 1
+            for move in picking.move_lines:
+                shipping_weight_in_kg += move.product_qty * move.product_id.weight
+ 
         bultos = str(num_bultos)
         for i in range(len(str(num_bultos)), 3):
             bultos = "0%s" % bultos
@@ -137,7 +144,28 @@ class NacexRequest():
             return float(result[1].replace(",", "."))
         except:
             raise UserError(_("Error al convertir el precio."))
+    
+    def get_label(self, carrier_tracking_ref, carrier):
+        params = {
+            "codExp": carrier_tracking_ref,
+            "modelo": carrier.nacex_etiqueta
+        }
 
+        code, result = self._send_request('getEtiqueta', carrier, params)
+
+        _logger.warning(code)
+        _logger.warning(result)
+        _logger.warning(price)
+        
+#        if result["Expedición cancelada con éxito"]:
+#            picking.message_post(body=_(u'Shipment #%s has been cancelled', picking.carrier_tracking_ref))
+#            picking.write({
+#                'carrier_tracking_ref': '',
+#                'carrier_price': 0.0
+#            })
+#        else:
+#            raise UserError(result['errors_message'])
+            
     def nacex_cancel_shipment(self, picking):
         params = {
             "expe_codigo": picking.carrier_tracking_ref

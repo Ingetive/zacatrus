@@ -86,6 +86,13 @@ VEHICULOS = [
     ('M', "Moto"),
 ]
 
+ETIQUETAS = [
+    ('TECSV4_B', 'TECSV4_B'),
+    ('TECEV4_B', 'TECEV4_B'),
+    ('TECFV4_B', 'TECFV4_B'),    
+    ('ZEBRA_B', 'ZEBRA_B'),
+    ('IMAGEN_B', 'IMAGEN_B'), 
+]
 
 class ProviderNacex(models.Model):
     _inherit = 'delivery.carrier'
@@ -105,6 +112,7 @@ class ProviderNacex(models.Model):
     nacex_delegacion_cliente = fields.Char("Delegación cliente")
     nacex_code_cliente = fields.Char("Código cliente")
     nacex_vehiculo = fields.Selection(VEHICULOS, string="Vehículo", default="C", required=True)
+    nacex_etiqueta = fields.Selection(ETIQUETAS, string="Etiqueta", default="IMAGEN_B", required=True)
     
     def nacex_rate_shipment(self, order):
         nacex = NacexRequest(self.log_xml)
@@ -160,8 +168,9 @@ class ProviderNacex(models.Model):
                 quote_currency = self.env['res.currency'].search([('name', '=', 'EUR')], limit=1)
                 carrier_price = quote_currency._convert(shipping['price'], order_currency, company, order.date_order or fields.Date.today())
                 
-            
             carrier_tracking_ref = shipping['num_seguimiento']
+            label = nacex.get_label(carrier_tracking_ref, self)
+            
             logmessage = (_("""
                 El envío de Nacex ha sido creado <br/> 
                 <b>Número de seguimiento: </b> %s <br/>
@@ -173,8 +182,9 @@ class ProviderNacex(models.Model):
                     shipping['hora_entrega'],
                     shipping['fecha_prevista'].strftime("%d/%m/%Y")
             ))
-            picking.message_post(body=logmessage)
 
+            picking.message_post(body=logmessage, attachments=label)
+            
             shipping_data = {
                 'exact_price': carrier_price,
                 'tracking_number': carrier_tracking_ref
