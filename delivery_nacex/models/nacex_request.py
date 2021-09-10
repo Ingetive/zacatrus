@@ -61,6 +61,7 @@ class NacexRequest():
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city, # Población de entrega
+            "obs1": picking.note, # Observaciones, hasta 4 observaciones (obs"n")
         }
         
         if partner_wharehouse.phone:
