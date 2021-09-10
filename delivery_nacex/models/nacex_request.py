@@ -55,7 +55,7 @@ class NacexRequest():
             "dir_rec": partner_wharehouse.street, # Dirección de recogida
             "cp_rec": partner_wharehouse.zip, # Código postal recogida (Ej. 08902)
             "pob_rec": partner_wharehouse.city, # Población de recogida
-            "pais_rec": partner_wharehouse.country_id.name, # País de recogida
+            "pais_rec": partner_wharehouse.country_id.code, # País de recogida
             "nom_ent": picking.partner_id.name, # Nombre de entrega
             "dir_ent": picking.partner_id.street, # Dirección de entrega
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
