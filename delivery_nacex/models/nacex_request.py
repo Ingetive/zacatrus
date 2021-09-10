@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import requests
+import base64
 
 from odoo import _
 from datetime import datetime, date
@@ -43,6 +44,7 @@ class NacexRequest():
         partner_wharehouse = picking.picking_type_id.warehouse_id.partner_id
             
         price = self._get_rate(carrier, partner_wharehouse.zip, picking.partner_id.zip, shipping_weight_in_kg)
+        _logger.warning(price)
         
         params = {
             "del_cli": carrier.nacex_delegacion_cliente, # Delegación del cliente
@@ -87,7 +89,6 @@ class NacexRequest():
         
         _logger.warning(code)
         _logger.warning(result)
-        _logger.warning(price)
         
         try:
             fecha_prevista = datetime.strptime(result[10], '%d/%m/%Y')
@@ -146,26 +147,20 @@ class NacexRequest():
         except:
             raise UserError(_("Error al convertir el precio."))
     
-    def get_label(self, carrier_tracking_ref, carrier):
+    def get_label(self, carrier_tracking_ref, etiqueta, carrier):
         params = {
             "codExp": carrier_tracking_ref,
-            "modelo": carrier.nacex_etiqueta
+            "modelo": etiqueta,
         }
 
         code, result = self._send_request('getEtiqueta', carrier, params)
-
-        _logger.warning(code)
-        _logger.warning(result)
-        _logger.warning(price)
         
-#        if result["Expedición cancelada con éxito"]:
-#            picking.message_post(body=_(u'Shipment #%s has been cancelled', picking.carrier_tracking_ref))
-#            picking.write({
-#                'carrier_tracking_ref': '',
-#                'carrier_price': 0.0
-#            })
-#        else:
-#            raise UserError(result['errors_message'])
+        if etiqueta == 'IMAGEN_B':
+            fichero = base64.urlsafe_b64decode(result[0] + '=' * (-len(result[0]) % 4))
+        else :
+            fichero = result[0]
+        
+        return fichero
             
     def nacex_cancel_shipment(self, picking):
         params = {
