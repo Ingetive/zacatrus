@@ -8,28 +8,30 @@
             <xpath expr="//page[@name='destination']" position='before'>
                 <page string="Nacex Configuration" name="nacex_configuration"
                      attrs="{'invisible': [('delivery_type', '!=', 'nacex')]}">
-                    <group>
+                    <group string="Cuenta">
+                        <field name="nacex_user" attrs="{'required': [('delivery_type', '=', 'nacex')]}"/>
+                        <field name="nacex_password" attrs="{'required': [('delivery_type', '=', 'nacex')]}"/>
+                        <field name="nacex_delegacion_cliente"/>
+                        <field name="nacex_code_cliente"/>
+                    </group>
+                    <group string="Servicio">
                         <group>
-                            <field name="nacex_user" attrs="{'required': [('delivery_type', '=', 'nacex')]}"/>
-                            <field name="nacex_password" attrs="{'required': [('delivery_type', '=', 'nacex')]}"/>
-                            <field name="nacex_tipo_servicio"/>
-                            <field name="nacex_tipo_cobro"/>
-                            <field name="nacex_delegacion_cliente"/>
-                            <field name="nacex_code_cliente"/>
-                            <field name="nacex_vehiculo"/>
-                            <field name="nacex_etiqueta"/>
+                        <field name="nacex_tipo_servicio"/>
+                        <field name="nacex_tipo_cobro"/>
+                        <field name="nacex_vehiculo"/>
+                        </group>
+                        <group attrs="{'invisible': [('nacex_tipo_servicio', '!=', 'peninsula')]}">
+                            <field name="nacex_tipo_servicio_peninsula"/>
+                            <field name="nacex_envase_peninsula"/>
+                        </group>
+                        <group attrs="{'invisible': [('nacex_tipo_servicio', '!=', 'internacional')]}">
+                            <field name="nacex_tipo_servicio_internacional"/>
+                            <field name="nacex_envase_internacional"/>
                         </group>
                     </group>
-                    
-                    <group attrs="{'invisible': [('nacex_tipo_servicio', '!=', 'peninsula')]}">
-                        <field name="nacex_tipo_servicio_peninsula" string="Servicio"/>
-                        <field name="nacex_envase_peninsula" string="Envase"/>
-                    </group>
-                    
-                    <group attrs="{'invisible': [('nacex_tipo_servicio', '!=', 'internacional')]}">
-                        <field name="nacex_tipo_servicio_internacional" string="Servicio"/>
-                        <field name="nacex_envase_internacional" string="Envase"/>
-                    </group>
+                     <group string="Impresora">
+                        <field name="nacex_etiqueta"/>
+                    </group>                            
                 </page>
             </xpath>
         </field>
