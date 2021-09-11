@@ -152,16 +152,22 @@ class NacexRequest():
             "codExp": carrier_tracking_ref,
             "modelo": etiqueta,
         }
-
-        code, result = self._send_request('getEtiqueta', carrier, params)
-        
-        if etiqueta == 'IMAGEN_B':
-            fichero = base64.urlsafe_b64decode(result[0] + '=' * (-len(result[0]) % 4))
-        else :
-            fichero = result[0]
-        
+        #Debido a la gran cantidad de veces que se produce "Incorrect padding" generamos tantas llamadas como sea necesario
+        fichero = None
+        while fichero is None:
+            try:
+                code, result = self._send_request('getEtiqueta', carrier, params)
+                label = result[0]
+                if etiqueta == 'IMAGEN_B':
+                    pad = len(label)%4
+                    label += "="*pad
+                    fichero = base64.urlsafe_b64decode(label)
+                else :
+                    fichero = result[0]
+            except:
+                 pass
         return fichero
-            
+                
     def nacex_cancel_shipment(self, picking):
         params = {
             "expe_codigo": picking.carrier_tracking_ref
