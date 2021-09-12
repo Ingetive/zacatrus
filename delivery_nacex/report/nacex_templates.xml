@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="label_etiqueta_template_view">
+            <t t-foreach="docs" t-as="picking">
+                <t t-translation="off">
+                    <t t-esc="picking.etiqueta_envio_zpl"/>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

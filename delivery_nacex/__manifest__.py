@@ -13,5 +13,7 @@
         'views/delivery_nacex.xml',
         'views/res_config_settings.xml',
         'views/stock_picking.xml',
+        'report/nacex_templates.xml',
+        'report/nacex_reports.xml',
     ],
 }

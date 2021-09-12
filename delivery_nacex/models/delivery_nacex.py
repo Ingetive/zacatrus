@@ -185,6 +185,8 @@ class ProviderNacex(models.Model):
                 
             picking.etiqueta_envio_zpl = fichero_etiqueta
             picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
+            
+            picking.print_etiqueta()
                                  
             shipping_data = {
                 'exact_price': carrier_price,
@@ -197,4 +199,3 @@ class ProviderNacex(models.Model):
         weight_uom_id = self.env['product.template']._get_weight_uom_id_from_ir_config_parameter()
         return weight_uom_id._compute_quantity(weight, self.env.ref('uom.product_uom_kgm'), round=False)
 
-    

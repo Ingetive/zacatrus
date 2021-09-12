@@ -22,8 +22,8 @@
         <field name="name">Nacex</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
-        <field name="nacex_user">TEST_SERMANCOMPUTERSL</field>
-        <field name="nacex_password">17AE486F84AD68CF7085CB7C839F3FFF</field>
+        <field name="nacex_user">SERMANCOMPUTERSL</field>
+        <field name="nacex_password">F578600E3839DE1C4FBA08B389788657</field>
         <field name="nacex_tipo_servicio">peninsula</field>
         <field name="nacex_tipo_servicio_peninsula">01</field>
         <field name="nacex_envase_peninsula">2</field>
