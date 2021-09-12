@@ -11,5 +11,15 @@
             <field name="binding_model_id" ref="stock.model_stock_picking"/>
             <field name="binding_type">report</field>
         </record>
+        <record id="report_nacex_label" model="ir.actions.report">
+            <field name="name">Etiqueta relacion Operaciones (ZPL)</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-text</field>
+            <field name="report_name">delivery_nacex.label_etiqueta_relacion_pickings_view</field>
+            <field name="report_file">delivery_nacex.label_etiqueta_relacion_pickings_view</field>
+            <field name="print_report_name">'Etiqueta relación pickings - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <field name="binding_type">report</field>
+        </record>
     </data>
 </odoo>

@@ -8,5 +8,18 @@
                 </t>
             </t>
         </template>
+        <template id="label_etiqueta_relacion_pickings_view">
+            <t t-foreach="docs" t-as="picking">
+                <t t-translation="off">
+^XA
+^FO100,50
+^A0N,44,33^FD<t t-esc="picking.name"/>^FS
+^FO100,200^BY3
+^BCN,100,Y,N,N
+^FD<t t-esc="picking.name"/>^FS
+                </t>
+^XZ
+            </t>
+        </template>
     </data>
 </odoo>
