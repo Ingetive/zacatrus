@@ -183,8 +183,8 @@ class ProviderNacex(models.Model):
                     shipping['fecha_prevista'].strftime("%d/%m/%Y")
             ))
                 
+            picking.etiqueta_envio_zpl = fichero_etiqueta
             picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
-            picking.message_post(body='Etiqueta impresora', attachments=[('fichero_etiqueta.txt',fichero_etiqueta)])
                                  
             shipping_data = {
                 'exact_price': carrier_price,
