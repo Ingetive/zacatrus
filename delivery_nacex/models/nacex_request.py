@@ -152,9 +152,10 @@ class NacexRequest():
             "codExp": carrier_tracking_ref,
             "modelo": etiqueta,
         }
-        #Debido a la gran cantidad de veces que se produce "Incorrect padding" generamos tantas llamadas como sea necesario
+        #Debido a la gran cantidad de veces que se produce "Incorrect padding" generamos tantas llamadas como sea necesario con un maximo de 10
+        max_intentos = 10
         fichero = None
-        while fichero is None:
+        while fichero is None and max_intentos>0:
             try:
                 code, result = self._send_request('getEtiqueta', carrier, params)
                 label = result[0]
@@ -165,7 +166,7 @@ class NacexRequest():
                 else :
                     fichero = result[0]
             except:
-                 pass
+                max_intentos -= 1
         return fichero
                 
     def nacex_cancel_shipment(self, picking):
