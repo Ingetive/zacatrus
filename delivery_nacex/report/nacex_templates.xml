@@ -8,6 +8,7 @@
                 </t>
             </t>
         </template>
+        
         <template id="label_etiqueta_relacion_pickings_view">
             <t t-foreach="docs" t-as="picking">
                 <t t-translation="off">
