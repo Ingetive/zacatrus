@@ -145,6 +145,7 @@ class ProviderNacex(models.Model):
             'warning_message': False
         }
     
+
     def nacex_send_shipping(self, pickings):
         _logger.warning("nacex_send_shipping")
         res = []
@@ -183,16 +184,18 @@ class ProviderNacex(models.Model):
                     shipping['fecha_prevista'].strftime("%d/%m/%Y")
             ))
                 
+#             picking.print_etiqueta()
+#             _logger.warning("imprimo")
+                
             picking.etiqueta_envio_zpl = fichero_etiqueta
             picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
-            
-            picking.print_etiqueta()
-                                 
+                  
             shipping_data = {
                 'exact_price': carrier_price,
                 'tracking_number': carrier_tracking_ref
             }
             res = res + [shipping_data]
+            
         return res
     
     def _nacex_convert_weight(self, weight):

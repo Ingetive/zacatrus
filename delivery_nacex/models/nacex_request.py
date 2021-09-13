@@ -44,8 +44,7 @@ class NacexRequest():
         partner_wharehouse = picking.picking_type_id.warehouse_id.partner_id
             
         price = self._get_rate(carrier, partner_wharehouse.zip, picking.partner_id.zip, shipping_weight_in_kg)
-        _logger.warning(price)
-        
+
         params = {
             "del_cli": carrier.nacex_delegacion_cliente, # Delegación del cliente
             "num_cli": carrier.nacex_code_cliente, # Código del cliente (Nº abonado Nacex)
