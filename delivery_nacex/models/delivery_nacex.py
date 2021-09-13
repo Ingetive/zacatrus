@@ -147,7 +147,6 @@ class ProviderNacex(models.Model):
     
 
     def nacex_send_shipping(self, pickings):
-        _logger.warning("nacex_send_shipping")
         res = []
         nacex = NacexRequest(self.log_xml)
         
@@ -183,10 +182,7 @@ class ProviderNacex(models.Model):
                     shipping['hora_entrega'],
                     shipping['fecha_prevista'].strftime("%d/%m/%Y")
             ))
-                
-#             picking.print_etiqueta()
-#             _logger.warning("imprimo")
-                
+        
             picking.etiqueta_envio_zpl = fichero_etiqueta
             picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
                   

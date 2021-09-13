@@ -10,7 +10,12 @@
         </template>
         
         <template id="label_etiqueta_relacion_pickings_view">
+            <t t-set="picking_ids" t-value="[]"/>
             <t t-foreach="docs" t-as="picking">
+                <t t-set="picking_ids" t-value="picking_ids + picking.sale_id.picking_ids.ids"/>
+            </t>
+            <t t-set="pickings" t-value="env['stock.picking'].browse(picking_ids)"/>
+            <t t-foreach="pickings" t-as="picking">
                 <t t-translation="off">
 ^XA
 ^FO100,50

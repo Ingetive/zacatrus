@@ -28,4 +28,4 @@ class Picking(models.Model):
         return res
     
     def print_etiqueta(self):
-        return self.env.ref('delivery_nacex.report_nacex_label').report_action(self)
+        return self.env.ref('delivery_nacex.report_nacex_label').report_action(self.id)

@@ -82,12 +82,7 @@ class NacexRequest():
                 "tip_env": carrier.nacex_envase_internacional, # Código de envase Nacex
             })
         
-        _logger.warning(params)
-        
         code, result = self._send_request('putExpedicion', carrier, params)
-        
-        _logger.warning(code)
-        _logger.warning(result)
         
         try:
             fecha_prevista = datetime.strptime(result[10], '%d/%m/%Y')
