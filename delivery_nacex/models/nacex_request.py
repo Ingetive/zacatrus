@@ -173,6 +173,7 @@ class NacexRequest():
         if result["Expedición cancelada con éxito"]:
             picking.message_post(body=_(u'Shipment #%s has been cancelled', picking.carrier_tracking_ref))
             picking.write({
+                'etiqueta_envio_zpl' : '',
                 'carrier_tracking_ref': '',
                 'carrier_price': 0.0
             })

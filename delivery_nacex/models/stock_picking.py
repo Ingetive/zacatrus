@@ -14,20 +14,21 @@ class Picking(models.Model):
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
 
     def send_to_shipper(self):
-        super(Picking, self).send_to_shipper()
-        if self.carrier_id.delivery_type == "nacex":
-            return self.print_etiqueta()
+        res = super(Picking, self).send_to_shipper()
+        #if self.carrier_id.delivery_type == "nacex":
+        #    return self.print_etiqueta()
+        return res
     
     def button_validate(self):
         res = super(Picking, self).button_validate()
-        if res is True:
-            for picking in self:
-                if picking.carrier_id.delivery_type == "nacex":
-                    return picking.print_etiqueta()
-                
-            for picking in self:
-                if picking.location_id.usage == 'internal' and picking.location_dest_id.usage == 'internal':
-                    return picking.action_report_relacion_operaciones()
+        #if res is True:
+        #    for picking in self:
+        #        if picking.carrier_id.delivery_type == "nacex":
+        #            return picking.print_etiqueta()
+        #        
+        #    for picking in self:
+        #        if picking.location_id.usage == 'internal' and picking.location_dest_id.usage == 'internal':
+        #            return picking.action_report_relacion_operaciones()
         return res
     
     def print_etiqueta(self):
