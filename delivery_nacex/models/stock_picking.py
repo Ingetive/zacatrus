@@ -36,9 +36,4 @@ class Picking(models.Model):
             return self.env.ref('delivery_nacex.report_nacex_label').report_action(self.id)
         except:
             _logger.error("Se intento imprimir la etiqueta de Nacex pero se produjo un error.")
-            
-    def action_report_relacion_operaciones(self):
-        try:
-            return self.env.ref('delivery_nacex.report_relacion_operaciones').report_action(self.id)
-        except:
-            _logger.error("Se intento imprimir la etiqueta de Nacex pero se produjo un error.")
+
