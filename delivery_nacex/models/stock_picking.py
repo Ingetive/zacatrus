@@ -2,6 +2,8 @@
 # © 2021 Voodoo - <hola@voodoo.es>
 
 import logging
+import requests
+import base64
 
 from odoo import api, models, fields
 
@@ -13,27 +15,19 @@ class Picking(models.Model):
     
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
 
-    def send_to_shipper(self):
-        res = super(Picking, self).send_to_shipper()
-        #if self.carrier_id.delivery_type == "nacex":
-        #    return self.print_etiqueta()
-        return res
-    
-    def button_validate(self):
-        res = super(Picking, self).button_validate()
-        #if res is True:
-        #    for picking in self:
-        #        if picking.carrier_id.delivery_type == "nacex":
-        #            return picking.print_etiqueta()
-        #        
-        #    for picking in self:
-        #        if picking.location_id.usage == 'internal' and picking.location_dest_id.usage == 'internal':
-        #            return picking.action_report_relacion_operaciones()
-        return res
-    
-    def print_etiqueta(self):
-        try:
-            return self.env.ref('delivery_nacex.report_nacex_label').report_action(self.id)
-        except:
-            _logger.error("Se intento imprimir la etiqueta de Nacex pero se produjo un error.")
+    def imprimir_etiqueta(self):
+        action = self.env.ref('delivery_nacex.report_nacex_label').report_action(self.id)
+        device = self.env['iot.device'].search([('identifier', '=', action['device_id'])], limit=1)
+        etiqueta = bytes(self.etiqueta_envio_zpl, 'utf-8')
+        
+        self.env['bus.bus'].sudo().sendone(
+            (self._cr.dbname, 'res.partner', self.env.user.partner_id.id),
+            {
+                'type': 'iot_print_documents',
+                'documents': [base64.encodebytes(etiqueta)],
+                'iot_device_identifier': action['device_id'],
+                'iot_ip': device.iot_ip,
+            }
+        )
+
 

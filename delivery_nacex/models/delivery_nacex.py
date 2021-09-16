@@ -168,23 +168,26 @@ class ProviderNacex(models.Model):
                 carrier_price = quote_currency._convert(shipping['price'], order_currency, company, order.date_order or fields.Date.today())
                 
             carrier_tracking_ref = shipping['codigo_expedicion']
-            imagen_etiqueta = nacex.get_label(carrier_tracking_ref, 'IMAGEN_B', self)
             fichero_etiqueta = nacex.get_label(carrier_tracking_ref, self.nacex_etiqueta, self)
-
-            logmessage = (_("""
-                El envío de Nacex ha sido creado <br/> 
-                <b>Número de seguimiento: </b> %s <br/>
-                <b>Nombre del servicio: </b> %s <br/>
-                <b>Hora de la entrega: </b> %s <br/>
-                <b>Fecha prevista de recogida:</b> %s""") % (
-                    carrier_tracking_ref, 
-                    shipping['nombre_servicio'],
-                    shipping['hora_entrega'],
-                    shipping['fecha_prevista'].strftime("%d/%m/%Y")
-            ))
+            #imagen_etiqueta = nacex.get_label(carrier_tracking_ref, 'IMAGEN_B', self)
+            
+            #logmessage = (_("""
+            #    El envío de Nacex ha sido creado <br/> 
+            #    <b>Número de seguimiento: </b> %s <br/>
+            #    <b>Nombre del servicio: </b> %s <br/>
+            #    <b>Hora de la entrega: </b> %s <br/>
+            #    <b>Fecha prevista de recogida:</b> %s""") % (
+            #        carrier_tracking_ref, 
+            #        shipping['nombre_servicio'],
+            #        shipping['hora_entrega'],
+            #        shipping['fecha_prevista'].strftime("%d/%m/%Y")
+            #))
         
-            picking.etiqueta_envio_zpl = fichero_etiqueta
-            picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
+            etiqueta = fichero_etiqueta[0:-3]
+            cb_picking_zpl = "^FO650,770^BY2,1^BCB,100,Y,N,N^A1,8,8^FD" + picking.name + "^FS^XZ"
+            picking.etiqueta_envio_zpl = etiqueta + cb_picking_zpl
+            #picking.message_post(body=logmessage)
+            #picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
                   
             shipping_data = {
                 'exact_price': carrier_price,
