@@ -40,7 +40,9 @@ class NacexRequest():
         bultos = str(num_bultos)
         for i in range(len(str(num_bultos)), 3):
             bultos = "0%s" % bultos
-            
+        
+        shipping_weight_in_kg = 1.0 #Forzamos a que el peso del envío siempre sea 1.0
+        
         partner_wharehouse = picking.picking_type_id.warehouse_id.partner_id
             
         price = self._get_rate(carrier, partner_wharehouse.zip, picking.partner_id.zip, shipping_weight_in_kg)
