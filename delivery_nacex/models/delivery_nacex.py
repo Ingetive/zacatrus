@@ -182,10 +182,13 @@ class ProviderNacex(models.Model):
             #        shipping['hora_entrega'],
             #        shipping['fecha_prevista'].strftime("%d/%m/%Y")
             #))
-        
-            etiqueta = fichero_etiqueta[0:-3]
+
             cb_picking_zpl = "^FO475,770^BY2,1^BCB,100,Y,N,N^A1,8,8^FD" + picking.name + "^FS^XZ"
-            picking.etiqueta_envio_zpl = etiqueta + cb_picking_zpl
+            etiqueta = fichero_etiqueta.replace("^XZ", cb_picking_zpl)
+            picking.etiqueta_envio_zpl = etiqueta
+            
+            #Para poner el codigo barras izquierdo más grande sustituir ^FO10,600^BY4,2 po r^FO10,515^BY4,3
+            
             #picking.message_post(body=logmessage)
             #picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
                   
