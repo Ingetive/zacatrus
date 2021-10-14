@@ -31,4 +31,9 @@
         <field name="nacex_delegacion_cliente">2804</field>
         <field name="nacex_code_cliente">40103</field>
     </record>
+
+    <record id="delivery_carrier_nacex_valija" model="delivery.carrier">
+        <field name="name">Nacex valija</field>
+        <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
+    </record>
 </odoo>

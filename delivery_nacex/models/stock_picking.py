@@ -15,19 +15,13 @@ class Picking(models.Model):
     
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
 
-    def imprimir_etiqueta(self):
-        action = self.env.ref('delivery_nacex.report_nacex_label').report_action(self.id)
-        device = self.env['iot.device'].search([('identifier', '=', action['device_id'])], limit=1)
-        etiqueta = bytes(self.etiqueta_envio_zpl, 'utf-8')
-        
-        self.env['bus.bus'].sudo().sendone(
-            (self._cr.dbname, 'res.partner', self.env.user.partner_id.id),
-            {
-                'type': 'iot_print_documents',
-                'documents': [base64.encodebytes(etiqueta)],
-                'iot_device_identifier': action['device_id'],
-                'iot_ip': device.iot_ip,
-            }
-        )
-
+    def imprimir_operacion(self):
+        nacex_id = self.env.ref('delivery_nacex.delivery_carrier_nacex').id
+        nacex_valija_id = self.env.ref('delivery_nacex.delivery_carrier_nacex_valija').id
+        if self.carrier_id.id == nacex_id:
+            #imprimir etiqueta
+            return self.env.ref('delivery_nacex.report_nacex_label').report_action(self)
+        elif self.carrier_id.id == nacex_valija_id:
+            #imprimir albaran
+            return self.env.ref('stock.action_report_picking').report_action(self)            
 
