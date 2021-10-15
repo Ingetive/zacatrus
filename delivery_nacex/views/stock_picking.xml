@@ -10,4 +10,21 @@
             </xpath>
         </field>
     </record>
+    
+    <!--
+        'Envio valija' in action dropdown
+    -->
+    <record id="action_envio_valija" model="ir.actions.server">
+        <field name="name">Envio valija</field>
+        <field name="model_id" ref="model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if record:
+    action_values = env.ref('delivery_nacex.envio_valija_action').sudo().read()[0]
+    action_values.update({'context': env.context})
+    action = action_values
+        </field>
+    </record>
 </odoo>

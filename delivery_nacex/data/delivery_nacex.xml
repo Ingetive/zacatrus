@@ -36,4 +36,5 @@
         <field name="name">Nacex valija</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
     </record>
+
 </odoo>

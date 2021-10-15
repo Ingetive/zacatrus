@@ -13,9 +13,11 @@
     ],
     'data': [
         'data/delivery_nacex.xml',
+        'security/ir.model.access.csv',
         'views/delivery_nacex.xml',
         'views/res_config_settings.xml',
         'views/stock_picking.xml',
+        'wizard/envio_nacex_valija.xml',
         'report/nacex_templates.xml',
         'report/nacex_reports.xml',
     ],
