@@ -14,14 +14,12 @@ class Picking(models.Model):
     _inherit = 'stock.picking'
     
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
-
+    
     def imprimir_operacion(self):
-        nacex_id = self.env.ref('delivery_nacex.delivery_carrier_nacex').id
-        nacex_valija_id = self.env.ref('delivery_nacex.delivery_carrier_nacex_valija').id
-        if self.carrier_id.id == nacex_id:
-            #imprimir etiqueta
-            return self.env.ref('delivery_nacex.report_nacex_label').report_action(self)
-        elif self.carrier_id.id == nacex_valija_id:
-            #imprimir albaran
-            return self.env.ref('stock.action_report_picking').report_action(self)            
+        #En el escenario es donde, según el dominio, imprimiremos el report:
+        # - etiqueta Nacex ZPL (Método de envío Nacex) 
+        # - Operaciones albarán (Método de envío Nacex valija)
+        printed = self.print_scenarios(action='print_document_on_transfer')
+        if printed:
+            self.write({'printed': True})       
 
