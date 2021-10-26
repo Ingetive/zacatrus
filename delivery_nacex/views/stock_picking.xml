@@ -7,6 +7,8 @@
         <field name="arch" type="xml">
             <xpath expr="//group[@name='carrier_data']" position="inside">
                 <field name="etiqueta_envio_zpl"/>
+                <field name="bultos"/>
+                <field name="picking_contenedor"/>
             </xpath>
         </field>
     </record>

@@ -15,7 +15,7 @@ class Picking(models.Model):
     
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
     bultos = fields.Integer('Bultos')
-    picking_contenedor= fields.Char('Albarán contenedor')
+    picking_contenedor= fields.Many2one('stock.picking', 'Albarán contenedor')
     
     def imprimir_operacion(self):
         #En el escenario es donde, según el dominio, imprimiremos el report:

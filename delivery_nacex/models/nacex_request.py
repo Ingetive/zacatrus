@@ -27,7 +27,7 @@ class NacexRequest():
         shipping_weight_in_kg = 0.0
         num_bultos = 0
         
-        if not picking.valija:
+        if not picking.bultos>0:
             if picking.package_ids:
                 for paquete in picking.package_ids:
                     shipping_weight_in_kg += paquete.weight
@@ -38,7 +38,7 @@ class NacexRequest():
                     shipping_weight_in_kg += move.product_qty * move.product_id.weight
             shipping_weight_in_kg = 1.0 #Forzamos a que el peso del envío siempre sea 1.0
         else:
-            num_bultos = picking.bultos_valija
+            num_bultos = picking.bultos
             shipping_weight_in_kg = 1.0 #Forzamos a que el peso del envío siempre sea 1.0
         
         bultos = str(num_bultos)
