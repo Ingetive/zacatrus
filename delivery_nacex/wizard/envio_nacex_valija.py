@@ -12,7 +12,7 @@ class EnvioValija(models.TransientModel):
 
     def action_envio_nacex_valija_apply(self):
         #TODO
-        #Los albaranes tienen que estar en estado ready???
+        #Los albaranes tienen que estar en estado Hecho
         #Los albaranes tienen que tener metodo de transporte Nacex Valija???
         #Los albaranes no tienen que tener Padre???
         #Vista stock picking -> mostrar albaran contenedor solo si el metodo de envio es valija ???
@@ -23,9 +23,10 @@ class EnvioValija(models.TransientModel):
         for albaran in pickings:
             if not picking_contenedor:
                 picking_contenedor = albaran
-                albaran.bultos = self.bultos
-                nacex.nacex_send_shipping(albaran)
-                albaran.carrier_id = nacex.id
+                picking_contenedor.bultos = self.bultos
+                nacex.nacex_send_shipping(picking_contenedor)
+                picking_contenedor.carrier_id = nacex.id
+                picking_contenedor.send_to_shipper()
             else:
                 albaran.picking_contenedor = picking_contenedor
                 albaran.carrier_id = nacex_valija
