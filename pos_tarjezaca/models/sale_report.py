@@ -13,8 +13,6 @@ class SaleReport(models.Model):
     x_mage_ocasiones = fields.Char('Ocasiones', readonly=True)
 
     def _queryz(self, with_clause='', fields={}, groupby='', from_clause=''):
-        _logger.warning("P_TZ: _queryz")
-
         with_ = ("WITH %s" % with_clause) if with_clause else ""
 
         select_ = """
@@ -102,8 +100,6 @@ class SaleReport(models.Model):
         return '%s (SELECT %s FROM %s GROUP BY %s)' % (with_, select_, from_, groupby_)
 
     def init(self):
-        _logger.warning("P_TZ: init sale_report")
-
         # self._table = sale_report
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""CREATE or REPLACE VIEW %s as (%s)""" % (self._table, self._queryz()))

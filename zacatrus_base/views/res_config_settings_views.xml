@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.zacatrus_base</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="95"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Zacatrus" string="Zacatrus" data-key="zacatrus_base" groups="point_of_sale.group_pos_manager">
+                    <h2>Magento</h2>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="magento_url"
+                            title="This tax is applied to any new product created in the catalog.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="URL del servidor" for="magento_url"/>
+                                    <div class="text-muted">
+                                        https://zacatrus.es/rest/all/V1/
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="magento_url" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="magento_user"
+                            title="This tax is applied to any new product created in the catalog.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Usuario" for="magento_user"/>
+                                    <div class="text-muted">
+                                        auser
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="magento_user" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="magento_password"
+                            title="This tax is applied to any new product created in the catalog.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Password" for="magento_password"/>
+                                    <div class="text-muted">
+                                        supersecret
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="magento_password" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="magento_secret"
+                            title="This tax is applied to any new product created in the catalog.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Secret" for="magento_secret"/>
+                                    <div class="text-muted">
+                                        supermegachorizoinfinito
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="magento_secret" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Products</h2>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="card_product_id"
+                            title="Es el producto que se vende en el pos.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Tarjeta regalo" for="card_product_id"/>
+                                    <div class="text-muted">
+                                        Tarjezaca
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="card_product_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="fichas_product_id"
+                            title="Son las fichas que se aplican en el pos.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Fichas" for="fichas_product_id"/>
+                                    <div class="text-muted">
+                                        Fichas
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="fichas_product_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_pos_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'zacatrus_base', 'bin_size': False}</field>
+    </record>
+
+</odoo>
