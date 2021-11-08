@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="label_etiqueta_template_view">
+            <t t-foreach="docs" t-as="picking">
+                <t t-translation="off">
+                    <t t-esc="picking.etiqueta_envio_zpl"/>
+                </t>
+            </t>
+        </template>
+        
+        <template id="label_etiqueta_relacion_pickings_view">
+            <t t-set="picking_ids" t-value="[]"/>
+            <t t-foreach="docs" t-as="picking">
+                <t t-set="picking_ids" t-value="picking_ids + picking.sale_id.picking_ids.ids"/>
+            </t>
+            <t t-set="pickings" t-value="env['stock.picking'].browse(picking_ids)"/>
+            <t t-foreach="pickings" t-as="picking">
+                <t t-translation="off">
+^XA
+^FO100,50
+^A0N,44,33^FD<t t-esc="picking.name"/>^FS
+^FO100,200^BY3
+^BCN,100,Y,N,N
+^FD<t t-esc="picking.name"/>^FS
+                </t>
+^XZ
+            </t>
+        </template>
+    </data>
+</odoo>

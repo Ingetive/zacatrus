@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="report_nacex_label" model="ir.actions.report">
+            <field name="name">Etiqueta Nacex (ZPL)</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-text</field>
+            <field name="report_name">delivery_nacex.label_etiqueta_template_view</field>
+            <field name="report_file">delivery_nacex.label_etiqueta_template_view</field>
+            <field name="print_report_name">'Etiqueta Nacex - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>

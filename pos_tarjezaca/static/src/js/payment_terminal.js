@@ -45,7 +45,7 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                             return rpc.query({
                                 model: 'ir.config_parameter',
                                 method: 'search_read',
-                                args: [[['key', '=', 'pos_tarjezaca.card_product_id']], ['key', 'value']],
+                                args: [[['key', '=', 'zacatrus_base.card_product_id']], ['key', 'value']],
                             })
                             .then(function(ret){
                                 //console.log(JSON.stringify(ret));

@@ -6,10 +6,12 @@
     'author': "Zacatrus",
     'website': "https://zacatrus.es",
     "license": "AGPL-3",
-    "depends": ["point_of_sale"],
+    'depends': [
+        "point_of_sale",
+        "zacatrus_base"
+    ],
     "data": [
         "views/assets.xml",
-        'views/res_config_settings_views.xml',
     ],
     "installable": True,
 }
