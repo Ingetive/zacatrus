@@ -19,7 +19,10 @@
     'version': '14.0',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'point_of_sale'],
+    'depends': [
+        "zacatrus_base", 
+        'point_of_sale'
+    ],
 
     # always loaded
     'data': [
