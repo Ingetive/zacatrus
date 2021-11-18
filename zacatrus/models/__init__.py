@@ -11,3 +11,4 @@ from . import stock_picking
 from . import purchase_order_line
 from . import pos_session
 from . import pos_payment
+from . import ir_property
