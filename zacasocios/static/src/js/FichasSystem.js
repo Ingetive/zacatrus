@@ -267,9 +267,14 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                         args: [client.email, this.env.pos.config.name],
                     })
                     .then(function(_fichas){
-                        fichas =  Math.floor(_fichas);
-                        core.bus.trigger('got_fichas', fichas);
-                        console.log("_getClientBalance: Got "+fichas+" fichas.");
+                        if (! fichas){
+                            fichas =  Math.floor(_fichas);
+                            core.bus.trigger('got_fichas', fichas);
+                            console.log("_getClientBalance: Got "+fichas+" fichas.");
+                        }
+                        else {
+                            console.log("Already gone for fichas.");
+                        }
                     },function(type,err){
                         alert("Error 10: No puedo obtener las fichas de este cliente.");
                     });
