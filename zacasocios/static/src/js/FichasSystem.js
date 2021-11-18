@@ -55,8 +55,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             this._setText()
         }
         _setText(){
-            if (! this._fichasApplied()){     
-                console.log("_setText: fichas not applied");  
+            if (! this._fichasApplied()){
                 if (fichas && fichas > 0){         
                     console.log("_setText: setting values");  
                     var available = this._calculateNumberOfFichas();
