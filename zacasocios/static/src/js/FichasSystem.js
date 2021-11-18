@@ -13,6 +13,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
     var rpc = require('web.rpc');
     var addingPoints = false;
     var fichas = false;
+    var hooksSet = false;
     var zacasocio = false;
     var pendingUpdate = false;
 
@@ -25,25 +26,28 @@ odoo.define('zacasocios.FichasSystem', function(require) {
         mounted() {
             console.log("mounted");
             this._getClientBalance();
-            this.env.pos.on('change:selectedClient', () => {
-                console.log("change:selectedClient");
-                var client = this.env.pos.get_order().get_client();
-                fichas = false;
+            if (!hooksSet){                
+                this.env.pos.on('change:selectedClient', () => {
+                    console.log("change:selectedClient");
+                    var client = this.env.pos.get_order().get_client();
+                    fichas = false;
 
-                console.log("change client. zacasocio: "+zacasocio);
+                    console.log("change client. zacasocio: "+zacasocio);
 
-                this._removeFichasFromOrder();
-                this._getClientBalance();
-                this._setText();
-            });
-            this.env.pos.on('change:selectedOrder', () => {
-                console.log("change:selectedOrder");
-                //this._getClientBalance();
-                //this._setText();
-            });
-            
-            this.env.pos.get_order().orderlines.on('change', this._onChange, this);
-            core.bus.on('got_fichas', this, this._onGotFichas);
+                    this._removeFichasFromOrder();
+                    this._getClientBalance();
+                    this._setText();
+                });
+                this.env.pos.on('change:selectedOrder', () => {
+                    console.log("change:selectedOrder");
+                    //this._getClientBalance();
+                    //this._setText();
+                });
+                
+                this.env.pos.get_order().orderlines.on('change', this._onChange, this);
+                core.bus.on('got_fichas', this, this._onGotFichas);
+                hooksSet = true;
+            }
         }
 
         _onGotFichas(_fichas){
