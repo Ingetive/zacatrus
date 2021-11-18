@@ -55,8 +55,10 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             this._setText()
         }
         _setText(){
-            if (! this._fichasApplied()){       
+            if (! this._fichasApplied()){     
+                console.log("_setText: fichas not applied");  
                 if (fichas && fichas > 0){         
+                    console.log("_setText: setting values");  
                     var available = this._calculateNumberOfFichas();
                     var suffix = " ("+available + " de "+fichas+")";
                     if (this.el && this.el.querySelector)
@@ -66,6 +68,9 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                     if (this.el && this.el.querySelector)
                         this.el.querySelector('#fichas_button').textContent = "Canjear Fichas";
                 }
+            }
+            else {
+                console.log("_setText: fichas applied");
             }
         }
 
