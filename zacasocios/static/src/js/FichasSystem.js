@@ -1,4 +1,4 @@
-const FICHAS_BARCODE = "100001";
+//const FICHAS_BARCODE = "100001";
 const TARIFA_ZACASOCIOS = 3;
 
 odoo.define('zacasocios.FichasSystem', function(require) {
@@ -16,6 +16,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
     var hooksSet = false;
     var zacasocio = false;
     var pendingUpdate = false;
+    var fichasID = false;
 
     class FichasSystem extends PosComponent {
         constructor() {
@@ -46,8 +47,15 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                 
                 this.env.pos.get_order().orderlines.on('change', this._onChange, this);
                 core.bus.on('got_fichas', this, this._onGotFichas);
+                core.bus.on('got_fichas_product_id', this, this._onGotId);
+
                 hooksSet = true;
             }
+        }
+
+        _onGotId(){
+            console.log("got id")
+            this._getClientBalance();
         }
 
         _onGotFichas(_fichas){
@@ -81,30 +89,32 @@ odoo.define('zacasocios.FichasSystem', function(require) {
         }
         willUnmount() {
             console.log("willUnmount");
-            var order = this.env.pos.get_order();
-            var orderlines = order.get_orderlines();
-            var max = this._calculateNumberOfFichas( );
-            var current = 0;
-            for(var i = 0, len = orderlines.length; i < len; i++){
-                if (orderlines[i].product && orderlines[i].product.barcode == FICHAS_BARCODE){
-                    current = (-1)*orderlines[i].get_quantity();
+            if (fichasID){
+                var order = this.env.pos.get_order();
+                var orderlines = order.get_orderlines();
+                var max = this._calculateNumberOfFichas( );
+                var current = 0;
+                for(var i = 0, len = orderlines.length; i < len; i++){
+                    if (orderlines[i].product && orderlines[i].product.id == fichasID){
+                        current = (-1)*orderlines[i].get_quantity();
+                    }
                 }
+                console.log("current:"+current);
+                console.log("max:"+max);
+                if (current > max && max > 0){
+                    this._addFichasToOrder();
+                    this.showPopup('ErrorPopup', {
+                        title: this.env._t('Fichas'),
+                        body: this.env._t(
+                            "OJO: Error en el conteo de Fichas. Por favor, recalcula."
+                        ),
+                    });
+                    throw "Cálculo de Fichas no válido.";
+                }
+                //this._addFichasToOrder();
+                this.env.pos.off('change:selectedClient', null, this);
+                this.env.pos.off('change:selectedOrder', null, this);
             }
-            console.log("current:"+current);
-            console.log("max:"+max);
-            if (current > max && max > 0){
-                this._addFichasToOrder();
-                this.showPopup('ErrorPopup', {
-                    title: this.env._t('Fichas'),
-                    body: this.env._t(
-                        "OJO: Error en el conteo de Fichas. Por favor, recalcula."
-                    ),
-                });
-                throw "Cálculo de Fichas no válido.";
-            }
-            //this._addFichasToOrder();
-            this.env.pos.off('change:selectedClient', null, this);
-            this.env.pos.off('change:selectedOrder', null, this);
         }
         async onClick() {
             var order = this.env.pos.get_order();
@@ -164,7 +174,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             }
         }
         _addFichasToOrder (  ) {
-            if (!this.addingPoints){
+            if (!this.addingPoints && fichasID){
 
                 var order = this.env.pos.get_order();
                 var selected_orderline = order.get_selected_orderline();
@@ -182,13 +192,13 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                     var val = this._calculateNumberOfFichas( );
                     var modified = false;
                     for(var i = 0, len = orderlines.length; i < len; i++){
-                        if (orderlines[i].product && orderlines[i].product.barcode == FICHAS_BARCODE){
+                        if (orderlines[i].product && orderlines[i].product.id == fichasID){
                             orderlines[i].set_quantity(-1*val);
                             modified = true;
                         }
                     }
                     if (fichas && fichas >= 100 && !modified){
-                        var fichasProduct = this.env.pos.db.get_product_by_barcode(FICHAS_BARCODE);
+                        var fichasProduct = this.env.pos.db.get_product_by_id(fichasID); //get_product_by_id
                         console.log( { quantity: val } );
                         console.log( { fichasProduct } );
                         order.add_product(fichasProduct, { quantity: -1*val });
@@ -201,96 +211,126 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             }
         }
         _fichasApplied (  ) {
-            var order = this.env.pos.get_order();
-            var orderlines = order.get_orderlines();
-            for(var i = 0, len = orderlines.length; i < len; i++){
-                if (orderlines[i].product && orderlines[i].product.barcode == FICHAS_BARCODE){
-                    return orderlines[i].get_quantity() != 0;
+            if (fichasID){
+                var order = this.env.pos.get_order();
+                var orderlines = order.get_orderlines();
+                for(var i = 0, len = orderlines.length; i < len; i++){
+                    if (orderlines[i].product && orderlines[i].product.id == fichasID){
+                        return orderlines[i].get_quantity() != 0;
+                    }
                 }
             }
             return false;
         }
         _removeFichasFromOrder (  ) {
-            var order = this.env.pos.get_order();
-            var selected_orderline = order.get_selected_orderline();
-            if (!order.get_orderlines().length) {
-                console.log("no order lines.")
-                return;
-            }
-            if (!addingPoints){
-                console.log("already adding lines.")
-                this.addingPoints = true;
-                var orderlines = order.get_orderlines();
-                for(var i = 0, len = orderlines.length; i < len; i++){
-                    if (orderlines[i].product && orderlines[i].product.barcode == FICHAS_BARCODE){
-                        orderlines[i].set_quantity(0);
-                        //orderlines.remove(orderlines[i]);
-                    }
+            if (fichasID){
+                var order = this.env.pos.get_order();
+                var selected_orderline = order.get_selected_orderline();
+                if (!order.get_orderlines().length) {
+                    console.log("no order lines.")
+                    return;
                 }
-                this.addingPoints = false;
+                if (!addingPoints){
+                    console.log("already adding lines.")
+                    this.addingPoints = true;
+                    var orderlines = order.get_orderlines();
+                    for(var i = 0, len = orderlines.length; i < len; i++){
+                        if (orderlines[i].product && orderlines[i].product.id == fichasID){
+                            orderlines[i].set_quantity(0);
+                            //orderlines.remove(orderlines[i]);
+                        }
+                    }
+                    this.addingPoints = false;
+                }
             }
         }
         _calculateNumberOfFichas(  ){
-            var order = this.env.pos.get_order();
-            var total     = order ? order.get_total_with_tax() : 0;
-            var orderlines = order.get_orderlines();
-            for(var i = 0, len = orderlines.length; i < len; i++){
-                if (orderlines[i].product && orderlines[i].product.barcode == FICHAS_BARCODE){
-                    total = total - orderlines[i].get_price_with_tax();
+            if (fichasID){
+                var order = this.env.pos.get_order();
+                var total     = order ? order.get_total_with_tax() : 0;
+                var orderlines = order.get_orderlines();
+                for(var i = 0, len = orderlines.length; i < len; i++){
+                    if (orderlines[i].product && orderlines[i].product.id == fichasID){
+                        total = total - orderlines[i].get_price_with_tax();
+                    }
                 }
+
+                var ret = 0;
+
+                if (fichas){
+                    ret = fichas;
+                    if (ret > total*100 / 2)
+                        ret = total*100 /2;
+
+                    ret = parseInt(ret / 100) * 100;
+                }
+
+                console.log("calculateNumberOfFichas, ret="+ret);
+
+                return ret;
             }
-
-            var ret = 0;
-
-            if (fichas){
-                ret = fichas;
-                if (ret > total*100 / 2)
-                    ret = total*100 /2;
-
-                ret = parseInt(ret / 100) * 100;
-            }
-
-            console.log("calculateNumberOfFichas, ret="+ret);
-
-            return ret;
         }
         _getClientBalance(  ) {
-            var order = this.env.pos.get_order();
-            var client = order.get_client();
+            if (! fichasID){
+                this._getFichasProductId()
+            }
+            else {
+                var order = this.env.pos.get_order();
+                var client = order.get_client();
 
-            //order.set_pricelist(client.pricelist_id);
+                //order.set_pricelist(client.pricelist_id);
 
-            fichas = false;
-            if (client != null){
-                zacasocio = false;
-                if (client && client.property_product_pricelist[0] == TARIFA_ZACASOCIOS){
-                    zacasocio = true;
-                    console.log(client.property_product_pricelist[0]);
+                fichas = false;
+                if (client != null){
+                    zacasocio = false;
+                    if (client && client.property_product_pricelist[0] == TARIFA_ZACASOCIOS){
+                        zacasocio = true;
+                        console.log(client.property_product_pricelist[0]);
+                    }
+                    if (zacasocio){
+                        console.log("getting Fichas...");
+                        rpc.query({
+                            model: 'zacasocios.zacasocios',
+                            method: 'getBalance',
+                            args: [client.email, this.env.pos.config.name],
+                        })
+                        .then(function(_fichas){
+                            if (! fichas){
+                                fichas =  Math.floor(_fichas);
+                                core.bus.trigger('got_fichas', fichas);
+                                console.log("_getClientBalance: Got "+fichas+" fichas.");
+                            }
+                            else {
+                                console.log("Already gone for fichas.");
+                            }
+                        },function(type,err){
+                            alert("Error 10: No puedo obtener las fichas de este cliente.");
+                        });
+                    }
+                    else{
+                        fichas = 0;
+                        console.log("No es zacasocio.");
+                    }
                 }
-                if (zacasocio){
-                    console.log("getting Fichas...");
-                    rpc.query({
-                        model: 'zacasocios.zacasocios',
-                        method: 'getBalance',
-                        args: [client.email, this.env.pos.config.name],
-                    })
-                    .then(function(_fichas){
-                        if (! fichas){
-                            fichas =  Math.floor(_fichas);
-                            core.bus.trigger('got_fichas', fichas);
-                            console.log("_getClientBalance: Got "+fichas+" fichas.");
-                        }
-                        else {
-                            console.log("Already gone for fichas.");
-                        }
-                    },function(type,err){
-                        alert("Error 10: No puedo obtener las fichas de este cliente.");
-                    });
-                }
-                else{
-                    fichas = 0;
-                    console.log("No es zacasocio.");
-                }
+            }
+        }
+        _getFichasProductId( ) {
+            if (!fichasID){
+                console.log("getting fichas product id...");
+                rpc.query({
+                    model: 'zacasocios.zacasocios',
+                    method: 'getFichasProductId',
+                    args: [],
+                })
+                .then(function(fichasProductId){
+                    console.log("Got fichas id.");
+                    if (fichasProductId){
+                        fichasID = fichasProductId;
+                        core.bus.trigger('got_fichas_product_id', fichas);
+                    }
+                },function(type,err){
+                    alert("Error 20: No puedo obtener el id de product de fichas.");
+                });
             }
         }
     }

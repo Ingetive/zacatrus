@@ -55,5 +55,14 @@ class Zacasocios(models.Model):
 			fichas = zacatrus.getBalance(email)
 
 		return fichas
+
+	@api.model
+	def getFichasProductId( self ):
+		fichasProductId = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id')
+
+		if (fichasProductId):
+			return int(fichasProductId)
+		else
+			return False
 		
 
