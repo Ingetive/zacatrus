@@ -62,7 +62,7 @@ class Zacasocios(models.Model):
 
 		if (fichasProductId):
 			return int(fichasProductId)
-		else
+		else:
 			return False
 		
 
