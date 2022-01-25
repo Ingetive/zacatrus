@@ -21,7 +21,7 @@ class EnvioValija(models.TransientModel):
                 picking_contenedor.bultos = self.bultos
                 nacex.nacex_send_shipping(picking_contenedor)
                 picking_contenedor.carrier_id = nacex.id
-                picking_contenedor.send_to_shipper()
+                picking_contenedor.with_context(force_send_to_shipper=True).send_to_shipper()
                 picking_contenedor.imprimir_operacion()
             else:
                 albaran.picking_contenedor = picking_contenedor

@@ -17,6 +17,11 @@ class Picking(models.Model):
     bultos = fields.Integer('Bultos')
     picking_contenedor= fields.Many2one('stock.picking', 'Albarán contenedor')
     
+    def send_to_shipper(self):
+        if not self.env.context.get("force_send_to_shipper") and self.carrier_id.delivery_type == 'nacex' and self.state != "assigned":
+            return
+        return super(Picking, self).send_to_shipper()
+    
     def imprimir_operacion(self):
         #En el escenario es donde, según el dominio, imprimiremos el report:
         # - etiqueta Nacex ZPL (Método de envío Nacex) 
