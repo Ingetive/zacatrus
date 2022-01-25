@@ -22,6 +22,7 @@ class EnvioValija(models.TransientModel):
                 nacex.nacex_send_shipping(picking_contenedor)
                 picking_contenedor.carrier_id = nacex.id
                 picking_contenedor.send_to_shipper()
+                picking_contenedor.imprimir_operacion()
             else:
                 albaran.picking_contenedor = picking_contenedor
                 albaran.carrier_id = nacex_valija

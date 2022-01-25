@@ -7,6 +7,7 @@ import re
 import requests
 import base64
 
+from urllib.parse import quote
 from odoo import _
 from datetime import datetime, date
 from odoo.exceptions import UserError
@@ -162,7 +163,7 @@ class NacexRequest():
                     label += "="*pad
                     fichero = base64.urlsafe_b64decode(label)
                 else :
-                    fichero = result[0]
+                    fichero = result[0].encode('iso-8859-1').decode()
             except:
                 max_intentos -= 1
         return fichero
@@ -241,7 +242,7 @@ class NacexRequest():
         for key, value in data.items():
             if data_string:
                 data_string += "|"
-            data_string += "%s=%s" % (key, value)    
+            data_string += "%s=%s" % (key, value)
         return data_string
     
     def _send_request(self, action, carrier, data={}):
