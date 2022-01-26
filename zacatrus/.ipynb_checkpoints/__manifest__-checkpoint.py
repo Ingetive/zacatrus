@@ -22,16 +22,31 @@
 
     # any module necessary for this one to work correctly
     'depends': [
+        'account',
         'base',
+        'point_of_sale',
         'product',
+        'purchase',
         'sale',
+        'stock_barcode',
+        'stock_account',
+        'delivery_nacex'
     ],
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
+        'report/purchase.xml',
         'views/views.xml',
-        #'views/templates.xml',
+        'views/point_of_sale.xml',
+        'views/account_move.xml',
+        'views/stock_picking.xml',
+        'views/stock_valuation_layer.xml',
+        'views/purchase_order.xml',
+        'report/etiqueta_vit.xml',
+        'report/zacatrus_views.xml',
+        'report/report_delivery_document.xml',
+        'views/templates.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

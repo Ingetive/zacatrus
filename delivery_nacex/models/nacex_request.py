@@ -67,8 +67,11 @@ class NacexRequest():
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city, # Población de entrega
-            "obs1": picking.note, # Observaciones, hasta 4 observaciones (obs"n")
+            "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
         }
+        
+        if picking.sale_id.x_droppoint:
+            params.update({'shop_codigo': picking.sale_id.x_droppoint})
         
         if partner_wharehouse.phone:
             params.update({"tel_rec": partner_wharehouse.phone}) # Teléfono de recogida

@@ -29,7 +29,8 @@
         'purchase',
         'sale',
         'stock_barcode',
-        'stock_account'
+        'stock_account',
+        'delivery_nacex'
     ],
 
     # always loaded

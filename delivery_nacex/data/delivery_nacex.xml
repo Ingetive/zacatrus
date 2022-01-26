@@ -18,21 +18,83 @@
         <field name="invoice_policy">order</field>
     </record>
     
-    <record id="delivery_carrier_nacex" model="delivery.carrier">
+    <record id="delivery_carrier_nacex_peninsula" model="delivery.carrier">
         <field name="name">Nacex</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
-        <field name="nacex_user">SERMANCOMPUTERSL</field>
-        <field name="nacex_password">F578600E3839DE1C4FBA08B389788657</field>
+        <field name="nacex_user">4002.ZACATRUSWS</field>
+        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
         <field name="nacex_tipo_servicio">peninsula</field>
-        <field name="nacex_tipo_servicio_peninsula">01</field>
+        <field name="nacex_tipo_servicio_peninsula">26</field>
         <field name="nacex_envase_peninsula">2</field>
         <field name="nacex_vehiculo">C</field>
-        <field name="nacex_delegacion_cliente">2804</field>
-        <field name="nacex_code_cliente">40103</field>
+        <field name="nacex_delegacion_cliente">4002</field>
+        <field name="nacex_code_cliente">5066</field>
+        <field name="country_ids" eval="[(4, ref('base.es'))]"/>
+        <field name="state_ids" eval="[(4, ref('base.state_es_vi')), (4, ref('base.state_es_b')), (4, ref('base.state_es_ab')), (4, ref('base.state_es_a')), (4, ref('base.state_es_al')), (4, ref('base.state_es_av')), (4, ref('base.state_es_ba')), (4, ref('base.state_es_bu')), (4, ref('base.state_es_cc')), (4, ref('base.state_es_ca')), (4, ref('base.state_es_cs')), (4, ref('base.state_es_cr')), (4, ref('base.state_es_co')), (4, ref('base.state_es_c')), (4, ref('base.state_es_cu')), (4, ref('base.state_es_gi')), (4, ref('base.state_es_gr')), (4, ref('base.state_es_gu')), (4, ref('base.state_es_ss')), (4, ref('base.state_es_h')), (4, ref('base.state_es_hu')), (4, ref('base.state_es_j')), (4, ref('base.state_es_le')), (4, ref('base.state_es_l')), (4, ref('base.state_es_lo')), (4, ref('base.state_es_lu')), (4, ref('base.state_es_m')), (4, ref('base.state_es_ma')), (4, ref('base.state_es_mu')), (4, ref('base.state_es_na')), (4, ref('base.state_es_or')), (4, ref('base.state_es_o')), (4, ref('base.state_es_p')), (4, ref('base.state_es_po')), (4, ref('base.state_es_sa')), (4, ref('base.state_es_s')), (4, ref('base.state_es_sg')), (4, ref('base.state_es_se')), (4, ref('base.state_es_so')), (4, ref('base.state_es_t')), (4, ref('base.state_es_te')), (4, ref('base.state_es_to')), (4, ref('base.state_es_v')), (4, ref('base.state_es_va')), (4, ref('base.state_es_bi')), (4, ref('base.state_es_za')), (4, ref('base.state_es_z')), (4, ref('base.state_es_ce')), (4, ref('base.state_es_ml'))]"/>
+    </record>
+    
+    <record id="delivery_carrier_nacex_canarias" model="delivery.carrier">
+        <field name="name">Nacex</field>
+        <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
+        <field name="delivery_type">nacex</field>
+        <field name="nacex_user">4002.ZACATRUSWS</field>
+        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
+        <field name="nacex_tipo_servicio">peninsula</field>
+        <field name="nacex_tipo_servicio_peninsula">48</field>
+        <field name="nacex_envase_peninsula">2</field>
+        <field name="nacex_vehiculo">C</field>
+        <field name="nacex_delegacion_cliente">4002</field>
+        <field name="nacex_code_cliente">5066</field>
+        <field name="country_ids" eval="[(4, ref('base.es'))]"/>
+        <field name="state_ids" eval="[(4, ref('base.state_es_tf')), (4, ref('base.state_es_gc'))]"/>
+    </record>
+    
+    <record id="delivery_carrier_nacex_baleares" model="delivery.carrier">
+        <field name="name">Nacex</field>
+        <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
+        <field name="delivery_type">nacex</field>
+        <field name="nacex_user">4002.ZACATRUSWS</field>
+        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
+        <field name="nacex_tipo_servicio">peninsula</field>
+        <field name="nacex_tipo_servicio_peninsula">26</field>
+        <field name="nacex_envase_peninsula">2</field>
+        <field name="nacex_vehiculo">C</field>
+        <field name="nacex_delegacion_cliente">4002</field>
+        <field name="nacex_code_cliente">5066</field>
+        <field name="country_ids" eval="[(4, ref('base.es'))]"/>
+        <field name="state_ids" eval="[(4, ref('base.state_es_pm'))]"/>
+    </record>
+    
+    <record id="delivery_carrier_nacex_shop" model="delivery.carrier">
+        <field name="name">Nacex</field>
+        <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
+        <field name="delivery_type">nacex</field>
+        <field name="nacex_user">4002.ZACATRUSWS</field>
+        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
+        <field name="nacex_tipo_servicio">peninsula</field>
+        <field name="nacex_tipo_servicio_peninsula">31</field>
+        <field name="nacex_envase_peninsula">2</field>
+        <field name="nacex_vehiculo">C</field>
+        <field name="nacex_delegacion_cliente">4002</field>
+        <field name="nacex_code_cliente">5066</field>
     </record>
 
     <record id="delivery_carrier_nacex_valija" model="delivery.carrier">
+        <field name="name">Nacex</field>
+        <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
+        <field name="delivery_type">nacex</field>
+        <field name="nacex_user">4002.ZACATRUSWS</field>
+        <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
+        <field name="nacex_tipo_servicio">peninsula</field>
+        <field name="nacex_tipo_servicio_peninsula">27</field>
+        <field name="nacex_envase_peninsula">2</field>
+        <field name="nacex_vehiculo">C</field>
+        <field name="nacex_delegacion_cliente">4002</field>
+        <field name="nacex_code_cliente">5066</field>
+    </record>
+    
+    <record id="delivery_carrier_valija" model="delivery.carrier">
         <field name="name">Nacex valija</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
     </record>

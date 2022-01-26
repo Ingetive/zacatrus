@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="report_picking" inherit_id="stock.report_picking">
+        <xpath expr="//div[@name='partner_header']/div[@t-field='o.partner_id']" position="attributes">
+            <attribute name="t-options">{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True, &quot;phone_icons&quot;: True}</attribute>
+        </xpath>
+    </template>
+    
     <template id="report_delivery_document_zacatrus" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[1]" position="replace">
         </xpath> 

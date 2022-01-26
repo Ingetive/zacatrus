@@ -35,6 +35,7 @@ SERVICIOS_PENINSULA = [
     ('14', 'DEVOLUCION PLUS BAG 1'),
     ('15', 'DEVOLUCION PLUS BAG 2'),
     ('17', 'DEVOLUCION E-NACEX'),
+    ('20', 'NACEX CUSTOM'),
     ('21', 'NACEX SABADO'),
     ('22', 'CANARIAS MARITIMO'),
     ('24', 'CANARIAS 24H'),
@@ -185,7 +186,8 @@ class ProviderNacex(models.Model):
             ))
 
             cb_picking_zpl = "^XA^XFETIQUETA^FS^FO475,770^BY2,1^BCB,100,Y,N,N^FD" + picking.name + "^FS"
-            etiqueta = fichero_etiqueta.replace("^XA^XFETIQUETA^FS", cb_picking_zpl)
+            etiqueta = fichero_etiqueta.replace("^DFETIQUETA", "^CI28^DFETIQUETA")
+            etiqueta = etiqueta.replace("^XA^XFETIQUETA^FS", cb_picking_zpl)
             picking.etiqueta_envio_zpl = etiqueta
             
             #Para poner el codigo barras izquierdo más grande sustituir ^FO10,600^BY4,2 po r^FO10,515^BY4,3
