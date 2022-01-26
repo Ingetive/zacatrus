@@ -13,11 +13,17 @@ class SaleOrder(models.Model):
     x_droppoint = fields.Integer('Punto Nacexshop')
     x_status = fields.Integer('Estado de importación (magento)')
     
-    def write(self, vals):
-        res = super(SaleOrder, self).write(vals)
-        if 'x_shipping_method' in vals:
-            self.change_delivery()
+    def create(self, vals):
+        res = super(SaleOrder, self).create(vals)
+        if res.x_shipping_method:
+            res.change_delivery()
         return res
+    
+#     def write(self, vals):
+#         res = super(SaleOrder, self).write(vals)
+#         if 'x_shipping_method' in vals:
+#             self.change_delivery()
+#         return res
 
     def change_delivery(self):
         carrier_nacex_peninsula = self.env.ref("delivery_nacex.delivery_carrier_nacex_peninsula")
