@@ -63,15 +63,28 @@ class NacexRequest():
             "pob_rec": partner_wharehouse.city, # Población de recogida
             "pais_rec": partner_wharehouse.country_id.code, # País de recogida
             "nom_ent": picking.partner_id.name, # Nombre de entrega
-            "dir_ent": picking.partner_id.street, # Dirección de entrega
+            "dir_ent": picking.partner_id.street[:60], # Dirección de entrega
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city, # Población de entrega
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
         }
         
-        if picking.sale_id.x_droppoint:
+        carrier_nacex_shop = self.env.ref('delivery.delivery_carrier_nacex_shop')
+        carrier_nacex_valija = self.env.ref('delivery.delivery_carrier_nacex_valija')
+        if picking.carrier_id.id in [carrier_nacex_shop.id, carrier_nacex_valija.id]:
+            params.update({
+                'tip_pre1': 1,
+                'mod_pre1': 1,
+            })
+            if picking.partner_id.phone:
+                params.update({'pre1': picking.partner_id.phone})
+        
+        if picking.carrier_id.id == carrier_nacex_shop.id and picking.sale_id.x_droppoint:
             params.update({'shop_codigo': picking.sale_id.x_droppoint})
+        
+        if picking.carrier_id.id == carrier_nacex_valija.id:
+            params.update({"nom_ent": "Zacatrus"})
         
         if partner_wharehouse.phone:
             params.update({"tel_rec": partner_wharehouse.phone}) # Teléfono de recogida
@@ -166,7 +179,11 @@ class NacexRequest():
                     label += "="*pad
                     fichero = base64.urlsafe_b64decode(label)
                 else :
+                    _logger.warning("fichero")
+                    _logger.warning(result[0])
                     fichero = result[0].encode('iso-8859-1').decode()
+                    _logger.warning("=====================")
+                    _logger.warning("=====================")
             except:
                 max_intentos -= 1
         return fichero

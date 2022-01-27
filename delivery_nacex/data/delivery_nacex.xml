@@ -19,7 +19,7 @@
     </record>
     
     <record id="delivery_carrier_nacex_peninsula" model="delivery.carrier">
-        <field name="name">Nacex</field>
+        <field name="name">Nacex STD</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>
@@ -35,7 +35,7 @@
     </record>
     
     <record id="delivery_carrier_nacex_canarias" model="delivery.carrier">
-        <field name="name">Nacex</field>
+        <field name="name">Nacex Canarias</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>
@@ -51,13 +51,13 @@
     </record>
     
     <record id="delivery_carrier_nacex_baleares" model="delivery.carrier">
-        <field name="name">Nacex</field>
+        <field name="name">Nacex Baleares</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>
         <field name="nacex_password">583406A8DA18F42AAEF2DD6D6E46FB85</field>
         <field name="nacex_tipo_servicio">peninsula</field>
-        <field name="nacex_tipo_servicio_peninsula">26</field>
+        <field name="nacex_tipo_servicio_peninsula">20</field>
         <field name="nacex_envase_peninsula">2</field>
         <field name="nacex_vehiculo">C</field>
         <field name="nacex_delegacion_cliente">4002</field>
@@ -67,7 +67,7 @@
     </record>
     
     <record id="delivery_carrier_nacex_shop" model="delivery.carrier">
-        <field name="name">Nacex</field>
+        <field name="name">Nacex Shop</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>
@@ -81,7 +81,7 @@
     </record>
 
     <record id="delivery_carrier_nacex_valija" model="delivery.carrier">
-        <field name="name">Nacex</field>
+        <field name="name">Nacex Valija</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>

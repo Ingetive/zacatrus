@@ -43,6 +43,7 @@
         'views/stock_picking.xml',
         'views/stock_valuation_layer.xml',
         'views/purchase_order.xml',
+        'views/sale_order.xml',
         'report/etiqueta_vit.xml',
         'report/zacatrus_views.xml',
         'report/report_delivery_document.xml',
