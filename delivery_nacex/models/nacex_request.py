@@ -70,8 +70,14 @@ class NacexRequest():
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
         }
         
-        if picking.sale_id.x_droppoint:
-            params.update({'shop_codigo': picking.sale_id.x_droppoint})
+        if picking.carrier_id.id == self.env.ref('delivery_carrier_nacex_shop').id:
+            params.update({
+                'tip_pre1': 1,
+                'mod_pre1': 1,
+                'shop_codigo': picking.sale_id.x_droppoint
+            })
+            if picking.partner_id.phone:
+                params.update({'pre1': picking.partner_id.phone})
         
         if partner_wharehouse.phone:
             params.update({"tel_rec": partner_wharehouse.phone}) # Teléfono de recogida
