@@ -70,8 +70,8 @@ class NacexRequest():
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
         }
         
-        carrier_nacex_shop = self.env.ref('delivery.delivery_carrier_nacex_shop')
-        carrier_nacex_valija = self.env.ref('delivery.delivery_carrier_nacex_valija')
+        carrier_nacex_shop = self.env.ref('delivery_nacex.delivery_carrier_nacex_shop')
+        carrier_nacex_valija = self.env.ref('delivery_nacex.delivery_carrier_nacex_valija')
         if picking.carrier_id.id in [carrier_nacex_shop.id, carrier_nacex_valija.id]:
             params.update({
                 'tip_pre1': 1,
