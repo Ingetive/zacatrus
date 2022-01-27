@@ -13,6 +13,7 @@ class SaleOrder(models.Model):
     x_droppoint = fields.Integer('Punto Nacexshop')
     x_status = fields.Integer('Estado de importación (magento)')
     
+    @api.model
     def create(self, vals):
         res = super(SaleOrder, self).create(vals)
         if res.x_shipping_method:
