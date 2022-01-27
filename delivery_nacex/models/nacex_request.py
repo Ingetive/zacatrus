@@ -171,21 +171,33 @@ class NacexRequest():
         max_intentos = 10
         fichero = None
         while fichero is None and max_intentos>0:
+            result = None
             try:
                 code, result = self._send_request('getEtiqueta', carrier, params)
-                label = result[0]
-                if etiqueta == 'IMAGEN_B':
-                    pad = len(label)%4
-                    label += "="*pad
-                    fichero = base64.urlsafe_b64decode(label)
-                else :
-                    _logger.warning("fichero")
-                    _logger.warning(result[0])
-                    fichero = result[0].encode('iso-8859-1').decode()
-                    _logger.warning("=====================")
-                    _logger.warning("=====================")
             except:
+                pass
+            
+            if not result:
+                _logger.warning("Error al intentar obtener la etiqueta.")
                 max_intentos -= 1
+                continue
+
+            label = result[0]
+            if etiqueta == 'IMAGEN_B':
+                pad = len(label)%4
+                label += "="*pad
+                fichero = base64.urlsafe_b64decode(label)
+            else :
+                _logger.warning("fichero")
+                _logger.warning(type(result[0]))
+                _logger.warning(result[0])
+                try:
+                    fichero = result[0].encode('iso-8859-1').decode()
+                except:
+                    fichero = result[0]
+                _logger.warning("=====================")
+                _logger.warning("=====================")
+
         return fichero
                 
     def nacex_cancel_shipment(self, picking):

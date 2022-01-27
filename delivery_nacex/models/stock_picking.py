@@ -41,3 +41,13 @@ class Picking(models.Model):
                     'res_id': self.id,
                 }
         return action
+    
+    def obtener_etiqueta(self):
+        nacex = NacexRequest(self.log_xml)
+        for r in self:
+            if r.carrier_tracking_ref:
+                fichero_etiqueta = nacex.get_label(r.carrier_tracking_ref, r.nacex_etiqueta, self)
+                cb_picking_zpl = "^XA^XFETIQUETA^FS^FO475,770^BY2,1^BCB,100,Y,N,N^FD" + r.name + "^FS"
+                etiqueta = fichero_etiqueta.replace("^DFETIQUETA", "^CI28^DFETIQUETA").replace("^XA^XFETIQUETA^FS", cb_picking_zpl)
+                r.etiqueta_envio_zpl = etiqueta
+        
