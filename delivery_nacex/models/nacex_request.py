@@ -63,18 +63,19 @@ class NacexRequest():
             "pob_rec": partner_wharehouse.city, # Población de recogida
             "pais_rec": partner_wharehouse.country_id.code, # País de recogida
             "nom_ent": picking.partner_id.name, # Nombre de entrega
-            "dir_ent": picking.partner_id.street, # Dirección de entrega
+            "dir_ent": picking.partner_id.street[:60], # Dirección de entrega
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city, # Población de entrega
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
         }
         
-        if picking.carrier_id.id == self.env.ref('delivery_carrier_nacex_shop').id:
+        carrier_nacex_shop = self.env.ref('delivery.delivery_carrier_nacex_shop')
+        carrier_nacex_valija = self.env.ref('delivery.delivery_carrier_nacex_valija')
+        if picking.carrier_id.id in [carrier_nacex_shop.id, carrier_nacex_valija.id]:
             params.update({
                 'tip_pre1': 1,
                 'mod_pre1': 1,
-                'shop_codigo': picking.sale_id.x_droppoint
             })
             if picking.partner_id.phone:
                 params.update({'pre1': picking.partner_id.phone})
