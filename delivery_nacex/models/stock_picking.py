@@ -6,6 +6,8 @@ import requests
 import base64
 
 from odoo import api, models, fields
+from odoo.exceptions import ValidationError
+from .nacex_request import NacexRequest
 
 _logger = logging.getLogger(__name__)
 
@@ -43,10 +45,12 @@ class Picking(models.Model):
         return action
     
     def obtener_etiqueta(self):
-        nacex = NacexRequest(self.log_xml)
         for r in self:
             if r.carrier_tracking_ref:
-                fichero_etiqueta = nacex.get_label(r.carrier_tracking_ref, r.nacex_etiqueta, self)
+                nacex = NacexRequest(r.carrier_id.log_xml)
+                fichero_etiqueta = nacex.get_label(r.carrier_tracking_ref, r.carrier_id.nacex_etiqueta, r.carrier_id)
+                if not fichero_etiqueta:
+                    raise ValidationError("No se ha podido obtener la etiqueta desde Nacex.")
                 cb_picking_zpl = "^XA^XFETIQUETA^FS^FO475,770^BY2,1^BCB,100,Y,N,N^FD" + r.name + "^FS"
                 etiqueta = fichero_etiqueta.replace("^DFETIQUETA", "^CI28^DFETIQUETA").replace("^XA^XFETIQUETA^FS", cb_picking_zpl)
                 r.etiqueta_envio_zpl = etiqueta
