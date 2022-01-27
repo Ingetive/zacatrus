@@ -80,6 +80,12 @@ class NacexRequest():
             if picking.partner_id.phone:
                 params.update({'pre1': picking.partner_id.phone})
         
+        if picking.carrier_id.id == carrier_nacex_shop.id and picking.sale_id.x_droppoint:
+            params.update({'shop_codigo': picking.sale_id.x_droppoint})
+        
+        if picking.carrier_id.id == carrier_nacex_valija.id:
+            params.update({"nom_ent": "Zacatrus"})
+        
         if partner_wharehouse.phone:
             params.update({"tel_rec": partner_wharehouse.phone}) # Teléfono de recogida
         
@@ -173,7 +179,11 @@ class NacexRequest():
                     label += "="*pad
                     fichero = base64.urlsafe_b64decode(label)
                 else :
+                    _logger.warning("fichero")
+                    _logger.warning(result[0])
                     fichero = result[0].encode('iso-8859-1').decode()
+                    _logger.warning("=====================")
+                    _logger.warning("=====================")
             except:
                 max_intentos -= 1
         return fichero
