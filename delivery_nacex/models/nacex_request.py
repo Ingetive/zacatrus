@@ -171,12 +171,7 @@ class NacexRequest():
         max_intentos = 10
         fichero = None
         while fichero is None and max_intentos>0:
-            result = None
-            try:
-                code, result = self._send_request('getEtiqueta', carrier, params)
-            except:
-                pass
-            
+            code, result = self._send_request('getEtiqueta', carrier, params)
             if not result:
                 _logger.warning("Error al intentar obtener la etiqueta.")
                 max_intentos -= 1
