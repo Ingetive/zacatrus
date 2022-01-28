@@ -45,12 +45,16 @@ class Picking(models.Model):
         return action
     
     def obtener_etiqueta(self, carrier_tracking_ref=None):
-        for r in self:
+        for r in self.sudo():
             if not carrier_tracking_ref:
                 carrier_tracking_ref = r.carrier_tracking_ref
             
             if not carrier_tracking_ref:
                 continue
+            
+            _logger.warning(carrier_tracking_ref)
+            _logger.warning(r.carrier_id.nacex_etiqueta)
+            _logger.warning(r.carrier_id)
             
             nacex = NacexRequest(r.carrier_id.log_xml)
             fichero_etiqueta = nacex.get_label(carrier_tracking_ref, r.carrier_id.nacex_etiqueta, r.carrier_id)
