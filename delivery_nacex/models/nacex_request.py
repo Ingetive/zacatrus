@@ -87,10 +87,10 @@ class NacexRequest():
             params.update({"nom_ent": "Zacatrus"})
         
         if partner_wharehouse.phone:
-            params.update({"tel_rec": partner_wharehouse.phone}) # Teléfono de recogida
+            params.update({"tel_rec": partner_wharehouse.phone[:19]}) # Teléfono de recogida
         
         if picking.partner_id.phone:
-            params.update({"tel_ent": picking.partner_id.phone}) # Teléfono de entrega
+            params.update({"tel_ent": picking.partner_id.phone[:19]}) # Teléfono de entrega
         
         if carrier.nacex_tipo_servicio == 'peninsula':
             params.update({
