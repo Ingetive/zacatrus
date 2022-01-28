@@ -30,7 +30,9 @@
         'sale',
         'stock_barcode',
         'stock_account',
-        'delivery_nacex'
+        'delivery_nacex',
+        'stock', 
+        'stock_location_children'
     ],
 
     # always loaded
