@@ -40,7 +40,7 @@ class StockInventoryLine(models.Model):
         # and eliminate lines where quantity is null
         for location_in in inventory_locations:
             _logger.warning("location_in %s" % location_in)
-            _logger.waRning("Para las siguiente lineas %s" % self.filtered(
+            _logger.warning("Para las siguiente lineas %s" % self.filtered(
                 lambda x: x.product_qty > 0
                 and x.location_id.id in location_in.children_ids.ids
             ).ids)
