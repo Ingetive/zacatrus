@@ -8,6 +8,6 @@ class StockWarehouseOrderpoint(models.Model):
 
     @api.model
     def action_replenish_external(self, orderpoint_id):
-        orderpoint = self.sudo().browse(orderpoint_id)
+        orderpoint = self.env["stock.warehouse.orderpoint"].sudo().browse(orderpoint_id)
         if orderpoint:
             return orderpoint.action_replenish()

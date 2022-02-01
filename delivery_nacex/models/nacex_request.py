@@ -83,9 +83,6 @@ class NacexRequest():
         if picking.carrier_id.id == carrier_nacex_shop.id and picking.sale_id.x_droppoint:
             params.update({'shop_codigo': picking.sale_id.x_droppoint})
         
-        if picking.carrier_id.id == carrier_nacex_valija.id:
-            params.update({"nom_ent": "Zacatrus"})
-        
         if partner_wharehouse.phone:
             params.update({"tel_rec": partner_wharehouse.phone[:19]}) # Teléfono de recogida
         
@@ -101,6 +98,12 @@ class NacexRequest():
             params.update({
                 "tip_ser": carrier.nacex_tipo_servicio_internacional, # Código de Servicio Nacex
                 "tip_env": carrier.nacex_envase_internacional, # Código de envase Nacex
+            })
+            
+        if picking.carrier_id.id == carrier_nacex_valija.id:
+            params.update({
+                "nom_ent": "Zacatrus",
+                "tel_ent": "910767606"
             })
         
         code, result = self._send_request('putExpedicion', carrier, params)
