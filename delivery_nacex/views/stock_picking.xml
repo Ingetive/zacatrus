@@ -33,12 +33,12 @@
         <field name="code">
 if records:
     partner = False
-    nacex_valija = env.ref('delivery_nacex.delivery_carrier_nacex_valija')
+    nacex_valija = env.ref('delivery_nacex.delivery_carrier_valija')
     for albaran in records:
         if albaran.state != 'done':
           raise UserError("Todos los albaranes deben estar realizados")
         if albaran.carrier_id != nacex_valija:
-          raise UserError("Todos los albaranes deben tener como método de envío Nacex valija")
+          raise UserError("Todos los albaranes deben tener como método de envío valija")
         if albaran.partner_id != partner and partner:
           raise UserError("Todos los albaranes deben tener la misma dirección de entrega")
         partner = albaran.partner_id
