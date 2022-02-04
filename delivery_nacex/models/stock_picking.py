@@ -4,6 +4,7 @@
 import logging
 import requests
 import base64
+import re
 
 from odoo import api, models, fields
 from odoo.exceptions import ValidationError
@@ -16,8 +17,17 @@ class Picking(models.Model):
     _inherit = 'stock.picking'
     
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
+    x_tracking = fields.Char("Numero de tracking de la mensajeria", compute='_compute_tracking')
     bultos = fields.Integer('Bultos')
     picking_contenedor= fields.Many2one('stock.picking', 'Albarán contenedor')
+
+    @api.depends('etiqueta_envio_zpl')
+    def _compute_tracking(self):
+        for r in self:
+            try:
+                r.x_tracking = re.search('[0-9]{4}\/[0-9]{8}', r.etiqueta_envio_zpl).group(0)
+            except:
+                r.x_tracking = False
     
     def send_to_shipper(self):
         if not self.env.context.get("force_send_to_shipper") and self.carrier_id.delivery_type == 'nacex' and self.state != "assigned":
