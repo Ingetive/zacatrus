@@ -68,6 +68,7 @@ class NacexRequest():
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city, # Población de entrega
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
+            "ref_cli" : picking.sale_id.client_order_ref if picking.sale_id else '',
         }
         
         carrier_nacex_shop = picking.env.ref('delivery_nacex.delivery_carrier_nacex_shop')
