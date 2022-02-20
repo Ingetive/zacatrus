@@ -18,7 +18,6 @@
         'security/ir.model.access.csv',
         'views/res_config_settings_views.xml',
         'report/report_deliveryslip_ticket.xml',
-        'report/zacatrus_base_views.xml',
     ],
     "installable": True,
 }
