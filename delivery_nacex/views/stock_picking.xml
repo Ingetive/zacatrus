@@ -5,8 +5,17 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="delivery.view_picking_withcarrier_out_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//button[@name='cancel_shipment']" position="after">
+                <button type="object" 
+                        class="fa fa-arrow-right oe_link" 
+                        name="obtener_etiqueta" 
+                        string="Obtener etiqueta" 
+                        attrs="{'invisible':['|','|','|','|',('etiqueta_envio_zpl','!=', False),('carrier_tracking_ref','=',False),('delivery_type','in', ['fixed', 'base_on_rule']),('delivery_type','=',False),('state','not in',('done'))]}"/>
+            </xpath>
+            
             <xpath expr="//group[@name='carrier_data']" position="inside">
                 <field name="etiqueta_envio_zpl"/>
+                <field name="x_tracking"/>
                 <field name="bultos"/>
                 <field name="picking_contenedor"/>
             </xpath>
@@ -24,16 +33,16 @@
         <field name="state">code</field>
         <field name="code">
 if records:
-    partner = False
-    nacex_valija = env.ref('delivery_nacex.delivery_carrier_nacex_valija')
+    zip = records[0].partner_id.zip
+    nacex_valija = env.ref('delivery_nacex.delivery_carrier_valija')
     for albaran in records:
-        if albaran.state != 'done':
-          raise UserError("Todos los albaranes deben estar realizados")
-        if albaran.carrier_id != nacex_valija:
-          raise UserError("Todos los albaranes deben tener como método de envío Nacex valija")
-        if albaran.partner_id != partner and partner:
-          raise UserError("Todos los albaranes deben tener la misma dirección de entrega")
-        partner = albaran.partner_id
+      partner = albaran.partner_id.zip
+      if albaran.state != 'done':
+        raise UserError("Todos los albaranes deben estar realizados")
+      if albaran.carrier_id != nacex_valija:
+        raise UserError("Todos los albaranes deben tener como método de envío valija")
+      if albaran.partner_id.zip != zip:
+        raise UserError("Todos los albaranes deben tener el mismo ZIP")
     action_values = env.ref('delivery_nacex.envio_valija_action').sudo().read()[0]
     action_values.update({'context': env.context})
     action = action_values

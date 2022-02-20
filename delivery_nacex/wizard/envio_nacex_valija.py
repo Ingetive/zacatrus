@@ -11,7 +11,7 @@ class EnvioValija(models.TransientModel):
     bultos = fields.Integer('Bultos', default=1)
 
     def action_envio_nacex_valija_apply(self):
-        nacex = self.env.ref('delivery_nacex.delivery_carrier_nacex')
+        valija = self.env.ref('delivery_nacex.delivery_carrier_valija')
         nacex_valija = self.env.ref('delivery_nacex.delivery_carrier_nacex_valija')
         picking_contenedor = False
         pickings = self.env['stock.picking'].browse(self.env.context.get('active_ids'))
@@ -19,9 +19,10 @@ class EnvioValija(models.TransientModel):
             if not picking_contenedor:
                 picking_contenedor = albaran
                 picking_contenedor.bultos = self.bultos
-                nacex.nacex_send_shipping(picking_contenedor)
-                picking_contenedor.carrier_id = nacex.id
-                picking_contenedor.send_to_shipper()
+#                 nacex_valija.nacex_send_shipping([picking_contenedor])
+                picking_contenedor.carrier_id = nacex_valija.id
+                picking_contenedor.with_context(force_send_to_shipper=True).send_to_shipper()
+                picking_contenedor.imprimir_operacion()
             else:
                 albaran.picking_contenedor = picking_contenedor
-                albaran.carrier_id = nacex_valija
+                albaran.carrier_id = valija.id

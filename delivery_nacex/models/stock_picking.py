@@ -4,8 +4,11 @@
 import logging
 import requests
 import base64
+import re
 
 from odoo import api, models, fields
+from odoo.exceptions import ValidationError
+from .nacex_request import NacexRequest
 
 _logger = logging.getLogger(__name__)
 
@@ -14,8 +17,22 @@ class Picking(models.Model):
     _inherit = 'stock.picking'
     
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
+    x_tracking = fields.Char("Numero de tracking de la mensajeria", compute='_compute_tracking')
     bultos = fields.Integer('Bultos')
     picking_contenedor= fields.Many2one('stock.picking', 'Albarán contenedor')
+
+    @api.depends('etiqueta_envio_zpl')
+    def _compute_tracking(self):
+        for r in self:
+            try:
+                r.x_tracking = re.search('[0-9]{4}\/[0-9]{8}', r.etiqueta_envio_zpl).group(0)
+            except:
+                r.x_tracking = False
+    
+    def send_to_shipper(self):
+        if not self.env.context.get("force_send_to_shipper") and self.carrier_id.delivery_type == 'nacex' and self.state != "assigned":
+            return
+        return super(Picking, self).send_to_shipper()
     
     def imprimir_operacion(self):
         #En el escenario es donde, según el dominio, imprimiremos el report:
@@ -36,3 +53,20 @@ class Picking(models.Model):
                     'res_id': self.id,
                 }
         return action
+    
+    def obtener_etiqueta(self, carrier_tracking_ref=None):
+        for r in self.sudo():
+            if not carrier_tracking_ref:
+                carrier_tracking_ref = r.carrier_tracking_ref
+            
+            if not carrier_tracking_ref:
+                continue
+            
+            nacex = NacexRequest(r.carrier_id.log_xml)
+            fichero_etiqueta = nacex.get_label(carrier_tracking_ref, r.carrier_id.nacex_etiqueta, r.carrier_id)
+            if not fichero_etiqueta:
+                raise ValidationError("No se ha podido obtener la etiqueta desde Nacex.")
+            cb_picking_zpl = "^XA^XFETIQUETA^FS^FO475,770^BY2,1^BCB,100,Y,N,N^FD" + r.name + "^FS"
+            etiqueta = fichero_etiqueta.replace("^DFETIQUETA", "^CI28^DFETIQUETA").replace("^XA^XFETIQUETA^FS", cb_picking_zpl)
+            r.etiqueta_envio_zpl = etiqueta
+        

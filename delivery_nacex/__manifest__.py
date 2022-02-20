@@ -7,9 +7,10 @@
     'sequence': 1,
     'version': '1.0',
     'application': True,
-    'depends': ['delivery',
-                'mail',
-                'printnode_base',
+    'depends': [
+        'delivery',
+        'mail',
+        'printnode_base',
     ],
     'data': [
         'data/delivery_nacex.xml',

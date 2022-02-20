@@ -7,6 +7,7 @@ import re
 import requests
 import base64
 
+from urllib.parse import quote
 from odoo import _
 from datetime import datetime, date
 from odoo.exceptions import UserError
@@ -62,18 +63,32 @@ class NacexRequest():
             "pob_rec": partner_wharehouse.city, # Población de recogida
             "pais_rec": partner_wharehouse.country_id.code, # País de recogida
             "nom_ent": picking.partner_id.name, # Nombre de entrega
-            "dir_ent": picking.partner_id.street, # Dirección de entrega
+            "dir_ent": picking.partner_id.street[:50], # Dirección de entrega
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city, # Población de entrega
-            "obs1": picking.note, # Observaciones, hasta 4 observaciones (obs"n")
+            "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
+            "ref_cli" : picking.sale_id.client_order_ref if picking.sale_id else '',
         }
         
+        carrier_nacex_shop = picking.env.ref('delivery_nacex.delivery_carrier_nacex_shop')
+        carrier_nacex_valija = picking.env.ref('delivery_nacex.delivery_carrier_nacex_valija')
+        if picking.carrier_id.id in [carrier_nacex_shop.id, carrier_nacex_valija.id]:
+            params.update({
+                'tip_pre1': 'S',
+                'mod_pre1': 'S',
+            })
+            if picking.partner_id.phone:
+                params.update({'pre1': picking.partner_id.phone})
+        
+        if picking.carrier_id.id == carrier_nacex_shop.id and picking.sale_id.x_droppoint:
+            params.update({'shop_codigo': picking.sale_id.x_droppoint})
+        
         if partner_wharehouse.phone:
-            params.update({"tel_rec": partner_wharehouse.phone}) # Teléfono de recogida
+            params.update({"tel_rec": partner_wharehouse.phone[:19]}) # Teléfono de recogida
         
         if picking.partner_id.phone:
-            params.update({"tel_ent": picking.partner_id.phone}) # Teléfono de entrega
+            params.update({"tel_ent": picking.partner_id.phone[:19]}) # Teléfono de entrega
         
         if carrier.nacex_tipo_servicio == 'peninsula':
             params.update({
@@ -84,6 +99,12 @@ class NacexRequest():
             params.update({
                 "tip_ser": carrier.nacex_tipo_servicio_internacional, # Código de Servicio Nacex
                 "tip_env": carrier.nacex_envase_internacional, # Código de envase Nacex
+            })
+            
+        if picking.carrier_id.id == carrier_nacex_valija.id:
+            params.update({
+                "nom_ent": "Zacatrus",
+                "tel_ent": "910767606"
             })
         
         code, result = self._send_request('putExpedicion', carrier, params)
@@ -154,17 +175,28 @@ class NacexRequest():
         max_intentos = 10
         fichero = None
         while fichero is None and max_intentos>0:
-            try:
-                code, result = self._send_request('getEtiqueta', carrier, params)
-                label = result[0]
-                if etiqueta == 'IMAGEN_B':
-                    pad = len(label)%4
-                    label += "="*pad
-                    fichero = base64.urlsafe_b64decode(label)
-                else :
-                    fichero = result[0]
-            except:
+            code, result = self._send_request('getEtiqueta', carrier, params)
+            if not result:
+                _logger.warning("Error al intentar obtener la etiqueta.")
                 max_intentos -= 1
+                continue
+
+            label = result[0]
+            if etiqueta == 'IMAGEN_B':
+                pad = len(label)%4
+                label += "="*pad
+                fichero = base64.urlsafe_b64decode(label)
+            else :
+                _logger.warning("fichero")
+                _logger.warning(type(result[0]))
+                _logger.warning(result[0])
+                try:
+                    fichero = result[0].encode('iso-8859-1').decode()
+                except:
+                    fichero = result[0]
+                _logger.warning("=====================")
+                _logger.warning("=====================")
+
         return fichero
                 
     def nacex_cancel_shipment(self, picking):
@@ -241,7 +273,7 @@ class NacexRequest():
         for key, value in data.items():
             if data_string:
                 data_string += "|"
-            data_string += "%s=%s" % (key, value)    
+            data_string += "%s=%s" % (key, value)
         return data_string
     
     def _send_request(self, action, carrier, data={}):
