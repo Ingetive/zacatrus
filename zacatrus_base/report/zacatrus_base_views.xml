@@ -23,7 +23,7 @@
             <field name="report_name">zacatrus_base.report_deliveryslip_ticket</field>
             <field name="report_file">zacatrus_base.report_deliveryslip_ticket</field>
             <field name="print_report_name">'Ticket - %s' % (object.name)</field>
-            <field name="binding_model_id" restockf="model_stock_picking"/>
+            <field name="binding_model_id" ref="model_stock_picking"/>
             <field name="binding_type">report</field>
             <field name="paperformat_id" ref="zacatrus_base.paperformat_zgticket"/>
         </record>   
