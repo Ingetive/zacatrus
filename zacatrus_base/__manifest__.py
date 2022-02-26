@@ -12,7 +12,8 @@
         'point_of_sale',
         'product',
         'purchase',
-        'sale'
+        'sale',
+        'zacatrus'
     ],
     "data": [
         'security/ir.model.access.csv',
