@@ -18,7 +18,7 @@
         </record>
         <record id="action_report_etiqueta_ticket" model="ir.actions.report">
             <field name="name">Zacatrus Ticket</field>
-            <field name="model">zacatrus.picking</field>
+            <field name="model">stock.picking</field>
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">zacatrus_base.report_deliveryslip_ticket</field>
             <field name="report_file">zacatrus_base.report_deliveryslip_ticket</field>
