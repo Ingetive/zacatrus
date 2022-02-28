@@ -43,8 +43,7 @@
             </xpath>
             
             <xpath expr="//group[1]" position="inside">
-                <filter string="partner_zip" 
-                        name="filter_partner_zip" 
+                <filter name="filter_partner_zip" 
                         string="ZIP" 
                         domain="[]" 
                         context="{'group_by': 'partner_zip'}"/>
