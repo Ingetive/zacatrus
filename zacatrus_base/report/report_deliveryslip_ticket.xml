@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<odoo>
+    <template id="report_deliveryslip_ticket">
+        <t t-foreach="docs" t-as="o">
+            <t t-set="company" t-value="env.company"/>
+            <t t-call="web.html_container">
+                <t t-call="web.internal_layout">
+                    <div class="page">
+                        <h4><t t-esc="o.origin"/></h4>
+
+                        <img alt="Barcode" t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(o.name or ''), 300, 50)" style="width:300px;height:50px"/>
+                          
+                        <h5><t t-esc="o.name"/></h5>
+
+                        <t t-set="partner" t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"/>
+                                          
+                        <div t-esc="partner" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True}"/>
+                                       
+                                    
+                        <!-- Orderlines -->
+                        <table class="table table-sm">
+                            <tbody>
+                                <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                                <tr t-foreach="lines" t-as="line">
+                                    <t t-set="internal_reference" t-value="line.product_id['code'] and '[%s] ' % line.product_id['code'] or ''"/>
+                                    <td><t t-esc="'{0:,.0f}'.format(line.product_uom_qty)"/>x <t t-esc="internal_reference"/><t t-esc="line.product_id['name']"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <br/>
+                        <br/>
+
+                    </div>
+                    <hr/>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
