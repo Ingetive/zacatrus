@@ -8,7 +8,7 @@
         owl="1"
     >
 
-        <xpath expr="//div/[@t-if='receipt.company.logo']" position="replace">
+        <xpath expr="//div/t[@t-if='receipt.company.logo']" position="replace">
             <img class="pos-receipt-logo" t-att-src="receipt.company.logo" alt="Logo"/>
             <br/>
             
