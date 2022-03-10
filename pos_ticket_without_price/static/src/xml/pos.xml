@@ -43,7 +43,7 @@
             </span>
         </xpath>
 
-        <xpath expr="//div/t/t[@t-if='line.discount !== 0']/div/span" position="attributes">
+        <xpath expr="//div/t/t[@t-if='line.discount !== 0']/div" position="attributes">
             <attribute name="class">oe_hidden</attribute>
         </xpath>
 
@@ -70,7 +70,7 @@
     <t t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('buttons')]" position="inside">
             <div class="button printwithoutprice" t-on-click="printReceiptwithoutprice">
-                <i class="fa fa-print" /> Print Receipt Without Price
+                <i class="fa fa-print" /> Ticket regalo
             </div>
         </xpath>
 
