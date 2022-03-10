@@ -7,6 +7,16 @@
         t-inherit-mode="primary"
         owl="1"
     >
+
+        <xpath expr="//div/[@t-if='receipt.company.logo']" position="replace">
+            <img class="pos-receipt-logo" t-att-src="receipt.company.logo" alt="Logo"/>
+            <br/>
+            
+            <h2 class="pos-receipt-center-align">Ticket regalo</h2>
+            <br/>
+        </xpath>
+
+
         <xpath expr="//div[hasclass('pos-receipt')]" position="attributes">
             <attribute name="class">pos-receipt pos-receipt-without-price</attribute>
             <attribute name="style">display: none;</attribute>
@@ -31,6 +41,10 @@
                 />
                 <span t-esc="line.unit_name" />
             </span>
+        </xpath>
+
+        <xpath expr="//div/t/t[@t-if='line.discount !== 0']/div/span" position="attributes">
+            <attribute name="class">oe_hidden</attribute>
         </xpath>
 
         <xpath
