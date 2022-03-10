@@ -43,7 +43,7 @@
             </span>
         </xpath>
 
-        <xpath expr="//div/t/t[@t-if='line.discount !== 0']/div" position="attributes">
+        <xpath expr="//div/t/t/t[@t-if='line.discount !== 0']/div" position="attributes">
             <attribute name="class">oe_hidden</attribute>
         </xpath>
 
