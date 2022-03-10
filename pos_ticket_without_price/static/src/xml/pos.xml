@@ -21,7 +21,7 @@
         <xpath expr="//div/t[@t-if='receipt.total_discount']/div" position="attributes">
             <attribute name="class">oe_hidden</attribute>
         </xpath>
-        <xpath expr="//div/t/t/t[@t-if='line.display_discount_policy == \'without_discount\' and line.price != line.price_lst']/div" position="attributes">
+        <xpath expr="//div/t/t/t/div[hasclass('pos-receipt-left-padding']" position="attributes">
             <attribute name="class">oe_hidden</attribute>
         </xpath>
 
