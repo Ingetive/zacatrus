@@ -7,6 +7,28 @@
         t-inherit-mode="primary"
         owl="1"
     >
+
+        <xpath expr="//div/t[@t-if='receipt.company.logo']" position="replace">
+            <img class="pos-receipt-logo" t-att-src="receipt.company.logo" alt="Logo"/>
+            <br/>
+            
+            <h2 class="pos-receipt-center-align">Ticket regalo</h2>
+            <br/>
+        </xpath>
+        <xpath expr="//div/t/t/t[@t-if='line.discount !== 0']/div" position="attributes">
+            <attribute name="class">oe_hidden</attribute>
+        </xpath>
+        <xpath expr="//div/t[@t-if='receipt.total_discount']/div" position="attributes">
+            <attribute name="class">oe_hidden</attribute>
+        </xpath>
+        <xpath expr="//div/t/t/t/div[hasclass('pos-receipt-left-padding')]" position="attributes">
+            <attribute name="class">oe_hidden</attribute>
+        </xpath>
+
+
+
+
+
         <xpath expr="//div[hasclass('pos-receipt')]" position="attributes">
             <attribute name="class">pos-receipt pos-receipt-without-price</attribute>
             <attribute name="style">display: none;</attribute>
@@ -33,6 +55,7 @@
             </span>
         </xpath>
 
+
         <xpath
             expr="//div/div[hasclass('pos-receipt-right-align')]"
             position="attributes"
@@ -56,7 +79,7 @@
     <t t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('buttons')]" position="inside">
             <div class="button printwithoutprice" t-on-click="printReceiptwithoutprice">
-                <i class="fa fa-print" /> Print Receipt Without Price
+                <i class="fa fa-print" /> Ticket regalo
             </div>
         </xpath>
 
