@@ -57,16 +57,16 @@ class NacexRequest():
             "tip_cob": carrier.nacex_tipo_cobro, # Código de Cobro Nacex
             "bul": bultos, # Número de bultos (Ej. Para 5 bultos, 005)
             "kil": shipping_weight_in_kg, # Peso en Kilos
-            "nom_rec": partner_wharehouse.name, # Nombre de recogida
-            "dir_rec": partner_wharehouse.street, # Dirección de recogida
+            "nom_rec": partner_wharehouse.name[:35], # Nombre de recogida
+            "dir_rec": partner_wharehouse.street[:60], # Dirección de recogida
             "cp_rec": partner_wharehouse.zip, # Código postal recogida (Ej. 08902)
-            "pob_rec": partner_wharehouse.city, # Población de recogida
+            "pob_rec": partner_wharehouse.city[:30], # Población de recogida
             "pais_rec": partner_wharehouse.country_id.code, # País de recogida
             "nom_ent": picking.partner_id.name[:50], # Nombre de entrega
             "dir_ent": picking.partner_id.street[:50], # Dirección de entrega
             "pais_ent": picking.partner_id.country_id.code, # País de entrega
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
-            "pob_ent": picking.partner_id.city, # Población de entrega
+            "pob_ent": picking.partner_id.city[:40], # Población de entrega
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
             "ref_cli" : picking.sale_id.client_order_ref if picking.sale_id else '',
         }
@@ -85,7 +85,7 @@ class NacexRequest():
             params.update({'shop_codigo': picking.sale_id.x_droppoint})
         
         if partner_wharehouse.phone:
-            params.update({"tel_rec": partner_wharehouse.phone[:19]}) # Teléfono de recogida
+            params.update({"tel_rec": partner_wharehouse.phone[:15]}) # Teléfono de recogida
         
         if picking.partner_id.phone:
             params.update({"tel_ent": picking.partner_id.phone[:19]}) # Teléfono de entrega
