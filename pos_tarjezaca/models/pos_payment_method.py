@@ -31,6 +31,7 @@ class PosPaymentMethod(models.Model):
                     else:                        
                         data = { 
                             "giftcard_id": mCard["giftcard_id"],
+                            "code": code,
                             "balance": float(mCard["balance"]) - float(amount)
                         }
                         if not zacatrus.updateGiftCard(data):
