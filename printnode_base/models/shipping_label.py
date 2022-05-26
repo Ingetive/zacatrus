@@ -37,6 +37,16 @@ class ShippingLabel(models.Model):
         comodel_name='shipping.label.document',
         inverse_name='shipping_id',
         string='Shipping Label(s)',
+        domain=[('is_return_label', '=', False)],
+        readonly=True,
+        copy=False,
+    )
+
+    return_label_ids = fields.One2many(
+        comodel_name='shipping.label.document',
+        inverse_name='shipping_id',
+        string='Return Shipping Label(s)',
+        domain=[('is_return_label', '=', True)],
         readonly=True,
         copy=False,
     )
@@ -72,16 +82,17 @@ class ShippingLabel(models.Model):
             update_attachment_list(label)
             return attachment_list
 
-        for label in self.label_ids:
+        for label in self.label_ids + self.return_label_ids:
             update_attachment_list(label)
+
         return attachment_list
 
     def print_via_printnode(self):
         user = self.env.user
         printer = user.get_shipping_label_printer()
 
-        for ship_lab in self:
-            attachment_list = ship_lab._get_attachment_list()
+        for shipping_label in self:
+            attachment_list = shipping_label._get_attachment_list()
             if not attachment_list:
                 continue
             for ascii_data, params in attachment_list:

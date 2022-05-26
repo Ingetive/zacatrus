@@ -15,12 +15,12 @@ class PrintnodeReportAbstractWizard(models.AbstractModel):
     )
 
     number_copy_selectable = fields.Boolean(
-        default=lambda self: self.get_number_copy_selectable(),
+        default=lambda self: self.default_number_copy_selectable(),
     )
 
     printer_id = fields.Many2one(
         comodel_name='printnode.printer',
-        default=lambda self: self.env.user.printnode_printer.id,
+        default=lambda self: self._default_printer_id(),
     )
 
     printer_bin = fields.Many2one(
@@ -34,6 +34,17 @@ class PrintnodeReportAbstractWizard(models.AbstractModel):
         related='printer_id.status',
     )
 
+    def _default_printer_id(self):
+        """
+        Return default printer to use in wizard
+        """
+        workstation_printer_id = self.env.user._get_workstation_device(
+            'printnode_workstation_printer_id')
+
+        # Workstation printer or user default printer
+        return workstation_printer_id or self.env.user.printnode_printer or \
+            self.env.company.printnode_printer
+
     @api.onchange('printer_id')
     def _onchange_printer(self):
         """
@@ -42,7 +53,7 @@ class PrintnodeReportAbstractWizard(models.AbstractModel):
         """
         self.printer_bin = self.printer_id.default_printer_bin.id
 
-    def get_number_copy_selectable(self):
+    def default_number_copy_selectable(self):
         # return Boolean
         return False
 
@@ -100,7 +111,21 @@ class PrintnodeReportAbstractWizard(models.AbstractModel):
             params=params
         )
 
-        return {'type': 'ir.actions.act_window_close'}
+        title = _('Document was sent to printer')
+        message = _('Document "{}" was sent to printer {}').format(
+            attachment.name,
+            self.printer_id.name)
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     def _print_report(self):
         report = self.get_report()
@@ -110,21 +135,32 @@ class PrintnodeReportAbstractWizard(models.AbstractModel):
         for i in range(self.number_copy - 1):
             docids += self.get_docids()
 
-        # if no printer than download PDF
+        # If no printer than download PDF
         if not self.printer_id:
-            return report.report_action(
-                docids=docids
-            )
+            return report.with_context(download=True).report_action(docids=docids)
 
         options = {}
         if self.printer_bin:
             options['bin'] = self.printer_bin.name
 
-        # if printer than send to printnode
+        # If printer than send to printnode
         self.printer_id.printnode_print(
             report,
             docids,
             options=options,
         )
 
-        return {'type': 'ir.actions.act_window_close'}
+        title = _('Report was sent to printer')
+        message = _('Document "{}" was sent to printer {}').format(
+            report.name, self.printer_id.name)
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            },
+        }

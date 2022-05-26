@@ -6,7 +6,7 @@ from odoo import models
 
 class PurchaseOrder(models.Model):
     _name = "purchase.order"
-    _inherit = ['purchase.order', 'printnode.scenario.mixin']
+    _inherit = ['purchase.order', 'printnode.mixin', 'printnode.scenario.mixin']
 
     def button_approve(self):
         res = super(PurchaseOrder, self).button_approve()

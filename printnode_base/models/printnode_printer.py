@@ -120,14 +120,14 @@ class PrintNodePrinter(models.Model):
                 rec.computer_id.status in ['connected']
 
     def _post_printnode_job(self, uri, data):
-        """ Send job into PrintNode ()
+        """ Send job into PrintNode. Return new job ID
         """
         auth = requests.auth.HTTPBasicAuth(
             self.account_id.api_key,
             self.account_id.password or ''
         )
 
-        ids = False
+        job_id = False
 
         function_name = uri.replace('/', '_')
         post_url = '{}/{}'.format(self.account_id.endpoint, uri)
@@ -143,7 +143,7 @@ class PrintNodePrinter(models.Model):
             job_id = resp.json()
             self.account_id.log_debug(job_id, 'printnode_post_response_%s' % function_name)
             self.sudo().write({'printjob_ids': [(0, 0, {
-                'printnode_id': job_id,
+                'printnode_id': str(job_id),
                 'description': data['title'],
             })]})
         else:
@@ -157,7 +157,7 @@ class PrintNodePrinter(models.Model):
 
             raise UserError(_('Cannot send printjob: {}').format(message))
 
-        return ids
+        return job_id
 
     def _format_title(self, objects, copies):
         if len(objects) == 1:
@@ -187,7 +187,19 @@ class PrintNodePrinter(models.Model):
             'qty': copies,
             'options': options,
         }
-        return self._post_printnode_job('printjobs', data)
+        res = self._post_printnode_job('printjobs', data)
+
+        # If model has printnode_printed flag and this flag is not inherited from other model
+        # (through _inherits) mark records as printed
+        if (
+            'printnode_printed' in objects._fields
+            and not objects._fields['printnode_printed'].inherited
+        ):
+            objects.write({
+                'printnode_printed': True,
+            })
+
+        return res
 
     def printnode_check_report(self, report_id, raise_exception=True):
         """

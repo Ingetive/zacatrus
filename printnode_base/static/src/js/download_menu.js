@@ -82,7 +82,7 @@ odoo.define('printnode.download_menu', function (require) {
     ActionMenus.components.DownloadDDMenu = DownloadDDMenu;
 
     const ControlPanel = require("web.ControlPanel");
-    ControlPanel.components.ActionMenus =  PatchableActionMenus;
+    ControlPanel.components.ActionMenus = PatchableActionMenus;
 
     return {
         DownloadDDMenuItem: DownloadDDMenu,

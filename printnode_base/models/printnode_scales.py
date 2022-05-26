@@ -29,7 +29,7 @@ class PrintNodePrinter(models.Model):
         readonly=True,
     )
 
-    device_name = fields.Char(
+    name = fields.Char(
         'Device Name',
         size=64,
         required=True,
@@ -62,7 +62,7 @@ class PrintNodePrinter(models.Model):
     _sql_constraints = [
         (
             'printnode_id',
-            'unique(printnode_id)',
+            'unique(computer_id, printnode_id)',
             'Scales ID should be unique.'
         ),
     ]
@@ -71,7 +71,7 @@ class PrintNodePrinter(models.Model):
         result = []
         for scales in self:
             name = '{}-{} ({})'.format(
-                scales.device_name,
+                scales.name,
                 scales.device_num,
                 scales.computer_id.name,
             )
@@ -80,16 +80,16 @@ class PrintNodePrinter(models.Model):
 
     @api.depends('status', 'computer_id.status')
     def _compute_scales_status(self):
-        """ check computer and printer status
+        """
+        Check computer and printer status
         """
         for rec in self:
-            rec.online = rec.status in ['online'] and \
-                rec.computer_id.status in ['connected']
+            rec.online = rec.status in ['online'] and rec.computer_id.status in ['connected']
 
     def get_scales_measure_kg(self, show_error_on_zero=True):
         scales_results = '/computer/{}/scale/{}/{}'.format(
             self.computer_id.printnode_id,
-            self.device_name,
+            self.name,
             self.device_num,
         )
         result = self.account_id._send_printnode_request(scales_results)
@@ -97,7 +97,7 @@ class PrintNodePrinter(models.Model):
         if not result:
             raise UserError(
                 _('Scales are not online. Please, check that they are available (%s).')
-                % self.device_name
+                % self.name
             )
 
         mass_micrograms = result.get('mass')[0]
@@ -105,13 +105,13 @@ class PrintNodePrinter(models.Model):
         if show_error_on_zero and mass_micrograms == 0.0:
             raise UserError(
                 _('Scales "(%s)" showing ZERO weight. Check that you\'ve placed package properly.')
-                % self.device_name
+                % self.name
             )
 
         if not mass_micrograms or mass_micrograms < 0.0:
             raise UserError(
                 _('Scales "(%s)" showing negative weight. Please, calibrate them.')
-                % self.device_name
+                % self.name
             )
 
         mass_kg = mass_micrograms / 1000000000

@@ -20,6 +20,15 @@
             <field name="report_id" eval="ref('stock.action_report_delivery')"/>
         </record>
 
+        <record id="transfer_confirm_outgoing_scenario" model="printnode.scenario">
+            <field name="action" eval="ref('printnode_base.print_document_on_transfer')" />
+            <field name="active">False</field>
+            <field name="description">Print Delivery Slip for all outgoing transfers (after validation)</field>
+            <field name="domain">[["picking_type_code","=","outgoing"]]</field>
+            <field name="model_id" eval="ref('stock.model_stock_picking')"/>
+            <field name="report_id" eval="ref('stock.action_report_delivery')"/>
+        </record>
+
         <record id="transfer_confirm_with_backorder_scenario" model="printnode.scenario">
             <field name="action" eval="ref('printnode_base.print_document_on_backorder')" />
             <field name="active">False</field>
@@ -96,6 +105,23 @@
             <field name="description">Print Customer Invoice after Validation</field>
             <field name="domain">[["move_type","=","out_invoice"]]</field>
             <field name="report_id" eval="ref('account.account_invoices')"/>
+        </record>
+
+        <record id="print_delivery_slip_on_picking_status_becomes_ready" model="printnode.scenario">
+            <field name="action" eval="ref('printnode_base.print_document_on_picking_status_change')" />
+            <field name="active">False</field>
+            <field name="description">Print Delivery Slip on Picking Status becomes Ready</field>
+            <field name="domain">[["state","=","assigned"], ["picking_type_code","=","outgoing"]]</field>
+            <field name="model_id" eval="ref('stock.model_stock_picking')"/>
+            <field name="report_id" eval="ref('stock.action_report_delivery')"/>
+        </record>
+
+        <record id="print_package_on_put_in_pack_scenario" model="printnode.scenario">
+            <field name="action" eval="ref('printnode_base.print_package_on_put_in_pack')" />
+            <field name="active">False</field>
+            <field name="description">Print Package on Put in Pack for Internal Pickings</field>
+            <field name="domain">[["picking_type_code","=","internal"]]</field>
+            <field name="report_id" eval="ref('stock.action_report_quant_package_barcode_small')"/>
         </record>
 
     </data>

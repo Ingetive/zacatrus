@@ -1,6 +1,8 @@
 # Copyright 2021 VentorTech OU
 # See LICENSE file for full copyright and licensing details.
 
+from . import printnode_mixin
+from . import printnode_release
 from . import printnode_account
 from . import printnode_printer
 from . import printnode_computer
@@ -34,3 +36,5 @@ from . import delivery_carrier
 from . import product_product
 from . import product_template
 from . import ir_http
+from . import ir_attachment
+from . import procurement_group

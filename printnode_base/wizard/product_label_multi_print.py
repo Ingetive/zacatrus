@@ -14,6 +14,7 @@ class ProductLabelMultiPrint(models.TransientModel):
     report_id = fields.Many2one(
         comodel_name='ir.actions.report',
         domain=REPORT_DOMAIN,
+        default=lambda self: self._default_report(),
     )
     product_line_ids = fields.One2many(
         comodel_name='product.label.multi.print.line',
@@ -21,46 +22,41 @@ class ProductLabelMultiPrint(models.TransientModel):
         string='Products',
     )
 
-    def _get_printers_from_preferences(self):
-        from_user = self.env.user.printnode_printer
-        from_company = self.env.company.printnode_printer
-        return from_user, from_company
-
-    def _get_default_report(self):
-        return self.env.company.def_wizard_report_id.ids
+    def _default_report(self):
+        return self.env.company.def_wizard_report_id
 
     def _get_available_reports(self):
-        return self.env.company.wizard_report_ids.ids
+        return self.env.company.wizard_report_ids
 
-    def _get_allowed_printers(self):
-        from_user_rules = self.env['printnode.rule'].search([
+    def _default_printer_id(self):
+        """
+        Return default printer for wizard
+        """
+        # There can be default report from settings (this method called before the deafult value
+        # to report_id will be applied)
+        report_id = self.report_id or self.env.company.def_wizard_report_id
+
+        # User rules
+        user_rules_printer_id = self.env['printnode.rule'].search([
             ('user_id', '=', self.env.uid),
-            ('report_id.model', '=', 'product.product'),
-        ]).mapped('printer_id')
-        from_user, from_company = self._get_printers_from_preferences()
-        return list(set(sum((from_user_rules.ids, from_user.ids, from_company.ids), [])))
+            ('report_id', '=', report_id.id),  # There will be no rules for report_id = False
+        ], limit=1).printer_id
+
+        # Workstation printer
+        workstation_printer_id = self.env.user._get_workstation_device(
+            'printnode_workstation_printer_id')
+
+        # Priority:
+        # 1. Printer from User Rules (if exists)
+        # 2. Default Workstation Printer (User preferences)
+        # 3. Default printer for current user (User Preferences)
+        # 4. Default printer for current company (Settings)
+        return user_rules_printer_id or workstation_printer_id or \
+            self.env.user.printnode_printer or self.env.company.printnode_printer
 
     @api.onchange('report_id')
     def _change_wizard_printer(self):
-        from_user_rules = self.env['printnode.rule'].search([
-            ('user_id', '=', self.env.uid),
-            ('report_id', '=', self.report_id.id),
-        ], limit=1)
-        from_user, from_company = self._get_printers_from_preferences()
-        self.printer_id = from_user_rules.printer_id or from_user or from_company
-
-    @api.model
-    def default_get(self, fields_list):
-        default_vals = super(ProductLabelMultiPrint, self).default_get(fields_list)
-
-        available_printers = self._get_allowed_printers()
-        if len(available_printers) == 1:
-            default_vals['printer_id'] = available_printers.pop()
-
-        report_id_list = self._get_default_report() or self._get_available_reports()
-        if report_id_list:
-            default_vals['report_id'] = report_id_list[0]
-        return default_vals
+        self.printer_id = self._default_printer_id()
 
     @api.model
     def fields_get(self, allfields=None, attributes=None):
@@ -68,7 +64,7 @@ class ProductLabelMultiPrint(models.TransientModel):
 
         available_report_ids = self._get_available_reports()
         if available_report_ids:
-            res['report_id']['domain'] = [('id', 'in', available_report_ids)]
+            res['report_id']['domain'] = [('id', 'in', available_report_ids.ids)]
         return res
 
     def get_action(self):

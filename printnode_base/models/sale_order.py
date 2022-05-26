@@ -6,7 +6,7 @@ from odoo import models
 
 class SaleOrder(models.Model):
     _name = "sale.order"
-    _inherit = ['sale.order', 'printnode.scenario.mixin']
+    _inherit = ['sale.order', 'printnode.mixin', 'printnode.scenario.mixin']
 
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
@@ -34,9 +34,10 @@ class SaleOrder(models.Model):
         picking_ids = self.picking_ids.filtered(
             lambda p: p.picking_type_id == picking_type_to_print)
 
-        printer_id.printnode_print(
-            report_id,
-            picking_ids,
-            copies=number_of_copies,
-            options=print_options,
-        )
+        if picking_ids:
+            printer_id.printnode_print(
+                report_id,
+                picking_ids,
+                copies=number_of_copies,
+                options=print_options,
+            )

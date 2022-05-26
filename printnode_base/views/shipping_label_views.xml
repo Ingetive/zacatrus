@@ -20,6 +20,12 @@
                                     <button name="print_label_with_package_via_printnode" type="object" icon="fa-print" string="Send to Printer" aria-label="Send to Printer" title="Send shipping labels to Printer via Direct Print" />
                                 </tree>
                             </field>
+                            <field name="return_label_ids">
+                                <tree create="false" edit="false" delete="false">
+                                    <field name="document_id" />
+                                    <button name="print_label_with_package_via_printnode" type="object" icon="fa-print" string="Send to Printer" aria-label="Send to Printer" title="Send shipping labels to Printer via Direct Print" />
+                                </tree>
+                            </field>
                             <field name="label_status" />
                         </group>
                     </sheet>
@@ -38,6 +44,7 @@
                     <field name="picking_id" />
                     <field name="tracking_numbers" />
                     <field name="label_ids" />
+                    <field name="return_label_ids" />
                     <field name="label_status" />
                     <button name="print_via_printnode" type="object" icon="fa-print" string="Send to Printer" aria-label="Send to Printer" title="Send shipping labels to Printer via Direct Print" />
                 </tree>

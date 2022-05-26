@@ -2,11 +2,7 @@
 # See LICENSE file for full copyright and licensing details.
 
 from odoo import api, exceptions, fields, models, _
-
-REPORT_DOMAIN = [
-    ('model', '=', 'product.product'),
-    ('report_type', 'in', ['qweb-pdf', 'qweb-text', 'py3o']),
-]
+from ..models.res_company import REPORT_DOMAIN
 
 
 class ResConfigSettings(models.TransientModel):
@@ -138,9 +134,11 @@ class ResConfigSettings(models.TransientModel):
     def _onchange_available_wizard_report(self):
         available_report_ids = self.wizard_report_ids.ids
 
-        if not available_report_ids:
-            self.def_wizard_report_id = False
-        elif self.def_wizard_report_id and self.def_wizard_report_id.id not in available_report_ids:
+        if (
+            available_report_ids and  # Empty list means that all reports allowed
+            self.def_wizard_report_id and
+            self.def_wizard_report_id.id not in available_report_ids
+        ):
             self.def_wizard_report_id = available_report_ids[0]
 
     @api.onchange('print_package_with_label', 'print_sl_from_attachment')
@@ -149,6 +147,25 @@ class ResConfigSettings(models.TransientModel):
             self.print_sl_from_attachment = False
         if self.print_sl_from_attachment:
             self.print_package_with_label = False
+
+    @api.onchange('group_stock_tracking_lot')
+    def _onchange_group_stock_tracking_lot(self):
+        """
+        Disable the "Print Package just after Shipping Label" setting
+        if the user disables the "Packages" setting
+        """
+        if not self.group_stock_tracking_lot and self.print_package_with_label:
+            self.print_package_with_label = False
+
+            return {
+                'warning': {
+                    'title': _("Warning!"),
+                    'message': _(
+                        'Disabling this option will also automatically disable option '
+                        '"Print Package just after Shipping Label" in Direct Print settings'
+                    ),
+                }
+            }
 
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
@@ -172,9 +189,10 @@ class ResConfigSettings(models.TransientModel):
         if self.print_package_with_label and not self.group_stock_tracking_lot:
             self.group_stock_tracking_lot = True
 
-        self.env['printnode.account'].update_main_account(
-            self.dpc_api_key,
-            self.dpc_is_allowed_to_collect_data)
+        if self.dpc_api_key:
+            self.env['printnode.account'].update_main_account(
+                self.dpc_api_key,
+                self.dpc_is_allowed_to_collect_data)
 
         super(ResConfigSettings, self).set_values()
 
@@ -189,10 +207,10 @@ class ResConfigSettings(models.TransientModel):
         else:
             raise exceptions.UserError(_('Please, add an account before activation'))
 
-    def import_printers(self):
+    def import_devices(self):
         accounts = self.env['printnode.account'].search([]).sorted(key=lambda r: r.id)
 
         if accounts:
-            return accounts[0].import_printers()
+            return accounts[0].import_devices()
         else:
             raise exceptions.UserError(_('Please, add an account before importing printers'))

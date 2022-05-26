@@ -17,3 +17,15 @@ class Base(models.AbstractModel):
             'target': 'new',
             'context': self.env.context,
         }
+
+    def run_printnode_print_reports_universal_wizard(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Print Reports Wizard'),
+            'res_model': 'printnode.print.reports.universal.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref(
+                'printnode_base.printnode_print_reports_universal_wizard_form').id,
+            'target': 'new',
+            'context': self.env.context,
+        }

@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
                 <form string="Account" create="true" edit="false" delete="false">
                     <header>
-                        <button name="import_printers" string=" Import Printers" type="object" class="oe_highlight" icon="fa-cloud-download" />
+                        <button name="import_devices" string=" Import Printers &amp; Scales" type="object" class="oe_highlight" icon="fa-cloud-download" />
                         <button name="unlink" string=" Forget Account" type="object" icon="fa-trash-o" />
                     </header>
                     <group>
@@ -40,7 +40,7 @@
                     <field name="printed" readonly="1" />
                     <field name="limits" readonly="1" />
                     <field name="status" />
-                    <button name="import_printers" title="Import Printers" type="object" icon="fa-cloud-download" />
+                    <button name="import_devices" title="Import Printers &amp; Scales" type="object" icon="fa-cloud-download" />
                     <button name="unlink" title="Forget Account" type="object" icon="fa-trash-o" />
                 </tree>
             </field>

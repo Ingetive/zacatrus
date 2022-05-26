@@ -28,5 +28,10 @@ class ShippingLabelDocument(models.Model):
         ondelete='set null',
     )
 
+    is_return_label = fields.Boolean(
+        string='Is Return Shipping label?',
+        default=False,
+    )
+
     def print_label_with_package_via_printnode(self):
         self.shipping_id.with_context(label=self).print_via_printnode()
