@@ -25,6 +25,7 @@
             <field name="res_model">printnode.rule</field>
             <field name="view_mode">tree</field>
             <field name="view_id" ref="printnode_rules_tree" />
+            <field name="context">{"active_test": False}</field>
         </record>
 
         <menuitem id="menu_printnode_rules"

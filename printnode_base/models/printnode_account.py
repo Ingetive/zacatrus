@@ -1,12 +1,17 @@
 # Copyright 2021 VentorTech OU
 # See LICENSE file for full copyright and licensing details.
 
-import json
 import re
 import requests
 import psycopg2
 
 from odoo import api, exceptions, fields, models, registry, SUPERUSER_ID, _
+
+# Copied from request library to provide compatibility with the library
+try:
+    from simplejson import JSONDecodeError
+except ImportError:
+    from json import JSONDecodeError
 
 
 class PrintNodeAccount(models.Model):
@@ -92,7 +97,7 @@ class PrintNodeAccount(models.Model):
     def create(self, vals):
         account = super(PrintNodeAccount, self).create(vals)
 
-        account.import_printers()
+        account.import_devices()
 
         return account
 
@@ -139,7 +144,7 @@ class PrintNodeAccount(models.Model):
             # But can try to activate through PrintNode
             if self._is_correct_dpc_api_key():
                 self.update_limits_for_account()
-                self.import_printers()
+                self.import_devices()
 
                 return
 
@@ -155,7 +160,7 @@ class PrintNodeAccount(models.Model):
         if response.get('status_code', 200) == 200:
             self.is_dpc_account = True
             self.update_limits_for_account()
-            self.import_printers()
+            self.import_devices()
 
             return
 
@@ -166,7 +171,7 @@ class PrintNodeAccount(models.Model):
 
             if self._is_correct_dpc_api_key():
                 self.update_limits_for_account()
-                self.import_printers()
+                self.import_devices()
 
                 return
 
@@ -199,10 +204,12 @@ class PrintNodeAccount(models.Model):
                 })
         return limits
 
-    def import_printers(self):
+    def import_devices(self):
         """ Re-import list of printers into OpenERP.
         """
         computers = self._send_printnode_request('computers') or []
+
+        self._deactivate_devices()
 
         for computer in computers:
             odoo_computer = self._get_node('computer', computer, self.id)
@@ -222,28 +229,27 @@ class PrintNodeAccount(models.Model):
                         )
                         if not existing_bin:
                             self.env['printnode.printer.bin'].create(bin_values)
+
             # Downloading scales
-            self.env['printnode.scales'].search([]).write(
-                {'status': 'offline'},
-            )
             get_scales_url = 'computer/{}/scales'.format(computer['id'])
             for scales in self._send_printnode_request(get_scales_url):
-                self._create_or_update_scales(scales, odoo_computer)  # NOQA
+                self._create_or_update_scales(scales, odoo_computer)
 
     def _create_or_update_scales(self, scales, odoo_computer):
         scales_env = self.env['printnode.scales']
         existing_scales = scales_env.with_context(active_test=False).search([
             ('printnode_id', '=', scales['productId']),
+            ('computer_id', '=', odoo_computer.id)
         ], limit=1)
 
         if existing_scales:
             existing_scales.write({
-                'computer_id': odoo_computer.id,
+                'name': scales['deviceName'],
                 'status': 'online',
             })
         else:
             scales_vals = {
-                'device_name': scales['deviceName'],
+                'name': scales['deviceName'],
                 'device_num': scales['deviceNum'],
                 'printnode_id': scales['productId'],
                 'computer_id': odoo_computer.id,
@@ -309,21 +315,29 @@ class PrintNodeAccount(models.Model):
         Update an existing or create a new main account.
         The main account is the account with lowest ID.
         """
+        main_account = None
         accounts = self.env['printnode.account'].search([]).sorted(key=lambda r: r.id)
 
         if accounts:
-            account = accounts[0]
-            if account.api_key != api_key:
-                account.api_key = api_key
-                account.is_allowed_to_collect_data = is_allowed_to_collect_data
-        else:
-            account = self.env['printnode.account'].create({
-                'api_key': api_key,
-                'is_allowed_to_collect_data': is_allowed_to_collect_data,
-            })
-            account.activate_account()
+            main_account = accounts[0]
 
-        return account
+            if not api_key:
+                # Remove account
+                main_account.unlink()
+            else:
+                # Update account
+                if main_account.api_key != api_key:
+                    main_account.api_key = api_key
+                    main_account.is_allowed_to_collect_data = is_allowed_to_collect_data
+        else:
+            if api_key:
+                main_account = self.env['printnode.account'].create({
+                    'api_key': api_key,
+                    'is_allowed_to_collect_data': is_allowed_to_collect_data,
+                })
+                main_account.activate_account()
+
+        return main_account
 
     @api.depends('endpoint', 'api_key', 'password')
     def _compute_account_status(self):
@@ -353,6 +367,7 @@ class PrintNodeAccount(models.Model):
             node = node.create(params)
         else:
             node.write({
+                'name': node_id['name'],
                 'status': node_id['state'],
             })
 
@@ -397,7 +412,11 @@ class PrintNodeAccount(models.Model):
             request_url = '{}/{}'.format(self.endpoint, uri)
             self.log_debug(request_url, 'printnode_get_request_%s' % function_name)
             resp = requests.get(request_url, auth=auth)
-            resp.raise_for_status()
+
+            # 403 is a HTTP status code which can be returned for child accounts in some cases
+            # like checking printing limits on PrintNode
+            if resp.status_code not in (200, 403):
+                resp.raise_for_status()
 
             self.status = 'OK'
 
@@ -416,7 +435,7 @@ class PrintNodeAccount(models.Model):
             # Deactivate printers only from current account
             self._deactivate_printers()
 
-            self.status = resp.json().get('message') or e
+            self.status = e
 
         return None
 
@@ -447,8 +466,8 @@ class PrintNodeAccount(models.Model):
         except requests.exceptions.RequestException as e:
             self._deactivate_printers()
 
-            self.status = resp.json().get('message') or e
-        except json.decoder.JSONDecodeError as e:
+            self.status = e
+        except JSONDecodeError as e:
             self._deactivate_printers()
 
             self.status = e
@@ -489,14 +508,20 @@ class PrintNodeAccount(models.Model):
         limits = 0
 
         stats = self._send_printnode_request('billing/statistics')
-        printed = stats and stats['current'].get('prints', 0)
+
+        # Unavailable for child PrintNode accounts
+        if stats and 'current' in stats:
+            printed = stats['current'].get('prints', 0)
 
         plan = self._send_printnode_request('billing/plan')
-        raw_limits = plan and plan['current'].get('printCurve')
-        if raw_limits:
-            # Parse with regex value like '("{0,5000}","{0,0}",0.0018)
-            m = re.match(r'\(\"{(?P<_>\d+),(?P<limits>\d+)}\",.*\)', raw_limits)
-            limits = (m and m.group('limits')) or 0
+
+        # Unavailable for child PrintNode accounts
+        if plan and 'current' in plan:
+            raw_limits = plan['current'].get('printCurve')
+            if raw_limits:
+                # Parse with regex value like '("{0,5000}","{0,0}",0.0018)
+                m = re.match(r'\(\"{(?P<_>\d+),(?P<limits>\d+)}\",.*\)', raw_limits)
+                limits = (m and m.group('limits')) or 0
 
         return printed, limits
 
@@ -527,3 +552,11 @@ class PrintNodeAccount(models.Model):
         domain = [['computer_id', 'in', self.computer_ids.ids]]
         self.env['printnode.printer'].with_context(active_test=False)\
             .search(domain).write({'status': 'offline'})
+
+    def _deactivate_devices(self):
+        """
+        Deactivate scales
+        """
+        self.env['printnode.scales'].search([]).write(
+            {'status': 'offline'},
+        )

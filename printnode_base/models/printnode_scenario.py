@@ -22,6 +22,7 @@ class PrintNodeScenario(models.Model):
         'printnode.scenario.action',
         string='Print Scenario Action',
         required=True,
+        ondelete='cascade',
         help="""Choose a print action to listen""",
     )
 
@@ -131,11 +132,13 @@ class PrintNodeScenario(models.Model):
         """
         user = self.env.user
         if (
-            not user.has_group(SECURITY_GROUP)
-            or not self.env.company.printnode_enabled
+            not self.env.company.printnode_enabled
+            or not user.has_group(SECURITY_GROUP)
             or not user.printnode_enabled
         ):
-            return False
+            # It is possible to execute scenarios from scheduled actions
+            if not self.env.context.get('from_cron', False):
+                return False
 
         scenarios = self.search([
             ('active', '=', True),

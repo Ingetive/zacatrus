@@ -1,7 +1,24 @@
 # Copyright 2021 VentorTech OU
 # See LICENSE file for full copyright and licensing details.
 
-from odoo import fields, models, api
+from odoo import fields, models, api, exceptions, _
+from ..wizard.printnode_print_reports_universal_wizard import REPORT_DOMAIN
+
+
+WIZARD_TYPES = [
+    ('attachments', _('Print Attachments Wizard')),
+    ('reports', _('Print Reports Wizard')),
+]
+
+ACTION_NAMES = {
+    'attachments': _('Print Attachments'),
+    'reports': _('Print Reports'),
+}
+
+ACTION_TYPES = {
+    'attachments': 'action = record.run_printnode_universal_wizard()',
+    'reports': 'action = record.run_printnode_print_reports_universal_wizard()',
+}
 
 
 class PrintnodeMapActionServer(models.Model):
@@ -15,7 +32,6 @@ class PrintnodeMapActionServer(models.Model):
     name = fields.Char(
         string='Action Name',
         required=True,
-        default='Print Attachments',
     )
     model_id = fields.Many2one(
         comodel_name='ir.model',
@@ -34,28 +50,66 @@ class PrintnodeMapActionServer(models.Model):
         string='Action',
         ondelete='cascade',
     )
+    print_wizard_type = fields.Selection(
+        selection=WIZARD_TYPES,
+        string='Print Wizard Type',
+        required=True,
+        default='attachments',
+    )
 
-    _sql_constraints = [
-        (
-            'model_id_uniq',
-            'unique (model_id)',
-            'An attachment wizard exists for the current model!',
-        ),
-    ]
+    @api.constrains('model_id', 'print_wizard_type')
+    def _check_uniqueness_of_models_of_wizards(self):
+        actions = self.env['printnode.map.action.server'].with_context(active_test=False).search([])
+        pairs = [(a.model_id.model, a.print_wizard_type) for a in actions]
+
+        for record in self:
+            pair = (record.model_id.model, record.print_wizard_type)
+
+            if pairs.count(pair) > 1:
+                raise exceptions.ValidationError(
+                    _("This type of wizard already exists for the '{}' model!").format(
+                        record.model_id.name
+                    )
+                )
+
+    @api.onchange('print_wizard_type')
+    def onchange_name(self):
+        self.name = ACTION_NAMES.get(self.print_wizard_type)
+
+    @api.onchange('print_wizard_type', 'model_id')
+    def onchange_model_name(self):
+        if self.print_wizard_type == 'reports' and self.model_id:
+            model_reports = self.env['ir.actions.report'].search([
+                *REPORT_DOMAIN,
+                ('model', '=', self.model_id.model),
+            ])
+            if not model_reports:
+                raise exceptions.ValidationError(
+                    _("No reports found for this model!")
+                )
 
     @api.model
     def create(self, vals):
-        res = super(PrintnodeMapActionServer, self).create(vals)
+        rec = super(PrintnodeMapActionServer, self).create(vals)
+
         action_server = self.env['ir.actions.server'].sudo().create({
             'state': 'code',
-            'name': res.name,
+            'name': rec.name,
             'binding_type': 'action',
-            'model_id': res.model_id.id,
-            'binding_model_id': res.model_id.id,
-            'code': 'action = record.run_printnode_universal_wizard()',
+            'model_id': rec.model_id.id,
+            'binding_model_id': rec.model_id.id,
+            'code': self._get_action_code(rec.print_wizard_type),
         })
-        res.write({'action_server_id': action_server.id})
-        return res
+
+        # Attach ir.model.data record to new action
+        self.env['ir.model.data']._update_xmlids([{
+            'xml_id': f'printnode_base.printnode_ir_actions_server_{action_server.id}',
+            'record': action_server
+        }])
+
+        rec.write({'action_server_id': action_server.id})
+
+        return rec
 
     def write(self, vals):
         res = super(PrintnodeMapActionServer, self).write(vals)
@@ -68,6 +122,13 @@ class PrintnodeMapActionServer(models.Model):
 
     def unlink(self):
         action_servers = self.mapped('action_server_id')
-        res = super(PrintnodeMapActionServer, self).unlink()
+
         action_servers.sudo().unlink()
+
+        res = super(PrintnodeMapActionServer, self).unlink()
+
         return res
+
+    @staticmethod
+    def _get_action_code(wizard_type):
+        return ACTION_TYPES[wizard_type]

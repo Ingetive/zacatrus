@@ -50,6 +50,7 @@
             <field name="res_model">printnode.printer</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="printnode_printer_tree" />
+            <field name="context">{"active_test": False}</field>
         </record>
 
         <menuitem id="menu_printnode_printers"
@@ -60,7 +61,7 @@
         />
 
         <!-- Print Report Policy - Printer Settings -->
-         <record id="printnode_policy_printer_tree" model="ir.ui.view">
+        <record id="printnode_policy_printer_tree" model="ir.ui.view">
             <field name="name">printnode.policy.printer.tree</field>
             <field name="model">printnode.printer</field>
             <field name="type">tree</field>
@@ -83,6 +84,7 @@
             <field name="res_model">printnode.printer</field>
             <field name="view_mode">tree</field>
             <field name="view_id" ref="printnode_policy_printer_tree" />
+            <field name="context">{"active_test": False}</field>
         </record>
 
         <menuitem id="menu_printnode_policy_printers"

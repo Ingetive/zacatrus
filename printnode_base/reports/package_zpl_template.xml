@@ -2,8 +2,8 @@
 <odoo>
 
     <template id="report_package_slip_zpl">
-^XA
 <t t-foreach="docs" t-as="o">
+^XA
 
 <t t-if="o.quant_ids">
 

@@ -6,6 +6,7 @@ from odoo import fields, models
 REPORT_DOMAIN = [
     ('model', '=', 'product.product'),
     ('report_type', 'in', ['qweb-pdf', 'qweb-text', 'py3o']),
+    ('report_name', '!=', 'product.report_pricelist'),
 ]
 
 
@@ -13,7 +14,7 @@ class Company(models.Model):
     _inherit = 'res.company'
 
     printnode_enabled = fields.Boolean(
-        string='Enable Direct Printing (for current company)',
+        string='Enable Direct Printing',
         default=False,
     )
 
@@ -38,7 +39,7 @@ class Company(models.Model):
     )
 
     print_sl_from_attachment = fields.Boolean(
-        string='(Experimental) Use Attachments Printing for Shipping Label(s)',
+        string='Use Attachments Printing for Shipping Label(s)',
         default=False,
     )
 
@@ -69,7 +70,7 @@ class Company(models.Model):
     )
 
     scales_enabled = fields.Boolean(
-        string='Enable Scales Integration (for current company)',
+        string='Enable Scales Integration',
         default=False,
     )
 

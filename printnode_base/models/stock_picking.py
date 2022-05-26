@@ -7,13 +7,36 @@ from odoo.exceptions import UserError
 
 class StockPicking(models.Model):
     _name = 'stock.picking'
-    _inherit = ['stock.picking', 'multi.print.mixin', 'printnode.scenario.mixin']
+    _inherit = ['stock.picking', 'multi.print.mixin', 'printnode.mixin', 'printnode.scenario.mixin']
 
     shipping_label_ids = fields.One2many(
         comodel_name='shipping.label',
         inverse_name='picking_id',
         string='Shipping Labels',
     )
+
+    def _compute_field_value(self, field):
+        """
+        Override to catch status updates
+        """
+        super()._compute_field_value(field)
+
+        # We cannot execute scenarios on new records (which have not yet been saved)
+        saved_records = self.filtered(lambda record: record.id)
+
+        if saved_records and field.name == 'state':
+            # with_company() used to print on correct printer when calling from scheduled actions
+            for record in saved_records:
+                record.with_company(record.company_id).print_scenarios(
+                    'print_document_on_picking_status_change')
+
+    def _put_in_pack(self, move_line_ids, create_package_level=True):
+        package = super(StockPicking, self)._put_in_pack(move_line_ids, create_package_level)
+
+        if package:
+            self.print_scenarios(action='print_package_on_put_in_pack', packages_to_print=package)
+
+        return package
 
     def button_validate(self):
         res = super(StockPicking, self).button_validate()
@@ -59,7 +82,8 @@ class StockPicking(models.Model):
         return label.print_via_printnode()
 
     def send_to_shipper(self):
-        """ Redefining a standard method
+        """
+        Redefining a standard method
         """
         user = self.env.user
 
@@ -108,10 +132,7 @@ class StockPicking(models.Model):
                 quantity = move.product_uom_qty
 
             product_lines.append(
-                (0, 0, {
-                    'product_id': move.product_id.id,
-                    'quantity': quantity},
-                 )
+                (0, 0, {'product_id': move.product_id.id, 'quantity': quantity})
             )
         return product_lines
 
@@ -173,11 +194,32 @@ class StockPicking(models.Model):
             label_attachments = [
                 (0, 0, {'document_id': attach.id}) for attach in message.attachment_ids
             ]
+
+        # Get return shipping labels
+        return_label_prefix = self.carrier_id.get_return_label_prefix()
+        return_label_messages = self.env['mail.message'].search([
+            ('model', '=', 'stock.picking'),
+            ('res_id', '=', self.id),
+            ('message_type', '=', 'notification'),
+            ('attachment_ids.description', 'like', '%s%%' % return_label_prefix),
+            ('create_date', '>=', message.create_date),
+        ])
+
+        return_label_attachments = []
+        if return_label_messages:
+            # All return labels are in the single message. There can be multiple message so we take
+            # only the closest one (looks like this is impossible on practice but anyway)
+            return_label_attachments = [
+                (0, 0, {'document_id': attach.id, 'is_return_label': True})
+                for attach in return_label_messages[0].attachment_ids
+            ]
+
         shipping_label_vals = {
             'carrier_id': self.carrier_id.id,
             'picking_id': self.id,
             'tracking_numbers': self.carrier_tracking_ref,
             'label_ids': label_attachments,
+            'return_label_ids': return_label_attachments,
             'label_status': 'active',
         }
         self.env['shipping.label'].create(shipping_label_vals)
@@ -334,6 +376,35 @@ class StockPicking(models.Model):
         printer_id.printnode_print(
             report_id,
             packages,
+            copies=number_of_copies,
+            options=print_options,
+        )
+
+    def _scenario_print_document_on_picking_status_change(
+        self, report_id, printer_id, number_of_copies=1, **kwargs
+    ):
+        print_options = kwargs.get('options', {})
+
+        printer_id.printnode_print(
+            report_id,
+            self,
+            copies=number_of_copies,
+            options=print_options,
+        )
+
+    def _scenario_print_package_on_put_in_pack(
+        self, report_id, printer_id, number_of_copies, packages_to_print, **kwargs
+    ):
+        """
+        Print new packages from stock.picking.
+
+        packages_to_print is a recordset of stock.quant.package to print
+        """
+        print_options = kwargs.get('options', {})
+
+        printer_id.printnode_print(
+            report_id,
+            packages_to_print,
             copies=number_of_copies,
             options=print_options,
         )

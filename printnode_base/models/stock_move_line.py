@@ -31,7 +31,8 @@ class StockMoveLine(models.Model):
         return res
 
     def _call_scenarios(self, mls):
-        if mls:
+        # These scenarios shouldn't be run from crons
+        if mls and not self.env.context.get('from_cron', False):
             self.print_scenarios(
                 action='print_single_lot_label_on_transfer',
                 ids_list=mls.mapped('picking_id.id'),

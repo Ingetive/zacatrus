@@ -93,5 +93,20 @@
             <field name="model_id" eval="ref('account.model_account_move')"/>
             <field name="reports_model_id" eval="ref('account.model_account_move')"/>
         </record>
+
+        <record id="print_document_on_picking_status_change" model="printnode.scenario.action">
+            <field name="name">Print Document on Picking Status Change</field>
+            <field name="code">print_document_on_picking_status_change</field>
+            <field name="model_id" eval="ref('stock.model_stock_picking')"/>
+            <field name="reports_model_id" eval="ref('stock.model_stock_picking')"/>
+        </record>
+
+        <record id="print_package_on_put_in_pack" model="printnode.scenario.action">
+            <field name="name">Print Package on Put in Pack</field>
+            <field name="code">print_package_on_put_in_pack</field>
+            <field name="model_id" eval="ref('stock.model_stock_picking')"/>
+            <field name="reports_model_id" eval="ref('stock.model_stock_quant_package')"/>
+        </record>
+
     </data>
 </odoo>

@@ -15,7 +15,7 @@
                         <field name="printnode_id" />
                         <field name="active" widget="boolean_toggle" />
                         <field name="online" widget="boolean_toggle" />
-                        <field name="device_name" />
+                        <field name="name" />
                         <field name="device_num" />
                         <field name="computer_id" />
                         <field name="account_id" />
@@ -30,7 +30,7 @@
             <field name="type">tree</field>
             <field name="arch" type="xml">
                 <tree string="Scales" create="false" edit="false" delete="false">
-                    <field name="device_name" />
+                    <field name="name" />
                     <field name="device_num" />
                     <field name="computer_id" />
                     <field name="account_id" />
@@ -46,6 +46,7 @@
             <field name="res_model">printnode.scales</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="printnode_scales_tree" />
+            <field name="context">{"active_test": False}</field>
         </record>
 
         <menuitem id="menu_printnode_scales"

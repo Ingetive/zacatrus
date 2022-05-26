@@ -1,7 +1,7 @@
 # Copyright 2021 VentorTech OU
 # See LICENSE file for full copyright and licensing details.
 
-from odoo import fields, models, api
+from odoo import api, fields, models, _
 
 
 class PrintnodeAttachUniversalWizard(models.TransientModel):
@@ -15,7 +15,7 @@ class PrintnodeAttachUniversalWizard(models.TransientModel):
     )
     printer_id = fields.Many2one(
         comodel_name='printnode.printer',
-        default=lambda self: self.env.user.printnode_printer.id,
+        default=lambda self: self._default_printer_id(),
         required=True,
     )
 
@@ -25,6 +25,21 @@ class PrintnodeAttachUniversalWizard(models.TransientModel):
         required=False,
         domain='[("printer_id", "=", printer_id)]',
     )
+
+    def _default_printer_id(self):
+        """
+        Returns default printer to print attachments
+        """
+        # Workstation printer
+        workstation_printer_id = self.env.user._get_workstation_device(
+            'printnode_workstation_printer_id')
+
+        # Priority:
+        # 1. Default Workstation Printer (User preferences)
+        # 2. Default printer for current user (User Preferences)
+        # 3. Default printer for current company (Settings)
+        return workstation_printer_id or self.env.user.printnode_printer or \
+            self.env.company.printnode_printer
 
     @api.onchange('printer_id')
     def _onchange_printer(self):
@@ -36,6 +51,7 @@ class PrintnodeAttachUniversalWizard(models.TransientModel):
 
     def do_print(self):
         printer = self.printer_id
+
         for line in self.attach_line_ids:
             params = {
                 'title': line.name,
@@ -44,6 +60,23 @@ class PrintnodeAttachUniversalWizard(models.TransientModel):
             }
             printer.printnode_print_b64(
                 line.bin_data.decode('ascii'), params, check_printer_format=False)
+
+        attachment_names = [al.attachment_id.name for al in self.attach_line_ids]
+        title = _('Documents were sent to printer')
+        message = _('Documents "{}" were sent to printer {}').format(
+            ', '.join(attachment_names),
+            self.printer_id.name)
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     @api.model
     def default_get(self, fields_list):

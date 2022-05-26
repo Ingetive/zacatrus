@@ -41,6 +41,7 @@
             <field name="res_model">printnode.computer</field>
             <field name="view_mode">tree</field>
             <field name="view_id" ref="printnode_computer_tree" />
+            <field name="context">{"active_test": False}</field>
         </record>
 
         <menuitem id="menu_printnode_computers"

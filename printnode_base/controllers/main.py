@@ -108,8 +108,24 @@ class ReportControllerProxy(ReportController):
     def _check_direct_print(self, data):
         print_data = {'can_print': False}
         request_content = json.loads(data)
+
         report_url, report_type = request_content[0], request_content[1]
+
+        # Get workstation devices from request (if specified)
+        # Moved to separate block for backward compatibility with old versions
+        workstation_devices = {}
+        if len(request_content) > 2:
+            workstation_devices = request_content[2]
+
         print_data['report_type'] = report_type
+
+        # Add workstations devices to context (if presented)
+        new_context = request.env.context.copy()
+        workstation_devices = {k: v for k, v in workstation_devices.items() if v is not None}
+
+        if workstation_devices:
+            new_context.update(workstation_devices)
+
         # STEP 1: First check if direct printing is enabled for user at all.
         # If no - not need to go further
         user = request.env.user
@@ -130,9 +146,16 @@ class ReportControllerProxy(ReportController):
         report_name = report_url.split('/report/{}/'.format(extension))[1].split('?')[0]
 
         if '/' in report_name:
-            report_name = report_name.split('/')[0]
+            report_name, ids = report_name.split('/')
+
+            if ids:
+                ids = [int(x) for x in ids.split(",")]
+                print_data['ids'] = ids
 
         report = request.env['ir.actions.report']._get_report_from_name(report_name)
+        model = request.env[report.model_id.model]
+
+        print_data['model'] = model
 
         rp = request.env['printnode.report.policy'].search([
             ('report_id', '=', report.id),
@@ -145,7 +168,8 @@ class ReportControllerProxy(ReportController):
 
         # STEP 4. Now let's check if we can define printer for the current report.
         # If not - just reset to default
-        printer_id, printer_bin = user.get_report_printer(report.id)
+        printer_id, printer_bin = user.with_context(new_context).get_report_printer(report.id)
+
         if not printer_id:
             return print_data
 
@@ -158,8 +182,10 @@ class ReportControllerProxy(ReportController):
     @http.route('/report/check', type='http', auth="user")
     def report_check(self, data, context=None):
         print_data = self._check_direct_print(data)
+
         if print_data['can_print']:
             return "true"
+
         return "false"
 
     @http.route('/report/print', type='http', auth="user")
@@ -197,7 +223,10 @@ class ReportControllerProxy(ReportController):
                 'size': rp and rp.report_paper_id,
                 'options': {'bin': printer_bin.name} if printer_bin else {},
             }
-            printer_id.printnode_print_b64(ascii_data, params)
+            res = printer_id.printnode_print_b64(ascii_data, params)
+
+            if res:
+                self._postprint_actions(print_data['model'], print_data.get('ids', []))
         except Exception as e:
             _logger.exception(e)
             se = _serialize_exception(e)
@@ -216,6 +245,28 @@ class ReportControllerProxy(ReportController):
             'success': True,
             'notify': request.env.company.im_a_teapot
         })
+
+    @http.route('/dpc/release-model-check', type='http', auth="user")
+    def release_model_check(self, context=None):
+        model = request.env['ir.model'].sudo().search([['model', '=', 'printnode.release']])
+        if model:
+            return "true"
+        return "false"
+
+    def _postprint_actions(self, model, ids):
+        """
+        Different post print actions.
+        For now it do:
+            - Update printnode_printed flag for all printed records (if flag exists)
+        """
+        if (
+            ids
+            and 'printnode_printed' in model._fields
+            and not model._fields['printnode_printed'].inherited
+        ):
+            model.browse(ids).write({
+                'printnode_printed': True,
+            })
 
 
 class DPCCallbackController(http.Controller):
