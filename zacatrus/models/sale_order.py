@@ -31,7 +31,8 @@ class SaleOrder(models.Model):
                 elif r.x_shipping_method == 'mageworxpickup':
                     carrier_id = self.env.ref("delivery_nacex.delivery_carrier_nacex_shop").id
                 
-            if r.x_shipping_method in ['freeshippingadmin', 'tablerate'] or r.team_id.id in [14] or self.env.context.get("without_shipping_method"): # team_id 14 es Amazon
+            #if r.x_shipping_method in ['freeshippingadmin', 'tablerate'] or r.team_id.id in [14] or self.env.context.get("without_shipping_method"): # team_id 14 es Amazon
+            if r.x_shipping_method in ['freeshippingadmin', 'tablerate'] or self.env.context.get("without_shipping_method"):
                 carriers = self.env['delivery.carrier'].search(['|', ('company_id', '=', False), ('company_id', '=', r.company_id.id)])
                 available_carrier_ids = carriers.available_carriers(r.partner_shipping_id) if r.partner_id else carriers
                 if carrier_nacex_canarias.id in available_carrier_ids.ids:
