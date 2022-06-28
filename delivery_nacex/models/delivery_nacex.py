@@ -147,7 +147,6 @@ class ProviderNacex(models.Model):
             'warning_message': False
         }
     
-
     def nacex_send_shipping(self, pickings):
         res = []
         nacex = NacexRequest(self.log_xml)
@@ -169,7 +168,8 @@ class ProviderNacex(models.Model):
                 quote_currency = self.env['res.currency'].search([('name', '=', 'EUR')], limit=1)
                 carrier_price = quote_currency._convert(shipping['price'], order_currency, company, order.date_order or fields.Date.today())
                 
-            carrier_tracking_ref = shipping['codigo_expedicion']
+            carrier_tracking_ref = shipping['carrier_tracking_ref']
+            codigo_expedicion = shipping['codigo_expedicion']
 #             imagen_etiqueta = nacex.get_label(carrier_tracking_ref, 'IMAGEN_B', self)
              
             logmessage = (_("""
@@ -184,7 +184,7 @@ class ProviderNacex(models.Model):
                     shipping['fecha_prevista'].strftime("%d/%m/%Y")
             ))
             
-            picking.obtener_etiqueta(carrier_tracking_ref)
+            picking.obtener_etiqueta(codigo_expedicion)
             #Para poner el codigo barras izquierdo más grande sustituir ^FO10,600^BY4,2 po r^FO10,515^BY4,3
             
             picking.message_post(body=logmessage)
@@ -192,6 +192,7 @@ class ProviderNacex(models.Model):
                   
             shipping_data = {
                 'exact_price': carrier_price,
+                'codigo_expedicion': codigo_expedicion,
                 'tracking_number': carrier_tracking_ref
             }
             res = res + [shipping_data]
