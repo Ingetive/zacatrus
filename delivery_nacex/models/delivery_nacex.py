@@ -189,6 +189,8 @@ class ProviderNacex(models.Model):
             
             picking.message_post(body=logmessage)
 #             picking.message_post(body=logmessage, attachments=[('imagen_etiqueta.png',imagen_etiqueta)])
+
+            picking.write({'codigo_expedicion': codigo_expedicion})
                   
             shipping_data = {
                 'exact_price': carrier_price,
