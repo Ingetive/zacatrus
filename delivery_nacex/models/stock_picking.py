@@ -19,7 +19,8 @@ class Picking(models.Model):
     etiqueta_envio_zpl = fields.Text("Etiqueta envio ZPL")
     x_tracking = fields.Char("Numero de tracking de la mensajeria", compute='_compute_tracking')
     bultos = fields.Integer('Bultos')
-    picking_contenedor= fields.Many2one('stock.picking', 'Albarán contenedor')
+    picking_contenedor = fields.Many2one('stock.picking', 'Albarán contenedor')
+    codigo_expedicion = fields.Char("Código Expedición")
 
     @api.depends('etiqueta_envio_zpl')
     def _compute_tracking(self):
@@ -45,25 +46,25 @@ class Picking(models.Model):
     def action_show_envio_nacex_valija_wizard(self):
         view = self.env.ref('view_envio_nacex_valija_wizard')
         action = {
-                    'name': _('Crear envio Nacex valija'),
-                    'type': 'ir.actions.act_window',
-                    'res_model': 'delivery_nacex.envio_nacex_valija',
-                    'views': [(view.id, 'form')],
-                    'target': 'new',
-                    'res_id': self.id,
-                }
+            'name': _('Crear envio Nacex valija'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'delivery_nacex.envio_nacex_valija',
+            'views': [(view.id, 'form')],
+            'target': 'new',
+            'res_id': self.id,
+        }
         return action
     
-    def obtener_etiqueta(self, carrier_tracking_ref=None):
+    def obtener_etiqueta(self, codigo_expedicion=None):
         for r in self.sudo():
-            if not carrier_tracking_ref:
-                carrier_tracking_ref = r.carrier_tracking_ref
+            if not codigo_expedicion:
+                codigo_expedicion = r.codigo_expedicion
             
-            if not carrier_tracking_ref:
+            if not codigo_expedicion:
                 continue
             
             nacex = NacexRequest(r.carrier_id.log_xml)
-            fichero_etiqueta = nacex.get_label(carrier_tracking_ref, r.carrier_id.nacex_etiqueta, r.carrier_id)
+            fichero_etiqueta = nacex.get_label(codigo_expedicion, r.carrier_id.nacex_etiqueta, r.carrier_id)
             if not fichero_etiqueta:
                 raise ValidationError("No se ha podido obtener la etiqueta desde Nacex.")
             cb_picking_zpl = "^XA^XFETIQUETA^FS^FO475,770^BY2,1^BCB,100,Y,N,N^FD" + r.name + "^FS"

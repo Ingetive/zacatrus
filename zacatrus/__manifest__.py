@@ -32,7 +32,8 @@
         'stock_account',
         'delivery_nacex',
         'stock', 
-        'stock_location_children'
+        'stock_location_children',
+#         'sale_amazon'
     ],
 
     # always loaded

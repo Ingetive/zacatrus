@@ -68,6 +68,7 @@ class NacexRequest():
             "cp_ent": picking.partner_id.zip, # Código postal entrega (Ej. 08902)
             "pob_ent": picking.partner_id.city[:40], # Población de entrega
             "obs1": picking.note if picking.note else '', # Observaciones, hasta 4 observaciones (obs"n")
+            "obs2": picking.name,
             "ref_cli" : picking.sale_id.client_order_ref if picking.sale_id else '',
         }
         
@@ -117,6 +118,7 @@ class NacexRequest():
         return {
             'price': price,
             'codigo_expedicion': result[0],
+            'carrier_tracking_ref': result[1],
             'num_seguimiento': result[1],
             'color_caja': result[2],
             'ruta': result[3],
@@ -166,9 +168,9 @@ class NacexRequest():
         except:
             raise UserError(_("Error al convertir el precio."))
     
-    def get_label(self, carrier_tracking_ref, etiqueta, carrier):
+    def get_label(self, codigo_expedicion, etiqueta, carrier):
         params = {
-            "codExp": carrier_tracking_ref,
+            "codExp": codigo_expedicion,
             "modelo": etiqueta,
         }
         #Debido a la gran cantidad de veces que se produce "Incorrect padding" generamos tantas llamadas como sea necesario con un maximo de 10
@@ -187,30 +189,26 @@ class NacexRequest():
                 label += "="*pad
                 fichero = base64.urlsafe_b64decode(label)
             else :
-                _logger.warning("fichero")
-                _logger.warning(type(result[0]))
-                _logger.warning(result[0])
                 try:
                     fichero = result[0].encode('iso-8859-1').decode()
                 except:
                     fichero = result[0]
-                _logger.warning("=====================")
-                _logger.warning("=====================")
 
         return fichero
                 
     def nacex_cancel_shipment(self, picking):
         params = {
-            "expe_codigo": picking.carrier_tracking_ref
+            "expe_codigo": picking.codigo_expedicion
         }
 
         code, result = self._send_request('cancelExpedicion', carrier, params)
 
         if result["Expedición cancelada con éxito"]:
-            picking.message_post(body=_(u'Shipment #%s has been cancelled', picking.carrier_tracking_ref))
+            picking.message_post(body=_(u'Shipment #%s has been cancelled', picking.codigo_expedicion))
             picking.write({
                 'etiqueta_envio_zpl' : '',
                 'carrier_tracking_ref': '',
+                'codigo_expedicion': '',
                 'carrier_price': 0.0
             })
         else:
