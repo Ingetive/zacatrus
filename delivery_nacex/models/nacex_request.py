@@ -77,7 +77,7 @@ class NacexRequest():
         if picking.carrier_id.id in [carrier_nacex_shop.id, carrier_nacex_valija.id]:
             params.update({
                 'tip_pre1': 'N',
-                'mod_pre1': 'N',
+                'mod_pre1': 'S',
             })
             if picking.partner_id.phone:
                 params.update({'pre1': picking.partner_id.phone})
