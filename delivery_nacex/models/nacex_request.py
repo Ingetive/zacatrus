@@ -74,9 +74,9 @@ class NacexRequest():
         
         carrier_nacex_shop = picking.env.ref('delivery_nacex.delivery_carrier_nacex_shop')
         carrier_nacex_valija = picking.env.ref('delivery_nacex.delivery_carrier_nacex_valija')
-        if picking.carrier_id.id in [carrier_nacex_shop.id, carrier_nacex_valija.id]:
+        if picking.carrier_id.id in [carrier_nacex_shop.id]:
             params.update({
-                'tip_pre1': 'N',
+                'tip_pre1': 'S',
                 'mod_pre1': 'S',
             })
             if picking.partner_id.phone:
