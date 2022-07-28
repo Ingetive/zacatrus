@@ -90,6 +90,7 @@ class Zconnector(models.Model):
             _logger.warning("P_ZB: e: " + str(e))
             print ("Cannot access.\n")
             
+        _logger.error("P_ZB: auth failed. Cannot get token.")
         return False
 
     def _getData(self, purl, postParams=False, method = False, token = None):
