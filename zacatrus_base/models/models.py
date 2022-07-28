@@ -96,6 +96,7 @@ class Zconnector(models.Model):
         isCustomer = False
         if not token:
             token = self._getToken()
+            _logger.info("P_ZB: token: " + token)
         else:
             isCustomer = True
 
@@ -109,6 +110,7 @@ class Zconnector(models.Model):
                 response = requests.get(self._getUrl(isCustomer) + purl, headers=hed)
             return response.json()
         else:
+            _logger.error("P_ZB: _getData failed for purl: " + purl)
             return False
 
     def _getCustomerByEmail(self, email):
