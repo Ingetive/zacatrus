@@ -143,9 +143,12 @@ class Zconnector(models.Model):
 
     def getBalance( self, email ):
         fichas = 0
+        _logger.info("T_ZB: getBalance: username: "+ email)
         mCustomer = self._getCustomerByEmail(email)
+        _logger.info("T_ZB: getBalance: mCustomer id: "+ str(mCustomer["id"]))
         if mCustomer:
             fichas = self._getPoints( mCustomer["id"] )
+            _logger.info("T_ZB: getBalance: fichas: "+ str(fichas))
 
         return fichas
         
