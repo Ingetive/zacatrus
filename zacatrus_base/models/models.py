@@ -96,7 +96,6 @@ class Zconnector(models.Model):
         isCustomer = False
         if not token:
             token = self._getToken()
-            _logger.info("P_ZB: token: " + token)
         else:
             isCustomer = True
 
