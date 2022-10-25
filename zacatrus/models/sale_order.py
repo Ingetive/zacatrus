@@ -44,9 +44,14 @@ class SaleOrder(models.Model):
                     carrier_id = carrier_nacex_baleares.id
                 elif carrier_nacex_peninsula.id in available_carrier_ids.ids:
                     carrier_id = carrier_nacex_peninsula.id
+                else:
+                    for carrierId in available_carrier_ids:
+                        carrier_id = carrierId
+                        _logger.info(f"Zacalog: Asignado carrier {carrier_id}.")
+                        break
                 
             if carrier_id:
                 r.write({'carrier_id': carrier_id})
             else:
-                _logger.warning(f"Al Pedido de Venta {r.name} no se le ha podido asignar ningún método de envío.")
+                _logger.warning(f"Zacalog: Al Pedido de Venta {r.name} no se le ha podido asignar ningún método de envío.")
                 
