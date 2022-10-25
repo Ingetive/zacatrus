@@ -14,6 +14,17 @@ class StockMove(models.Model):
     
     @api.model
     def create(self, vals):
+        if vals.get("sale_line_id"):
+            sale_line = self.env['sale.order.line'].search([
+                ('id', '=', vals.get("sale_line_id")),
+                ('order_id.amazon_order_ref', '!=', False)
+            ], limit=1)
+            if sale_line:
+                vals.update({
+                    "rule_id": 102,
+                    "route_ids": [(4, 58)]
+                })
+        
         _logger.warning("create")
         _logger.warning(vals)
         
