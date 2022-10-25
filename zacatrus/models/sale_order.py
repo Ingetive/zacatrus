@@ -44,8 +44,9 @@ class SaleOrder(models.Model):
                     carrier_id = carrier_nacex_baleares.id
                 elif carrier_nacex_peninsula.id in available_carrier_ids.ids:
                     carrier_id = carrier_nacex_peninsula.id
-                else:
+                elif False: #TODO: Asignar carriers externos para Transloan (Distri, Francia, ...) y activar
                     for carrierId in available_carrier_ids:
+                        #TODO: Discriminar por partner_shipping_id (ECI, Fnac, ...), picking_type_id y pais
                         carrier_id = carrierId
                         _logger.info(f"Zacalog: Asignado carrier {carrier_id}.")
                         break
