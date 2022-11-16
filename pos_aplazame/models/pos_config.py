@@ -5,7 +5,7 @@ from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)   
 
-class PosConfig(models.TransientModel):
+class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     x_aplazame_key = fields.Char("Aplazame private api key")
