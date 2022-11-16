@@ -1,0 +1,17 @@
+{
+    "name": "POS Aplazame Payment",
+    "version": "14.0.1.0.0",
+    "category": "Point Of Sale",
+    "summary": "Point of sale: supports Aplazame payment",
+    'author': "Zacatrus",
+    'website': "https://zacatrus.es",
+    "license": "AGPL-3",
+    'depends': [
+        "point_of_sale",
+        "zacatrus_base"
+    ],
+    "data": [
+        "views/assets.xml",
+    ],
+    "installable": True,
+}
