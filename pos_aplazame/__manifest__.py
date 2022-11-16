@@ -8,10 +8,10 @@
     "license": "AGPL-3",
     'depends': [
         "point_of_sale",
-        "zacatrus_base"
     ],
     "data": [
         "views/assets.xml",
+        'views/pos_config.xml',
     ],
     "installable": True,
 }
