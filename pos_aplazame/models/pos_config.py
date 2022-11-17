@@ -9,3 +9,5 @@ class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     x_aplazame_key = fields.Char("Aplazame private api key")
+    x_shop_code = fields.Char("Código de tienda Zacatrus")
+    x_min_amount = fields.Integer("Importe mínimo del pedido para financiar")
