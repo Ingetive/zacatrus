@@ -12,6 +12,7 @@
     "data": [
         "views/assets.xml",
         'views/pos_config.xml',
+        'views/res_config_settings_views.xml',
     ],
     "installable": True,
 }

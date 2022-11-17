@@ -15,9 +15,12 @@ class PosPaymentMethod(models.Model):
         return res
 
     def _call(self, key, url, data = False):
+        mode = ""        
+        if self.env['ir.config_parameter'].sudo().get_param('pos_aplazame.aplazame_sandbox_mode'):
+            mode = ".sandbox"
         hed = {
             'Authorization': f"Bearer {key}",
-            'Accept': 'application/vnd.aplazame.sandbox.v3+json'
+            'Accept': f"application/vnd.aplazame{mode}.v3+json"
         }
         try:
             if data:

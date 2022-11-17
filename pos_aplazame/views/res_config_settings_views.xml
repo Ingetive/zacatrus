@@ -7,6 +7,23 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Aplazame" string="Aplazame" data-key="pos_aplazame" groups="point_of_sale.group_pos_manager">
+                    <h2>Aplazame</h2>
+                    <div class="row mt16 o_settings_container" name="aplazame_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="aplazame_sandbox_mode"
+                            title="Modo pruebas de Aplazame.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Modo pruebas" for="aplazame_sandbox_mode"/>
+                                    <div class="content-group mt16">
+                                        <field name="aplazame_sandbox_mode" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </xpath>
         </field>
     </record>
@@ -19,5 +36,4 @@
         <field name="target">inline</field>
         <field name="context">{'module' : 'pos_aplazame', 'bin_size': False}</field>
     </record>
-
 </odoo>
