@@ -75,9 +75,10 @@ class PosPaymentMethod(models.Model):
         return self._call(key, url, dataParams)
 
     @api.model
-    def aplazame(self, posId, name, data):
+    def aplazame(self, posId, name, _data):
         config_obj = self.env['pos.config']
         cursor = config_obj.search([('id', '=', posId)])
+        data = json.loads(_data)
         apiKey = None
         shopCode = "Z"
         for _client in cursor:
@@ -99,11 +100,14 @@ class PosPaymentMethod(models.Model):
                             cause = "La solicitud ha expirado. Por favor, cancela el pedido y empieza de nuevo."
                         return {"ok": False, "cause": cause}
                     elif info['status'] == 'ok':
-                        return {"ok": True, "cause": ""}
+                        if data['amount']*100 == info["total_amount"]:
+                            return {"ok": True, "cause": ""}
+                        else:
+                            return {"ok": False, "cause": f"La cantidad a cobrar tiene que ser exactamente la misma que la de la primera solicitud: "+str(info["total_amount"]/100)}
                     else:
                         return {"ok": False, "cause": f"La solicitud está en estado {info['status']}."}
                 elif code == 404:
-                    response = self._create(apiKey, orderId, json.loads(data))
+                    response = self._create(apiKey, orderId, data)
                     if response != False:
                         code = response.status_code
                         info = response.json()
