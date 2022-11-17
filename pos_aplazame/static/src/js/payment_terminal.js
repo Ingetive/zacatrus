@@ -24,49 +24,59 @@ odoo.define("pos_aplazame.payment", function (require) {
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
             var orderlines = order.get_orderlines();
-            console.log( order.name );
-            console.log(JSON.stringify(this.pos.config.id));
-            console.log(JSON.stringify(this.pos.config.name));
-            console.log(JSON.stringify(this.pos.config.x_min_amount));
-            //console.log(JSON.stringify(this.pos.config));
-            console.log(JSON.stringify(order));
-            console.log(JSON.stringify(orderlines));
-            console.log("pay_line.amount: "+ pay_line.amount);
+            var client = order.get_client();
             if (pay_line.amount < this.pos.config.x_min_amount){
                 Gui.showPopup("ErrorPopup", {title: "Error", body: "Ops, el importe mínimo para financiar es "+this.pos.config.x_min_amount+" euros.",});
                 return false;
             }
-            //TODO: Check client with email
+            if (!client || !client['email'] || client['email'] == ''){
+                Gui.showPopup("ErrorPopup", {title: "Error", body: "Sorry, es necesario asignar un cliente con email al pedido.",});
+                return false;   
+            }
+            var phone = false;
+            if (client['mobile'] && client['mobile'] != ''){
+                phone = client['mobile'];
+            }
+            else if (client['phone'] && client['phone'] != ''){
+                phone = client['phone'];
+            }
+            var articles = [];
             for(var i = 0, len = orderlines.length; i < len; i++){
                 if (orderlines[i].product){
-                    console.log("product id: "+ orderlines[i].product.id);
+                    articles.push({
+                        'id': orderlines[i].product.id, 
+                        'price': orderlines[i].get_price_with_tax(), 
+                        'qty': orderlines[i].get_quantity(), 
+                        'tax': orderlines[i].get_tax()
+                    });
                 }
+            }
+            var data = {
+                "email": client['email'],
+                "amount": pay_line.amount,
+                "articles": articles
+            };
+            if (phone){
+                data['phone'] = phone;
             }
 
             return rpc.query({
                 model: 'pos.payment.method',
                 method: 'aplazame',
-                args: [this.pos.config.id, order.name],
+                args: [this.pos.config.id, order.name, JSON.stringify(data)],
             })
             .then(function(ret){                            
                 console.log("");
                 if (!ret["ok"]) {
-                    Gui.showPopup("ErrorPopup", {title: "Error", body: ret["cause"],});
+                    Gui.showPopup("ErrorPopup", {title: "Atención", body: ret["cause"],});
                 }
                 else {
                     return true;
                 }
                 return false;
             },function(type, err){
-                Gui.showPopup("ErrorPopup", {title: "Error 20 ", body: "No puedo procesar el pago.",});
+                Gui.showPopup("ErrorPopup", {title: "Error 20", body: "No puedo procesar el pago.",});
                 return false;
-            });
-        },
-
-        _show_error: function (msg, title) {
-            Gui.showPopup("ErrorPopup", {
-                title: title || _t("Payment Terminal Error"),
-                body: msg,
             });
         },
     });
