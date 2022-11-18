@@ -64,13 +64,7 @@ class PosPaymentMethod(models.Model):
             customer['phone'] = data['phone']
         dataParams = {  
             "merchant": {
-                "ipn_url": "https://mozo.zacatrus.es",
-                "notification_url": "https://mozo.zacatrus.es",
-                "success_url": "/",
-                "pending_url": "/",
-                "error_url": "/",
-                "dismiss_url": "/",
-                "ko_url": "/",
+                "ipn_url": "https://mozo.zacatrus.es"
             },
             "order": {
                 "id": orderId,
