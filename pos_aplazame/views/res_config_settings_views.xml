@@ -23,6 +23,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt16 o_settings_container" name="aplazame_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="aplazame_notification_url"
+                            title="Url para notificaciones.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Url para notificaciones" for="aplazame_notification_url"/>
+                                    <div class="content-group mt16">
+                                        <field name="aplazame_notification_url" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </xpath>
         </field>

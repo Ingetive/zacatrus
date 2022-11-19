@@ -41,18 +41,20 @@ class PosPaymentMethod(models.Model):
         url = f"https://api.aplazame.com/orders/{orderId}"
         return self._call(key, url)
 
-    def _create(self, key, orderId, data):
+    def _createOrder(self, key, orderId, data):
+        #_logger.info(f"Zacalog: Data from Odoo: "+ json.dumps(data))
         articles = []
         for article in data['articles']:
             product_obj = self.env['product.product']
             cursor = product_obj.search_read([('id', '=', article['id'])], ['name'])
+            taxRate = (article['tax'] / (article['price'] - article['tax'])) * 10000
             for _product in cursor:
                 articles.append({
                     "id": article['id'],
                     "name": _product['name'],
                     "quantity": article['qty'],
                     "price": article['price'] / article['qty'],
-                    #"tax_rate": 2100,
+                    "tax_rate": int(taxRate),
                     "discount_rate": 0,
                     "description": _product['name']
                 })
@@ -62,10 +64,8 @@ class PosPaymentMethod(models.Model):
         }
         if 'phone' in data:
             customer['phone'] = data['phone']
-        dataParams = {  
-            "merchant": {
-                "ipn_url": "https://mozo.zacatrus.es"
-            },
+
+        dataParams = {
             "order": {
                 "id": orderId,
                 "total_amount": data['amount']*100,
@@ -74,7 +74,14 @@ class PosPaymentMethod(models.Model):
             },
             "customer": customer
         }
+
+        ipn = self.env['ir.config_parameter'].sudo().get_param('pos_aplazame.aplazame_notification_url')
+        if ipn:
+            dataParams['merchant'] = {
+                "ipn_url": ipn
+            }
         url = f"https://api.aplazame.com/checkout/offline"
+        #_logger.info(f"Zacalog: Data to Aplazame: "+ json.dumps(dataParams))
         return self._call(key, url, dataParams)
 
     @api.model
@@ -110,7 +117,7 @@ class PosPaymentMethod(models.Model):
                     else:
                         return {"ok": False, "cause": f"La solicitud está en estado {info['status']}."}
                 elif code == 404:
-                    response = self._create(apiKey, orderId, data)
+                    response = self._createOrder(apiKey, orderId, data)
                     if response != False:
                         code = response.status_code
                         info = response.json()
