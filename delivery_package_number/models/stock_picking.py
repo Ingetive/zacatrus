@@ -6,13 +6,12 @@ from odoo import api, fields, models
 class StockPicking(models.Model):
     _inherit = "stock.picking"
 
-    number_of_packages = fields.Integer("Number of Packages")
-#     number_of_packages = fields.Integer(
-#         string="Number of Packages",
-#         compute="_compute_number_of_packages",
-#         readonly=False,
-#         store=True,
-#     )
+    number_of_packages = fields.Integer(
+        string="Number of Packages",
+        compute="_compute_number_of_packages",
+        readonly=False,
+        store=True,
+    )
 
     @api.depends("package_ids")
     def _compute_number_of_packages(self):
