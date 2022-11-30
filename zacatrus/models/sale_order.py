@@ -23,6 +23,8 @@ class SaleOrder(models.Model):
         carrier_nacex_peninsula = self.env.ref("delivery_nacex.delivery_carrier_nacex_peninsula")
         carrier_nacex_canarias = self.env.ref("delivery_nacex.delivery_carrier_nacex_canarias")
         carrier_nacex_baleares = self.env.ref("delivery_nacex.delivery_carrier_nacex_baleares")
+        carrier_dhl_b2c_francia = 13
+
         for r in self:
             carrier_id = False
             if not self.env.context.get("without_shipping_method"):
@@ -44,9 +46,17 @@ class SaleOrder(models.Model):
                     carrier_id = carrier_nacex_baleares.id
                 elif carrier_nacex_peninsula.id in available_carrier_ids.ids:
                     carrier_id = carrier_nacex_peninsula.id
+                elif carrier_dhl_b2c_francia in available_carrier_ids.ids:
+                    carrier_id = carrier_dhl_b2c_francia
+                elif False: #TODO: Asignar carriers externos para Transloan (Distri, Francia, ...) y activar
+                    for carrierId in available_carrier_ids:
+                        #TODO: Discriminar por partner_shipping_id (ECI, Fnac, ...), picking_type_id y pais
+                        carrier_id = carrierId
+                        _logger.info(f"Zacalog: Asignado carrier {carrier_id}.")
+                        break
                 
             if carrier_id:
                 r.write({'carrier_id': carrier_id})
             else:
-                _logger.warning(f"Al Pedido de Venta {r.name} no se le ha podido asignar ningún método de envío.")
+                _logger.warning(f"Zacalog: Al Pedido de Venta {r.name} no se le ha podido asignar ningún método de envío.")
                 

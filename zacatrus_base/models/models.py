@@ -90,6 +90,7 @@ class Zconnector(models.Model):
             _logger.warning("P_ZB: e: " + str(e))
             print ("Cannot access.\n")
             
+        _logger.error("P_ZB: auth failed. Cannot get token.")
         return False
 
     def _getData(self, purl, postParams=False, method = False, token = None):
@@ -109,6 +110,7 @@ class Zconnector(models.Model):
                 response = requests.get(self._getUrl(isCustomer) + purl, headers=hed)
             return response.json()
         else:
+            _logger.error("P_ZB: _getData failed for purl: " + purl)
             return False
 
     def _getCustomerByEmail(self, email):
@@ -143,9 +145,12 @@ class Zconnector(models.Model):
 
     def getBalance( self, email ):
         fichas = 0
+        _logger.info("T_ZB: getBalance: email: "+ email)
         mCustomer = self._getCustomerByEmail(email)
         if mCustomer:
+            _logger.info("T_ZB: getBalance: mCustomer id: "+ str(mCustomer["id"]))
             fichas = self._getPoints( mCustomer["id"] )
+            _logger.info("T_ZB: getBalance: fichas: "+ str(fichas))
 
         return fichas
         

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos_aplazame</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="95"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Aplazame" string="Aplazame" data-key="pos_aplazame" groups="point_of_sale.group_pos_manager">
+                    <h2>Aplazame</h2>
+                    <div class="row mt16 o_settings_container" name="aplazame_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="aplazame_sandbox_mode"
+                            title="Modo pruebas de Aplazame.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Modo pruebas" for="aplazame_sandbox_mode"/>
+                                    <div class="content-group mt16">
+                                        <field name="aplazame_sandbox_mode" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="aplazame_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="aplazame_notification_url"
+                            title="Url para notificaciones.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Url para notificaciones" for="aplazame_notification_url"/>
+                                    <div class="content-group mt16">
+                                        <field name="aplazame_notification_url" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_pos_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'pos_aplazame', 'bin_size': False}</field>
+    </record>
+</odoo>
