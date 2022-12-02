@@ -12,6 +12,7 @@ class ResConfigSettings(models.TransientModel):
     magento_user = fields.Char(readonly=False)
     magento_password = fields.Char(readonly=False)
     magento_secret = fields.Char(readonly=False)
+    printnode_key = fields.Char(readonly=False)
     dhl_segovia_printer_id = fields.Char(readonly=False)
     card_product_id = fields.Many2one('product.product', string="Gift Card product", help="La tarjeta física que se vende en tienda.", readonly=False)
     fichas_product_id = fields.Many2one('product.product', string="Fichas product", help="El producto que se aplica al añadir fichas en el pos.", readonly=False)
@@ -30,6 +31,7 @@ class ResConfigSettings(models.TransientModel):
             fichasProductId = int(self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id'))
         res.update(
             magento_url = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url'),
+            printnode_key = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.printnode_key'),
             dhl_segovia_printer_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_segovia_printer_id'),
             magento_user = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_user'),
             card_product_id = cardProductId,
@@ -41,6 +43,7 @@ class ResConfigSettings(models.TransientModel):
     @api.model
     def set_values(self):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_url', self.magento_url)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.printnode_key', self.printnode_key)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.dhl_segovia_printer_id', self.dhl_segovia_printer_id)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_user', self.magento_user)
         if self.card_product_id and self.card_product_id != "":
