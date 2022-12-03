@@ -13,12 +13,13 @@ class Attachment(models.Model):
             printnodeKey = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.printnode_key')
             printerId = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_segovia_printer_id')
             if printnodeKey and printerId:
-                pickings = self.env['stock_picking'].sudo().search_read([
+                pickings = self.env['stock.picking'].sudo().search_read([
                     ('id', '=', record.res_id)
-                ], ['carrier_id'])
+                ], ['carrier_id', 'picking_type_id'])
 
                 for picking in pickings:
-                    if picking.carrier_id == 12:
+                    # Es DHL y sale de Segovia
+                    if picking['carrier_id'][0] == 12 and picking['picking_type_id'][0] == 5:
                         data = {
                           "content": record.datas ,
                           "printerId": int(printerId),
