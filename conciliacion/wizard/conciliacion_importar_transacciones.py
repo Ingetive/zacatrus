@@ -25,54 +25,53 @@ class ImportarTransacciones(models.Model):
     def action_importar(self):
         decrypted = base64.b64decode(self.fichero).decode('utf-8')
         with io.StringIO(decrypted) as fp:
+            neto = 0
+            comisiones = 0
+            transferencias_banco = 0
+            
             reader = csv.reader(fp, delimiter=",", quotechar='"')
-            for row in reader:
-                neto = 0
-                comisiones = 0
-                transferencias_banco = 0
-                recordlist = record_data.split(u'\n')
-                for line in recordlist:
-                    if not line:
-                        pass
+            for line in reader:
+                if not line:
+                    pass
 
-                    try:  debit = float(line[10])
-                    except: debit = 0
+                try:  debit = float(line[10])
+                except: debit = 0
 
-                    try:  credit = float(line[11])
-                    except: credit = 0
+                try:  credit = float(line[11])
+                except: credit = 0
 
-                    neto += credit - debit
+                neto += credit - debit
 
-                    try:  markup = float(line[17])
-                    except: markup = 0
+                try:  markup = float(line[17])
+                except: markup = 0
 
-                    try:  scheme_fees = float(line[18])
-                    except: scheme_fees = 0
+                try:  scheme_fees = float(line[18])
+                except: scheme_fees = 0
 
-                    comisiones += markup + scheme_fees
+                comisiones -= markup + scheme_fees
 
-                    try:  interchange = float(line[19])
-                    except: interchange = 0
+                try:  interchange = float(line[19])
+                except: interchange = 0
 
-                    transferencias_banco += interchange
+                transferencias_banco -= interchange
 
-                self.env['account.bank.statement.line'].create({
-                    'payment_ref': "Neto",
-                    'statement_id': self.bank_statement_id.id,
-                    'amount': neto
-                })
-                
-                self.env['account.bank.statement.line'].create({
-                    'payment_ref': "Comisiones",
-                    'statement_id': self.bank_statement_id.id,
-                    'amount': comisiones
-                })
-                
-                self.env['account.bank.statement.line'].create({
-                    'payment_ref': "Transferencias a bancos",
-                    'statement_id': self.bank_statement_id.id,
-                    'amount': transferencias_banco
-                })
+            self.env['account.bank.statement.line'].create({
+                'payment_ref': "Neto",
+                'statement_id': self.bank_statement_id.id,
+                'amount': neto
+            })
+
+            self.env['account.bank.statement.line'].create({
+                'payment_ref': "Comisiones",
+                'statement_id': self.bank_statement_id.id,
+                'amount': comisiones
+            })
+
+            self.env['account.bank.statement.line'].create({
+                'payment_ref': "Transferencias a bancos",
+                'statement_id': self.bank_statement_id.id,
+                'amount': transferencias_banco
+            })
         
         
     def open_wizard(self, context=None):

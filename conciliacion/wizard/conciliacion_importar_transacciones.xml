@@ -6,7 +6,9 @@
         <field name="arch" type="xml">
             <form>
                 <field name="bank_statement_id" invisible="1"/>
-                <field name="fichero"/>
+                <group>
+                    <field name="fichero"/>
+                </group>
                 <footer>
                     <button string="Importar" name="action_importar" type="object" class="oe_highlight"/>
                     <button string="Cancel" class="btn btn-secondary" special="cancel"/>
