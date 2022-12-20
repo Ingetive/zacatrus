@@ -55,10 +55,11 @@ class ImportarTransacciones(models.Model):
                     interchange = self._convert_to_float(line[19])
                     comisiones_venta += interchange + markup + scheme_fees + commission
                 
+            line_values = []
+            amls_total = 0
             sequence = 0
             if fecha:
                 amls = self.env['account.move.line'].search([
-                    # ('journal_id.id', '=', self.env.ref("point_of_sale.pos_sale_journal").id),
                     ('account_id', '=', self.env.ref("l10n_es.1_account_common_4300").id),
                     ('ref', '=ilike', f"POS/{fecha.strftime('%Y/%m/%d')}/%"),
                     ('name', 'ilike', "Adyen")
@@ -66,40 +67,41 @@ class ImportarTransacciones(models.Model):
                 
                 for aml in amls:
                     payment_ref = f"{aml.move_id.name} : {aml.name} : {aml.ref}"
-                    self.env['account.bank.statement.line'].create({
+                    amount = aml.debit or (aml.credit * -1)
+                    line_values.append((0, 0, {
                         'sequence': sequence,
                         'payment_ref': payment_ref,
                         'statement_id': self.bank_statement_id.id,
-                        'amount': aml.debit or (aml.credit * -1)
-                    })
+                        'amount': amount
+                    }))
+                    amls_total += amount
                     sequence += 1
 
-            self.env['account.bank.statement.line'].create({
-                'payment_ref': "Comisiones venta",
-                'statement_id': self.bank_statement_id.id,
-                'amount': comisiones_venta * -1
-            })
-            sequence += 1
-            
-            self.env['account.bank.statement.line'].create({
-                'sequence': sequence,
-                'payment_ref': "Comisiones transferencia",
-                'statement_id': self.bank_statement_id.id,
-                'amount': comisiones_transferencia * -1
-            })
-            sequence += 1
-            
-            self.env['account.bank.statement.line'].create({
-                'sequence': sequence,
-                'payment_ref': "Transferencia",
-                'statement_id': self.bank_statement_id.id,
-                'amount': transferencia * -1
-            })
-
+            line_values.extend([(0, 0, {
+                    'sequence': sequence + 1,
+                    'payment_ref': "Comisiones venta",
+                    'amount': comisiones_venta * -1
+                }),
+                (0, 0, {
+                    'sequence': sequence + 2,
+                    'payment_ref': "Comisiones transferencia",
+                    'amount': comisiones_transferencia * -1
+                }),
+                (0, 0, {
+                    'sequence': sequence + 3,
+                    'payment_ref': "Transferencia",
+                    'amount': transferencia * -1
+                })
+            ])
+                    
             self.bank_statement_id.write({
-                'neto_importado': neto
+                'neto_importado': neto,
+                "line_ids": line_values
             })
-    
+            
+            if self.bank_statement_id.balance_end == 0 and self.bank_statement_id.neto_importado == round(amls_total, 2):
+                self.bank_statement_id.button_post()
+            
     @api.model
     def _convert_to_float(self, num_str):
         try:  
