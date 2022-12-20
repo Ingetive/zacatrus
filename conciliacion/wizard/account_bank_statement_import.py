@@ -107,11 +107,12 @@ class AccountBankStatementImport(models.TransientModel):
                     }))
                     amls_total += amount
                     sequence += 1
-
-            if neto > total_facturas:
-                comisiones_venta += total_facturas - neto
-            elif total_facturas > neto:
-                comisiones_venta += neto - total_facturas 
+            
+            if name == "ZacatrusEs":
+                if neto > total_facturas:
+                    comisiones_venta += total_facturas - neto
+                elif total_facturas > neto:
+                    comisiones_venta += neto - total_facturas 
                     
             line_values.extend([(0, 0, {
                     'sequence': sequence + 1,
