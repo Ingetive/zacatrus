@@ -9,10 +9,11 @@
     'application': True,
     'depends': [
         'account',
+        'account_bank_statement_import'
     ],
     'data': [
         'security/ir.model.access.csv',
         'views/account_bank_statement.xml',
-        'wizard/conciliacion_importar_transacciones.xml'
+        'wizard/account_bank_statement_import.xml'
     ],
 }

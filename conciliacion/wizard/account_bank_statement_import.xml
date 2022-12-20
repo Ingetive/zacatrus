@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_bank_statement_import_view" model="ir.ui.view">
+        <field name="name">Upload Bank Statements conciliacion</field>
+        <field name="model">account.bank.statement.import</field>
+        <field name="inherit_id" ref="account_bank_statement_import.account_bank_statement_import_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='attachment_ids']" position="attributes">
+                <attribute name="attrs">{'invisible': [('journal_bank_statements_source', '=', 'adyen')]}</attribute>
+            </xpath>
+            
+            <xpath expr="//field[@name='attachment_ids']" position="after">
+                <field name="journal_id" invisible="1"/>
+                <field name="journal_bank_statements_source" invisible="1"/>
+                <field name="fichero_adyen" string="Fichero" attrs="{'invisible': [('journal_bank_statements_source', '!=', 'adyen')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

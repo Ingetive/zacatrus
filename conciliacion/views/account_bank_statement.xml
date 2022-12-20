@@ -4,18 +4,10 @@
         <field name="name">account.bank.statement.form.conciliacion</field>
         <field name="inherit_id" ref="account.view_bank_statement_form"/>
         <field name="model">account.bank.statement</field>
-        <field name="arch" type="xml">
-            <xpath expr="//header[1]" position="inside">
-				<button string="Importar transacciones"  
-                        class="oe_highlight" 
-                        name="action_importar_transacciones" 
-                        type="object"/>
-            </xpath>
-            
+        <field name="arch" type="xml">  
             <xpath expr="//notebook[1]" position="inside">
                 <page string="Detalle">
                     <group>
-                        <field name="nombre_fichero"/>
                         <field name="neto_importado"/>
                     </group>
                 </page>
