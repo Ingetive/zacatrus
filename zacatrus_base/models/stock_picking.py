@@ -21,7 +21,7 @@ class Picking(models.Model):
             # If valija
             if newCarrierId == 9:
                 if picking.origin.endswith("-DHL"):
-                    newCarrierId = 12 # DHL B2B
+                    newCarrierId = 14 # DHL Carry
 
             picking.write({
               'carrier_id' : newCarrierId
