@@ -20,7 +20,7 @@ class Attachment(models.Model):
 
                     for picking in pickings:
                         # Es DHL y sale de Segovia
-                        if picking['carrier_id'][0] == 12 and picking['picking_type_id'][0] == 5:
+                        if picking['carrier_id'][0] == 14 and picking['picking_type_id'][0] == 5:
                             data = {
                               "content": attachment.datas ,
                               "printerId": int(printerId),
