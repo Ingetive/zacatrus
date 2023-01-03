@@ -35,102 +35,122 @@ class AccountBankStatementImport(models.TransientModel):
         AccountMove = self.env['account.move']
         decrypted = base64.b64decode(self.fichero_adyen).decode('utf-8')
         with io.StringIO(decrypted) as fp:
-            total_facturas = 0
             sequence = 0
-            line_values = []
-            neto = 0
-            comisiones_venta = 0
-            comisiones_transferencia = 0
-            transferencia = 0
-            fecha = None
-            name = ''
-            
+
+            line_values =[]
+            lineas_extracto = {}
             reader = csv.reader(fp, delimiter=",", quotechar='"')
             for line in reader:
+                neto = 0
+                comisiones_venta = 0
+                comisiones_transferencia = 0
+                transferencia = 0
+                name = line[1]
+                if name == 'Merchant Account': #Saltamos cabecera
+                    continue
+                if name not in ['ZacatrusPOS', 'ZacatrusEs']:
+                    raise ValidationError("El fichero no es válido.")
                 if not line or len(line) < 8:
                     continue
-                elif line[7] == "Fee":
+                fecha = self._convert_to_date(line[5])
+                if line[7] == "Fee":
                     comisiones_transferencia = self._convert_to_float(line[14])
                 elif line[7] == "MerchantPayout":
                     transferencia = self._convert_to_float(line[14])
                 elif line[7] in ["Settled", "Refunded"]:
-                    if not name:
-                        name = line[1]
-                    
-                    if not name or name not in ['ZacatrusPOS', 'ZacatrusEs']:
-                        raise ValidationError("El fichero no es válido.")
-                    
-                    if not fecha:
-                        fecha = self._convert_to_date(line[5])
-                        
                     debit = self._convert_to_float(line[10])
                     credit = self._convert_to_float(line[11])
-                    neto += credit - debit
-                    
-                    if name == 'ZacatrusEs':
-                        factura = AccountMove.search([('ref', '=', line[3])], limit=1)
-                        if factura:
-                            amount = factura.amount_total
-                            if line[7] == "Refunded":
-                                amount *= -1
-                        
-                            line_values.append((0, 0, {
-                                'sequence': sequence,
-                                'payment_ref': factura.name,
-                                'amount': amount
-                            }))
-                            sequence += 1
-                            total_facturas += amount
+                    neto = credit - debit
                     
                     commission = self._convert_to_float(line[16])
                     markup = self._convert_to_float(line[17])
                     scheme_fees = self._convert_to_float(line[18])
                     interchange = self._convert_to_float(line[19])
                     comisiones_venta += interchange + markup + scheme_fees + commission
-                
-            
-            amls_total = 0
-            if name == 'ZacatrusPOS' and fecha:
-                amls = self.env['account.move.line'].search([
-                    ('account_id', '=', self.env.ref("l10n_es.1_account_common_4300").id),
-                    ('ref', '=ilike', f"POS/{fecha.strftime('%Y/%m/%d')}/%"),
-                    ('name', 'ilike', "Adyen")
-                ])
-                
-                for aml in amls:
-                    payment_ref = f"{aml.move_id.name}: {aml.name} : {aml.ref}"
-                    amount = aml.debit or (aml.credit * -1)
-                    line_values.append((0, 0, {
+
+                if fecha in lineas_extracto:
+                    lineas_extracto[fecha]['neto'] += neto
+                    lineas_extracto[fecha]['comisiones_venta'] += comisiones_venta
+                    lineas_extracto[fecha]['comisiones_transferencia'] += comisiones_transferencia
+                    lineas_extracto[fecha]['transferencia'] += transferencia
+                else:
+                    lineas_extracto[fecha] = {
                         'sequence': sequence,
-                        'payment_ref': payment_ref,
-                        'amount': amount
-                    }))
-                    amls_total += amount
-                    sequence += 1
-            
-            if name == "ZacatrusEs":
-                if neto > total_facturas:
-                    comisiones_venta += total_facturas - neto
-                elif total_facturas > neto:
-                    comisiones_venta += neto - total_facturas 
+                        'name' : name,
+                        'neto' : neto,
+                        'comisiones_venta' : comisiones_venta,
+                        'comisiones_transferencia' : comisiones_transferencia,
+                        'transferencia' :  transferencia,
+                    }
+
+            sequence = 0
+            for fecha, resumen in lineas_extracto.items():
+                amls_total = 0
+                if resumen['name'] == 'ZacatrusPOS' and resumen['neto'] != 0:
+                    amls = self.env['account.move.line'].search([
+                        ('account_id', '=', self.env.ref("l10n_es.1_account_common_4300").id),
+                        ('date', '=', fecha),
+                        ('ref', '=ilike', f"POS/{fecha.strftime('%Y/%m/%d')}/%"),
+                        ('name', 'ilike', "Adyen")
+                    ])
                     
-            line_values.extend([(0, 0, {
-                    'sequence': sequence + 1,
-                    'payment_ref': "Comisiones venta",
-                    'amount': comisiones_venta * -1
-                }),
-                (0, 0, {
-                    'sequence': sequence + 2,
-                    'payment_ref': "Comisiones transferencia",
-                    'amount': comisiones_transferencia * -1
-                }),
-                (0, 0, {
-                    'sequence': sequence + 3,
-                    'payment_ref': "Transferencia",
-                    'amount': transferencia * -1
-                })
-            ])
-            
+                    for aml in amls:
+                        payment_ref = f"{aml.move_id.name}: {aml.name} : {aml.ref}"
+                        amount = aml.debit or (aml.credit * -1)
+                        line_values.append((0, 0, {
+                            'sequence': sequence,
+                            'date' : fecha,
+                            'payment_ref': payment_ref,
+                            'amount': amount
+                        }))
+                        amls_total += amount
+                        sequence += 1
+                    diferencia = resumen['neto'] - amls_total
+                    if diferencia:
+                        #Ha existido alguna devoución
+                        line_values.append((0, 0, {
+                            'sequence': sequence,
+                            'date' : fecha,
+                            'payment_ref': "Diferencia (Devoluciones)",
+                            'amount': diferencia,
+                        }))
+                        sequence += 1
+
+                if resumen['name'] == "ZacatrusEs":
+                    if resumen['neto']:
+                        line_values.append((0, 0, {
+                            'sequence': sequence,
+                            'date' : fecha,
+                            'payment_ref': 'Ventas',
+                            'amount': resumen['neto']
+                        }))
+                        sequence += 1
+
+                if resumen['comisiones_venta']:
+                    line_values.extend([(0, 0, {
+                            'sequence': sequence + 1,
+                            'date' : fecha,
+                            'payment_ref': "Comisiones venta",
+                            'amount': resumen['comisiones_venta'] * -1
+                        })])
+                    sequence += 1
+
+                if resumen['comisiones_transferencia']:
+                    line_values.extend([(0, 0, {
+                            'sequence': sequence + 1,
+                            'date' : fecha,
+                            'payment_ref': "Comisiones transferencia",
+                            'amount': resumen['comisiones_transferencia'] * -1
+                        })])
+                if resumen['transferencia']:
+                    line_values.extend([(0, 0, {
+                            'sequence': sequence + 1,
+                            'date' : fecha,
+                            'payment_ref': "Transferencia",
+                            'amount': resumen['transferencia'] * -1
+                        })])
+                    sequence += 1
+
             if fecha:
                 name_statement = f"{name} {fecha.strftime('%d/%m/%Y')}"
             
