@@ -24,7 +24,8 @@
         'delivery_nacex',
         'stock', 
         'stock_location_children',
-        'sale_amazon'
+        'sale_amazon',
+        'portal'
     ],
     'data': [
         'security/ir.model.access.csv',
