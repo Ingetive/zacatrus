@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos_paylands</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="95"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Paylands" string="Paylands" data-key="pos_paylands" groups="point_of_sale.group_pos_manager">
+                    <h2>Paylands</h2>
+                    <div class="row mt16 o_settings_container" name="paylands_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="paylands_sandbox_mode"
+                            title="Modo pruebas de Paylands.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Modo pruebas" for="paylands_sandbox_mode"/>
+                                    <div class="content-group mt16">
+                                        <field name="paylands_sandbox_mode" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="paylands_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="paylands_notification_url"
+                            title="Url para notificaciones.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Url para notificaciones" for="paylands_notification_url"/>
+                                    <div class="content-group mt16">
+                                        <field name="paylands_notification_url" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="paylands_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="paylands_signature"
+                            title="Firma digital">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Firma digital" for="paylands_signature"/>
+                                    <div class="content-group mt16">
+                                        <field name="paylands_signature" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="paylands_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="paylands_apikey"
+                            title="Api key">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Api key" for="paylands_apikey"/>
+                                    <div class="content-group mt16">
+                                        <field name="paylands_apikey" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_pos_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'pos_paylands', 'bin_size': False}</field>
+    </record>
+</odoo>
