@@ -81,9 +81,31 @@ class PosPaymentMethod(models.Model):
         return {"ok": ok, 'code': code, 'message': message, 'status': status}
 
     @api.model
-    def get_status(self, methodId, saleId):
-        return 1
+    def get_status(self, posId, name):
+        ret = 0
+        orderNumber = name.replace(" ", "-")
+        orderId = f"POS{posId}_{orderNumber}"
+
+        payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
+        for payment in payments:
+            print (payment)
+            ret = payment['status']
+
+        return ret
 
     @api.model
-    def cancel(self, methodId, saleId):
-        return 1
+    def cancel(self, posId, name):
+        ret = 0
+        orderNumber = name.replace(" ", "-")
+        orderId = f"POS{posId}_{orderNumber}"
+
+        args = [
+            ('order_id', '=', orderId)
+        ]
+        payments = self.env["pos_paylands.payment"].search(args)
+        for payment in payments:
+            res = payment.write({'status': 300})
+            if res:
+                ret = 300
+
+        return ret
