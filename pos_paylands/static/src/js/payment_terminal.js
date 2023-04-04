@@ -34,7 +34,7 @@ odoo.define("pos_paylands.payment", function (require) {
             return rpc.query({
                 model: 'pos.payment.method',
                 method: 'cancel',
-                args: [[this.payment_method.id], this._paylands_get_sale_id()],
+                args: [this.pos.config.id, this.pos.get_order().name],
             }, {
                 timeout: 5000,
                 shadow: true,
@@ -70,7 +70,7 @@ odoo.define("pos_paylands.payment", function (require) {
             return rpc.query({
                 model: 'pos.payment.method',
                 method: 'get_status',
-                args: [[this.payment_method.id], this._paylands_get_sale_id()],
+                args: [this.pos.config.id, this.pos.get_order().name],
             }, {
                 timeout: 5000,
                 shadow: true,
@@ -87,20 +87,20 @@ odoo.define("pos_paylands.payment", function (require) {
                 return Promise.reject(data);
             }).then(function (status) {
                 console.log("status: "+status);
-                var notification = status.latest_response;
+                //var notification = status.latest_response;                
                 var order = self.pos.get_order();
                 var line = self.pending_paylands_line() || resolve(false);
 
-                if (notification && notification.SaleToPOIResponse.MessageHeader.ServiceID == line.terminalServiceId) {
-                    var response = notification.SaleToPOIResponse.PaymentResponse.Response;
-                    var additional_response = new URLSearchParams(response.AdditionalResponse);
+                if (status != 0) {
+                    //var response = notification.SaleToPOIResponse.PaymentResponse.Response;
+                    //var additional_response = new URLSearchParams(response.AdditionalResponse);
 
-                    if (response.Result == 'Success') {
+                    if (status == 200) {
                         var config = self.pos.config;
-                        var payment_response = notification.SaleToPOIResponse.PaymentResponse;
-                        var payment_result = payment_response.PaymentResult;
+                        // var payment_response = notification.SaleToPOIResponse.PaymentResponse;
+                        //var payment_result = payment_response.PaymentResult;
 
-                        var cashier_receipt = payment_response.PaymentReceipt.find(function (receipt) {
+                        /*var cashier_receipt = payment_response.PaymentReceipt.find(function (receipt) {
                             return receipt.DocumentQualifier == 'CashierReceipt';
                         });
 
@@ -120,13 +120,17 @@ odoo.define("pos_paylands.payment", function (require) {
                         if (config.paylands_ask_customer_for_tip && tip_amount > 0) {
                             order.set_tip(tip_amount);
                             line.set_amount(payment_result.AmountsResp.AuthorizedAmount);
-                        }
+                        }*/
 
-                        line.transaction_id = additional_response.get('pspReference');
+                        //TODO: Poner datos de la transaccion pnp
+                        /*line.transaction_id = additional_response.get('pspReference');
                         line.card_type = additional_response.get('cardType');
                         line.cardholder_name = additional_response.get('cardHolderName') || '';
+                        */
                         resolve(true);
                     } else {
+                        // TODO:
+                        /*
                         var message = additional_response.get('message');
                         self._show_error(_.str.sprintf(_t('Message from Paylands: %s'), message));
 
@@ -137,6 +141,7 @@ odoo.define("pos_paylands.payment", function (require) {
                             line.set_payment_status('retry');
                             reject();
                         }
+                        */
                     }
                 } else {
                     line.set_payment_status('waitingCard')
