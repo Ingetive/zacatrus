@@ -53,7 +53,7 @@ class PosPaymentMethod(models.Model):
             message = 'Creado'
             ok = True
 
-        if not dbPayment:
+        if status not in [200]:
             notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
             hed = {'Authorization': 'Bearer ' + apiKey}
             postParams = {
@@ -69,11 +69,12 @@ class PosPaymentMethod(models.Model):
             response = requests.post(url, headers=hed, json=postParams)
             if response.status_code == 200:  
                 ok = True
-                self.env["pos_paylands.payment"].create({
-                    "order_id": orderId,
-                    "status": status,
-                    "amount": data['amount']
-                })
+                if not dbPayment:
+                    self.env["pos_paylands.payment"].create({
+                        "order_id": orderId,
+                        "status": status,
+                        "amount": data['amount']
+                    })
             res = response.json()
             message = res['message']
             code = res['code']

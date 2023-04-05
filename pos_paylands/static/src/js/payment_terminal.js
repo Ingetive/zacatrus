@@ -128,7 +128,22 @@ odoo.define("pos_paylands.payment", function (require) {
                         line.cardholder_name = additional_response.get('cardHolderName') || '';
                         */
                         resolve(true);
-                    } else {
+                    }
+                    else if (status == 500) { 
+                        var message = additional_response.get('message');
+                        self._show_error( _t('Rechazada') );
+
+                        line.set_payment_status('retry');
+                        reject();
+                    }
+                    else if (status == 300) { 
+                        var message = additional_response.get('message');
+                        self._show_error( _t('Cancelado por el usuario') );
+
+                        line.set_payment_status('retry');
+                        reject();
+                    }
+                    else {
                         // TODO:
                         /*
                         var message = additional_response.get('message');
