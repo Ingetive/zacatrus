@@ -85,37 +85,41 @@ odoo.define("pos_paylands.payment", function (require) {
                 // This is to make sure that if 'data' is not an instance of Error (i.e. timeout error),
                 // this promise don't resolve -- that is, it doesn't go to the 'then' clause.
                 return Promise.reject(data);
-            }).then(function (status) {
-                console.log("status: "+status);
+            }).then(function (res) {
+                console.log("status: "+res['status']);
                 //var notification = status.latest_response;                
                 var order = self.pos.get_order();
                 var line = self.pending_paylands_line() || resolve(false);
 
-                if (status != 0) {
+                if (res['status'] != 0) {
                     //var response = notification.SaleToPOIResponse.PaymentResponse.Response;
                     //var additional_response = new URLSearchParams(response.AdditionalResponse);
 
-                    if (status == 200) {
+                    if (res['status'] == 200) {
                         var config = self.pos.config;
                         // var payment_response = notification.SaleToPOIResponse.PaymentResponse;
                         //var payment_result = payment_response.PaymentResult;
 
-                        /*var cashier_receipt = payment_response.PaymentReceipt.find(function (receipt) {
+                        /*
+                        var cashier_receipt = payment_response.PaymentReceipt.find(function (receipt) {
                             return receipt.DocumentQualifier == 'CashierReceipt';
                         });
+                        */
 
-                        if (cashier_receipt) {
-                            line.set_cashier_receipt(self._convert_receipt_info(cashier_receipt.OutputContent.OutputText));
-                        }
+                        //console.log("THIS is a test");
+                        //if (cashier_receipt) {
+                            //line.set_cashier_receipt("THIS is a test");
+                        //}
 
+
+/*
                         var customer_receipt = payment_response.PaymentReceipt.find(function (receipt) {
                             return receipt.DocumentQualifier == 'CustomerReceipt';
                         });
-
                         if (customer_receipt) {
                             line.set_receipt_info(self._convert_receipt_info(customer_receipt.OutputContent.OutputText));
                         }
-
+*//*
                         var tip_amount = payment_result.AmountsResp.TipAmount;
                         if (config.paylands_ask_customer_for_tip && tip_amount > 0) {
                             order.set_tip(tip_amount);
@@ -123,22 +127,22 @@ odoo.define("pos_paylands.payment", function (require) {
                         }*/
 
                         //TODO: Poner datos de la transaccion pnp
-                        /*line.transaction_id = additional_response.get('pspReference');
-                        line.card_type = additional_response.get('cardType');
-                        line.cardholder_name = additional_response.get('cardHolderName') || '';
-                        */
+                        line.transaction_id = res['additional']['uuid'];
+                        line.card_type = res['additional']['brand'];
+                        //line.cardholder_name = additional_response.get('cardHolderName') || '';
+                        
                         resolve(true);
                     }
-                    else if (status == 500) { 
-                        var message = additional_response.get('message');
-                        self._show_error( _t('Rechazada') );
+                    else if (res['status'] == 500) { 
+                        //var message = additional_response.get('message');
+                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Rechazada...'),});
 
                         line.set_payment_status('retry');
                         reject();
                     }
-                    else if (status == 300) { 
-                        var message = additional_response.get('message');
-                        self._show_error( _t('Cancelado por el usuario') );
+                    else if (res['status'] == 300) { 
+                        //var message = additional_response.get('message');
+                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Cancelado por el usuario'),});
 
                         line.set_payment_status('retry');
                         reject();
@@ -227,9 +231,15 @@ odoo.define("pos_paylands.payment", function (require) {
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
             var self = this;
+            var client = order.get_client();
+            var clientId = 'anonymous';
 
+            if (client){
+                console.log(client);
+                clientId = client.id;  
+            }
             var data = {
-                //"email": client['email'],
+                "client": clientId,
                 "amount": pay_line.amount,
                 //"articles": articles
             };

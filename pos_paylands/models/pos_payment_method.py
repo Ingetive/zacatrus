@@ -45,7 +45,7 @@ class PosPaymentMethod(models.Model):
         status = 0
         ok = False
 
-        payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
+        payments = self.env["pos_paylands.payment"].search([("order_id", "=", orderId)])
         dbPayment = False
         for payment in payments:
             dbPayment = payment
@@ -53,6 +53,7 @@ class PosPaymentMethod(models.Model):
             message = 'Creado'
             ok = True
 
+        print("Zacalog: UNO");
         if status not in [200]:
             notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
             hed = {'Authorization': 'Bearer ' + apiKey}
@@ -63,10 +64,18 @@ class PosPaymentMethod(models.Model):
                 "description": f"{name}",
                 "url_post": notificationUrl,
                 "reference": orderId,
-                "customer_ext_id": "12345678Z",
+                "customer_ext_id": str(data['client']),
                 "additional": "Additional info"
             }
+            print( postParams);
             response = requests.post(url, headers=hed, json=postParams)
+
+            print("Zacalog: DOS");
+            print(response)
+
+            res = response.json()
+            message = res['message']
+            print(message)
             if response.status_code == 200:  
                 ok = True
                 if not dbPayment:
@@ -75,6 +84,8 @@ class PosPaymentMethod(models.Model):
                         "status": status,
                         "amount": data['amount']
                     })
+                else:
+                    dbPayment.write( {'status' : 0} )
             res = response.json()
             message = res['message']
             code = res['code']
@@ -90,7 +101,13 @@ class PosPaymentMethod(models.Model):
         payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
         for payment in payments:
             print (payment)
-            ret = payment['status']
+            ret = {'status': payment['status'], 'additional' : {}}
+            if payment['status'] == 200:
+                ret['additional'] = {      
+                    'uuid': payment['uuid'],
+                    'masked_pan': payment['masked_pan'],
+                    'brand': payment['brand'],
+                }
 
         return ret
 
