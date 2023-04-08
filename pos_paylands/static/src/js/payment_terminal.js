@@ -106,9 +106,9 @@ odoo.define("pos_paylands.payment", function (require) {
                         });
                         */
 
-                        //console.log("THIS is a test");
                         //if (cashier_receipt) {
                             //line.set_cashier_receipt("THIS is a test");
+                            line.set_receipt_info( res['additional']['ticket_footer'] );
                         //}
 
 

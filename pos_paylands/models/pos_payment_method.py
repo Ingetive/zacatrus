@@ -53,7 +53,6 @@ class PosPaymentMethod(models.Model):
             message = 'Creado'
             ok = True
 
-        print("Zacalog: UNO");
         if status not in [200]:
             notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
             hed = {'Authorization': 'Bearer ' + apiKey}
@@ -67,15 +66,10 @@ class PosPaymentMethod(models.Model):
                 "customer_ext_id": str(data['client']),
                 "additional": "Additional info"
             }
-            print( postParams);
             response = requests.post(url, headers=hed, json=postParams)
-
-            print("Zacalog: DOS");
-            print(response)
 
             res = response.json()
             message = res['message']
-            print(message)
             if response.status_code == 200:  
                 ok = True
                 if not dbPayment:
@@ -107,6 +101,7 @@ class PosPaymentMethod(models.Model):
                     'uuid': payment['uuid'],
                     'masked_pan': payment['masked_pan'],
                     'brand': payment['brand'],
+                    'ticket_footer': payment['ticket_footer']
                 }
 
         return ret

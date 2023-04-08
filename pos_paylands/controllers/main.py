@@ -1,5 +1,6 @@
 import logging
 from odoo import http
+import datetime
 import hmac, base64, struct, hashlib, time, os
 import json
 _logger = logging.getLogger(__name__)
@@ -87,9 +88,41 @@ class PaylandsController(http.Controller):
                 ]
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
-                    print(f"<li>{payment['order_id']} {payment['status']}</li>")
-                    print(payment)
-                    status = 200
-                    payment.write({'status': 200})
+                    data = None
+                    if notification['order']['amount'] != payment['amount']*100:
+                        data = {'status': 500}
+                    else:
+                        for transaction in notification['order']['transactions']:
+                            data = {
+                                'uuid': notification['order']['uuid'],
+                                #'cardType': notification['order']['reference'],
+                                #'cardHolderName': notification['order']['reference'],
+                                'masked_pan': transaction['pos']['masked_pan'],
+                                'brand': transaction['pos']['brand'],
+                                'status': 200,
+                                'ticket_footer': self._getTicketFooter(notification, transaction)
+                            }
+
+                    if data:
+                        payment.write( data )
 
         return {"ok": ok, "status": status}
+
+    def _getTicketFooter(self, notification, transaction):
+        when = datetime.datetime.strptime(notification['order']['created'], '%Y-%m-%dT%H:%M:%S%z')
+        amount = notification['order']['amount']/100
+        ticketFooter = f"------------------------------------------<br />"
+        ticketFooter += f"DATOS TARJETA:<br />"
+        ticketFooter += f"Id. transacción: {notification['order']['uuid']}<br />"
+        ticketFooter += f"Fecha: {when.strftime('%d/%m/%Y')}<br />"
+        ticketFooter += f"Hora: {when.strftime('%H:%M:%S')}<br />"
+        ticketFooter += f"Cantidad: {amount}<br />"
+        ticketFooter += f"Cod. moneda: {notification['order']['currency']}<br />"
+        ticketFooter += f"Servicio: {notification['order']['service']}<br />"
+        ticketFooter += f"Tipo: {transaction['pos']['brand']}<br />"
+        ticketFooter += f"Tarjeta: {transaction['pos']['masked_pan']}<br />"
+        ticketFooter += f"Met. verificación: {transaction['pos']['verification_method']}<br />"
+        ticketFooter += f"Mod. entrada: {transaction['pos']['entry_mode']}<br />"
+        ticketFooter += f"------------------------------------------<br />"
+
+        return ticketFooter
