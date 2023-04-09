@@ -9,7 +9,6 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     paylands_sandbox_mode = fields.Boolean("Paylands en modo pruebas")
-    paylands_notification_url = fields.Char("Url para notificaciones de Paylands")
     paylands_signature = fields.Char("Firma digital")
     paylands_apikey = fields.Char("Api key")
 
@@ -18,12 +17,10 @@ class ResConfigSettings(models.TransientModel):
         res = super(ResConfigSettings, self).get_values()
 
         paylandsSandboxMode = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_sandbox_mode')
-        paylandsIpnUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
         paylandsSignature = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_signature')
         paylandsApikey = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_apikey')
         res.update(
             paylands_sandbox_mode = paylandsSandboxMode,
-            paylands_notification_url = paylandsIpnUrl,
             paylands_signature = paylandsSignature,
             paylands_apikey = paylandsApikey
         )
@@ -32,7 +29,6 @@ class ResConfigSettings(models.TransientModel):
     @api.model
     def set_values(self):
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.paylands_sandbox_mode', self.paylands_sandbox_mode)
-        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.paylands_notification_url', self.paylands_notification_url)
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.paylands_signature', self.paylands_signature)
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.paylands_apikey', self.paylands_apikey)
 

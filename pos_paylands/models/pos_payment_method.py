@@ -54,7 +54,10 @@ class PosPaymentMethod(models.Model):
             ok = True
 
         if status not in [200]:
-            notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
+            #notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
+            baseUrl = self.env['ir.config_parameter'].get_param('web.base.url')
+            notificationUrl = f"{baseUrl}/payment/paylands/return"
+            print(f"Zacalog: notificationUrl: {notificationUrl}")
             hed = {'Authorization': 'Bearer ' + apiKey}
             postParams = {
                 "signature": signature,
@@ -94,7 +97,6 @@ class PosPaymentMethod(models.Model):
 
         payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
         for payment in payments:
-            print (payment)
             ret = {'status': payment['status'], 'additional' : {}}
             if payment['status'] == 200:
                 ret['additional'] = {      
