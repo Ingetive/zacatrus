@@ -10,7 +10,6 @@ odoo.define("pos_paylands.payment", function (require) {
 
     var PaylandsPayment = PaymentInterface.extend({
         init: function () {
-            console.log("init payment terminal");
             this._super.apply(this, arguments);
         },
 
@@ -269,7 +268,7 @@ odoo.define("pos_paylands.payment", function (require) {
 
 
             if (pay_line.amount > 0){
-                return this._doSend('');
+                return this._doSend( false );
             }
             else {
                 return Gui.showPopup('TextInputPopup', {
