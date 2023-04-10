@@ -40,7 +40,6 @@ class PaylandsController(http.Controller):
         #cancelacion:
         #notification = {'order': {'uuid': '404C0CC3-4A3F-47F4-AEF1-4D56471299AC', 'created': '2023-04-05T17:57:18+0200', 'created_from_client_timezone': '2023-04-05T17:57:18+0200', 'amount': 5000, 'currency': '978', 'paid': False, 'status': 'CANCELLED', 'safe': True, 'refunded': 0, 'additional': 'Additional info', 'service': 'CREDORAX', 'service_uuid': '435A61DC-BC1A-45E2-921C-17BC5BA47687', 'customer': '12345678Z', 'cof_txnid': None, 'transactions': [{'uuid': 'F9AF2321-E755-4BC5-98C7-4797DFA42646', 'created': '2023-04-05T17:57:18+0200', 'created_from_client_timezone': '2023-04-05T17:57:18+0200', 'operative': 'AUTHORIZATION', 'amount': 5000, 'authorization': '', 'processor_id': None, 'status': 'CANCELLED', 'error': 'NONE', 'source': None, 'antifraud': None, 'device': None, 'error_details': None, 'pos': {'requestor_id': 'API', 'pos_device_id': '641d793e4512905387c04410', 'reversal': False, 'brand': None, 'masked_pan': None, 'verification_method': '', 'entry_mode': None, 'expiry_date': None}}], 'token': None, 'ip': None, 'reference': 'POS3_Orden-09779-002-0005', 'dynamic_descriptor': None, 'threeds_data': None}, 'client': {'uuid': 'D329BC3B-0AE1-422E-9BB2-BCA1278487EE'}, 'validation_hash': '1d2939a29129d5933d92d483eed14a54ee9f38050ca7c075d77aa9a1747a636b'}
 
-        print(notification)
         _logger.info("Zacalog: Paylands return :"+ str(notification))
 
         # Check hash
@@ -67,7 +66,7 @@ class PaylandsController(http.Controller):
             for payment in payments:
                 payment.write({'status': 500})
                 status = 500
-        if notification['order']['status'] == 'CANCELLED':
+        elif notification['order']['status'] == 'CANCELLED':
             args = [
                 ('order_id', '=', notification['order']['reference'])
             ]
@@ -75,7 +74,8 @@ class PaylandsController(http.Controller):
             for payment in payments:
                 payment.write({'status': 300})
                 status = 300
-        elif notification['order']['status'] == 'SUCCESS':
+        elif notification['order']['status'] == 'SUCCESS' or notification['order']['status'] == 'REFUNDED':
+            print("Zacalog: SUCCESS")
             for transaction in notification['order']['transactions']:
                 if transaction['status'] == 'SUCCESS':
                     ok = True
@@ -88,20 +88,25 @@ class PaylandsController(http.Controller):
                 ]
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
-                    data = None
-                    if notification['order']['amount'] != payment['amount']*100:
-                        data = {'status': 500}
+                    if (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or (payment['amount'] > 0 and notification['order']['status'] == 'REFUNDED'):
+                        ok = False
+                        status = 502
                     else:
-                        for transaction in notification['order']['transactions']:
-                            data = {
-                                'uuid': notification['order']['uuid'],
-                                #'cardType': notification['order']['reference'],
-                                #'cardHolderName': notification['order']['reference'],
-                                'masked_pan': transaction['pos']['masked_pan'],
-                                'brand': transaction['pos']['brand'],
-                                'status': 200,
-                                'ticket_footer': self._getTicketFooter(notification, transaction)
-                            }
+                        data = None
+                        print("Zacalog: "+str(payment['amount']))
+                        if notification['order']['status'] == 'SUCCESS' and notification['order']['amount'] != payment['amount']*100:
+                            data = {'status': 503}
+                        else:
+                            for transaction in notification['order']['transactions']:
+                                data = {
+                                    'uuid': notification['order']['uuid'],
+                                    #'cardType': notification['order']['reference'],
+                                    #'cardHolderName': notification['order']['reference'],
+                                    'masked_pan': transaction['pos']['masked_pan'],
+                                    'brand': transaction['pos']['brand'],
+                                    'status': 200,
+                                    'ticket_footer': self._getTicketFooter(notification, transaction)
+                                }
 
                     if data:
                         payment.write( data )
@@ -125,4 +130,5 @@ class PaylandsController(http.Controller):
         ticketFooter += f"Mod. entrada: {transaction['pos']['entry_mode']}<br />"
         ticketFooter += f"------------------------------------------<br />"
 
+        print(ticketFooter)
         return ticketFooter

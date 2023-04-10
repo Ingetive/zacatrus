@@ -11,7 +11,7 @@ class PosPaymentMethod(models.Model):
 
     def _getBaseUrl(self, sandbox = False):
         sandboxText = "/sandbox" if sandbox else ""
-        return f"https://api.paylands.com/v1{sandboxText}/posms/payment"
+        return f"https://api.paylands.com/v1{sandboxText}"
 
     def _get_payment_terminal_selection(self):
         res = super()._get_payment_terminal_selection()
@@ -56,9 +56,9 @@ class PosPaymentMethod(models.Model):
         if status not in [200]:
             if data['amount'] < 0:
                 orderCode = data['order'].replace(" ", "").replace("Order", "").replace("Orden", "")
-                orderId = f"Order-{orderCode}"
-                print(f"Zacalog: Es una devolución del pedido {orderId}")
-                payments = self.env["pos_paylands.payment"].search([("order_id", "=", orderId)])
+                prevOrderId = f"Order-{orderCode}"
+                print(f"Zacalog: Es una devolución del pedido {prevOrderId}")
+                payments = self.env["pos_paylands.payment"].search([("order_id", "=", prevOrderId)])
                 found = False
                 for payment in payments:
                     found = True
@@ -71,12 +71,21 @@ class PosPaymentMethod(models.Model):
                         "amount": data['amount']*100*-1
                     }
                     print(postParams)
-                    response = requests.post(url, headers=hed, json=postParams)
+                    response = requests.post(f"{url}/posms/refund", headers=hed, json=postParams)
 
                     res = response.json()
                     message = res['message']
                     if response.status_code == 200:
                         ok = True
+                        if not dbPayment:
+                            self.env["pos_paylands.payment"].create({
+                                "order_id": orderId,
+                                "status": status,
+                                "amount": data['amount']
+                            })
+                        else:
+                            dbPayment.write( {'status' : 0} )
+                        #payment.write( {'return_order_id': orderId} )
                     else:
                         code = response.status_code
                         message = res['message']
@@ -99,7 +108,7 @@ class PosPaymentMethod(models.Model):
                     "customer_ext_id": str(data['client']),
                     "additional": "Additional info"
                 }
-                response = requests.post(url, headers=hed, json=postParams)
+                response = requests.post(f"{url}/posms/payment", headers=hed, json=postParams)
 
                 res = response.json()
                 message = res['message']
@@ -128,6 +137,7 @@ class PosPaymentMethod(models.Model):
         orderId = f"{orderNumber}"
 
         payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
+        ret = {'status': 0, 'additional' : {}}
         for payment in payments:
             ret = {'status': payment['status'], 'additional' : {}}
             if payment['status'] == 200:
@@ -137,6 +147,8 @@ class PosPaymentMethod(models.Model):
                     'brand': payment['brand'],
                     'ticket_footer': payment['ticket_footer']
                 }
+            elif payment['status'] == 202:
+                pass
 
         return ret
 

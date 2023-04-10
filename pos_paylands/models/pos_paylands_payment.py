@@ -11,6 +11,7 @@ class PosPaylandsPayment(models.Model):
 
     #x_paylands_key = fields.Char("Paylands api key")
     order_id = fields.Char("Id del pedido")
+    #refund_order_id = fields.Char("Id del pedido de la devolución")
     status = fields.Integer("Estado del pedido")
     amount = fields.Integer("Importe total")
     #x_min_amount = fields.Integer("Importe mínimo del pedido para financiar")
