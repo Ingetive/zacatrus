@@ -39,7 +39,7 @@ class PosPaymentMethod(models.Model):
         data = json.loads(_data)
 
         orderNumber = name.replace(" ", "-")
-        orderId = f"POS{posId}_{orderNumber}"
+        orderId = f"{orderNumber}"
         code = 0
         message = ''
         status = 0
@@ -54,38 +54,70 @@ class PosPaymentMethod(models.Model):
             ok = True
 
         if status not in [200]:
-            #notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
-            baseUrl = self.env['ir.config_parameter'].get_param('web.base.url')
-            notificationUrl = f"{baseUrl}/payment/paylands/return"
-            print(f"Zacalog: notificationUrl: {notificationUrl}")
-            hed = {'Authorization': 'Bearer ' + apiKey}
-            postParams = {
-                "signature": signature,
-                "device": posParams['device'],
-                "amount": data['amount']*100,
-                "description": f"{name}",
-                "url_post": notificationUrl,
-                "reference": orderId,
-                "customer_ext_id": str(data['client']),
-                "additional": "Additional info"
-            }
-            response = requests.post(url, headers=hed, json=postParams)
+            if data['amount'] < 0:
+                orderCode = data['order'].replace(" ", "").replace("Order", "").replace("Orden", "")
+                orderId = f"Order-{orderCode}"
+                print(f"Zacalog: Es una devolución del pedido {orderId}")
+                payments = self.env["pos_paylands.payment"].search([("order_id", "=", orderId)])
+                found = False
+                for payment in payments:
+                    found = True
+                    code = 500
+                    hed = {'Authorization': 'Bearer ' + apiKey}
+                    postParams = {
+                        "signature": signature,
+                        "device": posParams['device'],
+                        "order_uuid": payment['uuid'],
+                        "amount": data['amount']*100*-1
+                    }
+                    print(postParams)
+                    response = requests.post(url, headers=hed, json=postParams)
 
-            res = response.json()
-            message = res['message']
-            if response.status_code == 200:  
+                    res = response.json()
+                    message = res['message']
+                    if response.status_code == 200:
+                        ok = True
+                    else:
+                        code = response.status_code
+                        message = res['message']
+
+                if not found:
+                    code = 404
+                    message = "No encuentro el pedido original. ¿Lo has tecleado bien?"
+            elif data['amount'] > 0:
+                #notificationUrl = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_notification_url')
+                baseUrl = self.env['ir.config_parameter'].get_param('web.base.url')
+                notificationUrl = f"{baseUrl}/payment/paylands/return"
+                hed = {'Authorization': 'Bearer ' + apiKey}
+                postParams = {
+                    "signature": signature,
+                    "device": posParams['device'],
+                    "amount": data['amount']*100,
+                    "description": f"{name}",
+                    "url_post": notificationUrl,
+                    "reference": orderId,
+                    "customer_ext_id": str(data['client']),
+                    "additional": "Additional info"
+                }
+                response = requests.post(url, headers=hed, json=postParams)
+
+                res = response.json()
+                message = res['message']
+                if response.status_code == 200:  
+                    ok = True
+                    if not dbPayment:
+                        self.env["pos_paylands.payment"].create({
+                            "order_id": orderId,
+                            "status": status,
+                            "amount": data['amount']
+                        })
+                    else:
+                        dbPayment.write( {'status' : 0} )
+                res = response.json()
+                message = res['message']
+                code = res['code']
+            else:
                 ok = True
-                if not dbPayment:
-                    self.env["pos_paylands.payment"].create({
-                        "order_id": orderId,
-                        "status": status,
-                        "amount": data['amount']
-                    })
-                else:
-                    dbPayment.write( {'status' : 0} )
-            res = response.json()
-            message = res['message']
-            code = res['code']
 
         return {"ok": ok, 'code': code, 'message': message, 'status': status}
 
@@ -93,7 +125,7 @@ class PosPaymentMethod(models.Model):
     def get_status(self, posId, name):
         ret = 0
         orderNumber = name.replace(" ", "-")
-        orderId = f"POS{posId}_{orderNumber}"
+        orderId = f"{orderNumber}"
 
         payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
         for payment in payments:
@@ -112,7 +144,7 @@ class PosPaymentMethod(models.Model):
     def cancel(self, posId, name):
         ret = 0
         orderNumber = name.replace(" ", "-")
-        orderId = f"POS{posId}_{orderNumber}"
+        orderId = f"{orderNumber}"
 
         args = [
             ('order_id', '=', orderId)

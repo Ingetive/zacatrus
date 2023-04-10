@@ -15,7 +15,6 @@ odoo.define("pos_paylands.payment", function (require) {
         },
 
         send_payment_request: function () {
-            console.log("Send payment");
             this._super.apply(this, arguments);
             return this._paylands_pay();
         },
@@ -227,20 +226,21 @@ odoo.define("pos_paylands.payment", function (require) {
             }
         },
 
-        _paylands_pay: function() { 
+        _doSend( code ){
+            var self = this;
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
-            var self = this;
             var client = order.get_client();
             var clientId = 'anonymous';
-
             if (client){
                 console.log(client);
                 clientId = client.id;  
             }
+            console.log("Send payment 2");
             var data = {
                 "client": clientId,
                 "amount": pay_line.amount,
+                "order": code
                 //"articles": articles
             };
 
@@ -260,6 +260,30 @@ odoo.define("pos_paylands.payment", function (require) {
                 Gui.showPopup("ErrorPopup", {title: "Error 20", body: "No puedo procesar el pago.",});
                 return false;
             });
+            return false;
+        },
+
+        _paylands_pay: function() { 
+            var order = this.pos.get_order();
+            var pay_line = order.selected_paymentline;
+
+
+            if (pay_line.amount > 0){
+                return this._doSend('');
+            }
+            else {
+                return Gui.showPopup('TextInputPopup', {
+                   title: 'Número de pedido (Order) original',
+                   body: 'Ej.: 00001-051-0001.',
+                }).then(({ confirmed, payload: code }) => {
+                    if (code){
+                        console.log("return: "+code);
+                        return this._doSend(code);
+                    }
+                });
+            }
+            return false;
+
         },
     });
     return PaylandsPayment;
