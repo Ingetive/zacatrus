@@ -60,8 +60,7 @@ class PaylandsController(http.Controller):
                         status = 502
                     else:
                         data = None
-                        print("Zacalog: "+str(payment['amount']))
-                        if notification['order']['status'] == 'SUCCESS' and notification['order']['amount'] != payment['amount']*100:
+                        if notification['order']['status'] == 'SUCCESS' and notification['order']['amount'] != payment['amount']:
                             data = {'status': 503}
                         else:
                             for transaction in notification['order']['transactions']:

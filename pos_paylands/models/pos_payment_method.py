@@ -70,7 +70,6 @@ class PosPaymentMethod(models.Model):
                         "order_uuid": payment['uuid'],
                         "amount": data['amount']*100*-1
                     }
-                    print(postParams)
                     response = requests.post(f"{url}/posms/refund", headers=hed, json=postParams)
 
                     res = response.json()
@@ -81,7 +80,7 @@ class PosPaymentMethod(models.Model):
                             self.env["pos_paylands.payment"].create({
                                 "order_id": orderId,
                                 "status": status,
-                                "amount": data['amount']
+                                "amount": data['amount']*100
                             })
                         else:
                             dbPayment.write( {'status' : 0} )
@@ -118,7 +117,7 @@ class PosPaymentMethod(models.Model):
                         self.env["pos_paylands.payment"].create({
                             "order_id": orderId,
                             "status": status,
-                            "amount": data['amount']
+                            "amount": data['amount']*100
                         })
                     else:
                         dbPayment.write( {'status' : 0} )

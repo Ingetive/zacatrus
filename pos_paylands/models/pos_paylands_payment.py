@@ -13,7 +13,7 @@ class PosPaylandsPayment(models.Model):
     order_id = fields.Char("Id del pedido")
     #refund_order_id = fields.Char("Id del pedido de la devolución")
     status = fields.Integer("Estado del pedido")
-    amount = fields.Integer("Importe total")
+    amount = fields.Integer("Importe total en céntimos (x100)")
     #x_min_amount = fields.Integer("Importe mínimo del pedido para financiar")
 
     uuid = fields.Char("Uuid del pedido")
