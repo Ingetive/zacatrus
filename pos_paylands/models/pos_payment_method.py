@@ -38,7 +38,10 @@ class PosPaymentMethod(models.Model):
         posParams = self._getPosParams(posId)
         data = json.loads(_data)
 
-        orderNumber = name.replace(" ", "-")
+        orderNumber = name
+        part = name.split(" ")
+        if count(part) == 2:
+            orderNumber = part[2]
         orderId = f"{orderNumber}"
         code = 0
         message = ''
@@ -55,9 +58,9 @@ class PosPaymentMethod(models.Model):
 
         if status not in [200]:
             if data['amount'] < 0:
-                orderCode = data['order'].replace(" ", "").replace("Order", "").replace("Orden", "")
-                prevOrderId = f"Order-{orderCode}"
-                print(f"Zacalog: Es una devolución del pedido {prevOrderId}")
+                orderCode = data['order'].replace(" ", "")
+                prevOrderId = f"{orderCode}"
+                _logger.warning(f"Zacalog: paylands prevOrderId: {prevOrderId}")
                 payments = self.env["pos_paylands.payment"].search([("order_id", "=", prevOrderId)])
                 found = False
                 for payment in payments:
@@ -105,8 +108,9 @@ class PosPaymentMethod(models.Model):
                     "url_post": notificationUrl,
                     "reference": orderId,
                     "customer_ext_id": str(data['client']),
-                    "additional": "Additional info"
+                    "additional": orderId
                 }
+                #_logger.warning(f"Zacalog: paylands {postParams}")
                 response = requests.post(f"{url}/posms/payment", headers=hed, json=postParams)
 
                 res = response.json()
@@ -132,7 +136,10 @@ class PosPaymentMethod(models.Model):
     @api.model
     def get_status(self, posId, name):
         ret = 0
-        orderNumber = name.replace(" ", "-")
+        orderNumber = name        
+        part = name.split(" ")
+        if count(part) == 2:
+            orderNumber = part[2]
         orderId = f"{orderNumber}"
 
         payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
@@ -154,7 +161,11 @@ class PosPaymentMethod(models.Model):
     @api.model
     def cancel(self, posId, name):
         ret = 0
-        orderNumber = name.replace(" ", "-")
+
+        orderNumber = name
+        part = name.split(" ")
+        if count(part) == 2:
+            orderNumber = part[2]
         orderId = f"{orderNumber}"
 
         args = [
