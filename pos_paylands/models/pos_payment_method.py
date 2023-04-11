@@ -40,8 +40,8 @@ class PosPaymentMethod(models.Model):
 
         orderNumber = name
         part = name.split(" ")
-        if count(part) == 2:
-            orderNumber = part[2]
+        if len(part) == 2:
+            orderNumber = part[1]
         orderId = f"{orderNumber}"
         code = 0
         message = ''
@@ -138,8 +138,8 @@ class PosPaymentMethod(models.Model):
         ret = 0
         orderNumber = name        
         part = name.split(" ")
-        if count(part) == 2:
-            orderNumber = part[2]
+        if len(part) == 2:
+            orderNumber = part[1]
         orderId = f"{orderNumber}"
 
         payments = self.env["pos_paylands.payment"].search_read(domain=[("order_id", "=", orderId)])
@@ -164,8 +164,8 @@ class PosPaymentMethod(models.Model):
 
         orderNumber = name
         part = name.split(" ")
-        if count(part) == 2:
-            orderNumber = part[2]
+        if len(part) == 2:
+            orderNumber = part[1]
         orderId = f"{orderNumber}"
 
         args = [
