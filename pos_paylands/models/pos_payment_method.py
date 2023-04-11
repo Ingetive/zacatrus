@@ -111,6 +111,7 @@ class PosPaymentMethod(models.Model):
 
                 res = response.json()
                 message = res['message']
+                code = res['code']
                 if response.status_code == 200:  
                     ok = True
                     if not dbPayment:
@@ -121,9 +122,8 @@ class PosPaymentMethod(models.Model):
                         })
                     else:
                         dbPayment.write( {'status' : 0} )
-                res = response.json()
-                message = res['message']
-                code = res['code']
+                else:
+                    status = response.status_code
             else:
                 ok = True
 

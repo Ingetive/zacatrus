@@ -131,9 +131,9 @@ odoo.define("pos_paylands.payment", function (require) {
                         
                         resolve(true);
                     }
-                    else if (res['status'] == 500) { 
+                    else if (res['status'] >= 500) { 
                         //var message = additional_response.get('message');
-                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Rechazada...'),});
+                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Denegada...'),});
 
                         line.set_payment_status('retry');
                         reject();
