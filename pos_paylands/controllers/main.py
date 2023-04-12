@@ -41,7 +41,7 @@ class PaylandsController(http.Controller):
             for payment in payments:
                 payment.write({'status': 300})
                 status = 300
-        elif notification['order']['status'] == 'SUCCESS' or notification['order']['status'] == 'REFUNDED':
+        elif notification['order']['status'] == 'SUCCESS' or notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']:
             print("Zacalog: SUCCESS")
             for transaction in notification['order']['transactions']:
                 if transaction['status'] == 'SUCCESS':
@@ -55,7 +55,7 @@ class PaylandsController(http.Controller):
                 ]
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
-                    if (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or (payment['amount'] > 0 and notification['order']['status'] == 'REFUNDED'):
+                    if (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or (payment['amount'] > 0 and notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']):
                         ok = False
                         status = 502
                     else:
