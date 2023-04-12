@@ -10,7 +10,7 @@ class PaylandsController(http.Controller):
     def handler(self):
         notification = http.request.jsonrequest
 
-        _logger.info("Zacalog: Paylands callback: "+ str(notification))
+        _logger.debug("Zacalog: Paylands callback: "+ str(notification))
 
         # Check hash
         signature = http.request.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_signature')
@@ -42,40 +42,33 @@ class PaylandsController(http.Controller):
                 payment.write({'status': 300})
                 status = 300
         elif notification['order']['status'] == 'SUCCESS' or notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']:
-            print("Zacalog: SUCCESS")
-            for transaction in notification['order']['transactions']:
-                if transaction['status'] == 'SUCCESS':
-                    ok = True
-                else:
-                    ok = False
-                    break
-            if ok:
+            lastTransaction = self._getLastTransaction(notification['order']['transactions'])
+
+            if lastTransaction['status'] == 'SUCCESS':
                 args = [
                     ('order_id', '=', notification['order']['reference'])
                 ]
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
-                    if (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or (payment['amount'] > 0 and notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']):
+                    if ( (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or 
+                        (payment['amount'] > 0 and notification['order']['status'] in ['SUCCESS', 'REFUNDED', 'PARTIALLY_REFUNDED']) ):
                         ok = False
                         status = 502
                     else:
                         data = None
                         if notification['order']['status'] == 'SUCCESS' and notification['order']['amount'] != payment['amount']:
-                            data = {'status': 503}
+                            payment.write( {'status': 503} )
                         else:
-                            for transaction in notification['order']['transactions']:
-                                data = {
-                                    'uuid': notification['order']['uuid'],
-                                    #'cardType': notification['order']['reference'],
-                                    #'cardHolderName': notification['order']['reference'],
-                                    'masked_pan': transaction['pos']['masked_pan'],
-                                    'brand': transaction['pos']['brand'],
-                                    'status': 200,
-                                    'ticket_footer': self._getTicketFooter(notification, transaction)
-                                }
+                            payment.write( {
+                                'uuid': notification['order']['uuid'],
+                                #'cardType': notification['order']['reference'],
+                                #'cardHolderName': notification['order']['reference'],
+                                'masked_pan': lastTransaction['pos']['masked_pan'],
+                                'brand': lastTransaction['pos']['brand'],
+                                'status': 200,
+                                'ticket_footer': self._getTicketFooter(notification, lastTransaction)
+                            } )
 
-                    if data:
-                        payment.write( data )
 
         return {"ok": ok, "status": status}
 
@@ -96,5 +89,16 @@ class PaylandsController(http.Controller):
         ticketFooter += f"Mod. entrada: {transaction['pos']['entry_mode']}<br />"
         ticketFooter += f"------------------------------------------<br />"
 
-        print(ticketFooter)
         return ticketFooter
+
+
+    def _getLastTransaction(self, transactions):
+        lastTransaction = None
+        lastTransactionDate = None
+        for transaction in transactions:
+            date = datetime.datetime.strptime(transaction['created'], "%Y-%m-%dT%H:%M:%S%z") #2023-04-11T17:07:24+0200
+            if not lastTransaction or lastTransactionDate < date:
+                lastTransaction = transaction
+                lastTransactionDate = date
+
+        return lastTransaction

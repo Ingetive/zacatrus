@@ -27,7 +27,6 @@ class PosPaymentMethod(models.Model):
 
         return ret
 
-
     @api.model
     def paylands(self, posId, name, _data):
         url = self._getBaseUrl(
