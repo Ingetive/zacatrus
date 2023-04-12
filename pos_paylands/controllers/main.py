@@ -50,8 +50,7 @@ class PaylandsController(http.Controller):
                 ]
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
-                    if ( (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or 
-                        (payment['amount'] > 0 and notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']) ):
+                    if not notification['order']['status'] in ['SUCCESS', 'REFUNDED', 'PARTIALLY_REFUNDED']:
                         _logger.error("Zacalog: Paylands callback failed.")
                         ok = False
                         status = 502
