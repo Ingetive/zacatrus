@@ -10,7 +10,7 @@ class PaylandsController(http.Controller):
     def handler(self):
         notification = http.request.jsonrequest
 
-        _logger.debug("Zacalog: Paylands callback: "+ str(notification))
+        _logger.info("Zacalog: Paylands callback: "+ str(notification))
 
         # Check hash
         signature = http.request.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_signature')
@@ -51,12 +51,14 @@ class PaylandsController(http.Controller):
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
                     if ( (payment['amount'] < 0 and notification['order']['status'] == 'SUCCESS') or 
-                        (payment['amount'] > 0 and notification['order']['status'] in ['SUCCESS', 'REFUNDED', 'PARTIALLY_REFUNDED']) ):
+                        (payment['amount'] > 0 and notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']) ):
+                        _logger.error("Zacalog: Paylands callback failed.")
                         ok = False
                         status = 502
                     else:
                         data = None
                         if notification['order']['status'] == 'SUCCESS' and notification['order']['amount'] != payment['amount']:
+                            _logger.error("Zacalog: Paylands callback failed 503.")
                             payment.write( {'status': 503} )
                         else:
                             payment.write( {
