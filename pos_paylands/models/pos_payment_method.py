@@ -82,6 +82,7 @@ class PosPaymentMethod(models.Model):
                             self.env["pos_paylands.payment"].create({
                                 "order_id": orderId,
                                 "status": status,
+                                "refund_order_id": prevOrderId,
                                 "amount": int(data['amount']*100)
                             })
                         else:

@@ -45,8 +45,11 @@ class PaylandsController(http.Controller):
             lastTransaction = self._getLastTransaction(notification['order']['transactions'])
 
             if lastTransaction['status'] == 'SUCCESS':
+                field = "order_id"
+                if notification['order']['status'] in ['REFUNDED', 'PARTIALLY_REFUNDED']:
+                    field = "refund_order_id"
                 args = [
-                    ('order_id', '=', notification['order']['reference'])
+                    (field, '=', notification['order']['reference'])
                 ]
                 payments = http.request.env["pos_paylands.payment"].search(args)
                 for payment in payments:
