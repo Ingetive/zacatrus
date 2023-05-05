@@ -103,18 +103,23 @@ class PosPaymentMethod(models.Model):
                 postParams = {
                     "signature": signature,
                     "device": posParams['device'],
-                    "amount": data['amount']*100,
+                    "amount": int(data['amount']*100),
                     "description": f"{name}",
                     "url_post": notificationUrl,
                     "reference": orderId,
                     "customer_ext_id": str(data['client']),
                     "additional": orderId
                 }
-                #_logger.warning(f"Zacalog: paylands {postParams}")
+                _logger.warning(f"Zacalog: paylands {postParams}")
                 response = requests.post(f"{url}/posms/payment", headers=hed, json=postParams)
 
                 res = response.json()
-                message = res['message']
+                _logger.warning(f"Zacalog: paylands res: {res}")
+                message = ''
+                if 'message' in res:
+                    message = res['message']
+                if 'details' in res:
+                    message += res['details']
                 code = res['code']
                 if response.status_code == 200:  
                     ok = True
@@ -122,7 +127,7 @@ class PosPaymentMethod(models.Model):
                         self.env["pos_paylands.payment"].create({
                             "order_id": orderId,
                             "status": status,
-                            "amount": data['amount']*100
+                            "amount": int(data['amount']*100)
                         })
                     else:
                         dbPayment.write( {'status' : 0} )
