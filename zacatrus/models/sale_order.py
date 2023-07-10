@@ -12,7 +12,7 @@ class SaleOrder(models.Model):
     x_company = fields.Char("Empresa")
     x_droppoint = fields.Integer('Punto Nacexshop')
     x_status = fields.Integer('Estado de importación (magento)')
-    x_tarjezaca = fields.Integer('Cantidad pagada con Tarjezaca')
+    x_tarjezaca = fields.Float('Cantidad pagada con Tarjezaca')
     
     @api.model
     def create(self, vals):
