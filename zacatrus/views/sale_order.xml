@@ -8,6 +8,7 @@
             <xpath expr="//group[@name='sale_shipping']" position="inside">
 				<field name="x_shipping_method" readonly="1"/>
                 <field name="x_droppoint"/>
+                <field name="x_tarjezaca" readonly="1"/>                
             </xpath>
         </field>
     </record>  
