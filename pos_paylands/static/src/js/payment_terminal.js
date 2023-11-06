@@ -38,7 +38,7 @@ odoo.define("pos_paylands.payment", function (require) {
                 shadow: true,
             }).then(function (status) {
                 self.was_cancelled = true;
-                Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Cancelando...'),});
+                Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Por favor, cancélalo en el datáfono.'),});   
             }).catch(function (status) {
                 Gui.showPopup("ErrorPopup", {title: "Paylands error", body: _t('Error de conexión.'),});
             })

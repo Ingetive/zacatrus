@@ -163,6 +163,31 @@ class PosPaymentMethod(models.Model):
 
         return ret
 
+    def _paylandsCancel(self, posParams, uuid):
+        baseUrl = self.env['ir.config_parameter'].get_param('web.base.url')
+        url = self._getBaseUrl(
+            self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_sandbox_mode')
+        )
+        apiKey = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_apikey')
+        signature = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_signature')
+
+        hed = {'Authorization': 'Bearer ' + apiKey}
+        postParams = {
+            "signature": signature,
+            "device": posParams['device'],
+            "order_uuid": uuid
+        }
+        _logger.warning(f"Zacalog: paylands {postParams}")
+        response = requests.post(f"{url}/posms/preauth/cancel", headers=hed, json=postParams)
+
+        res = response.json()
+        print(res)
+        message = res['message']
+        if response.status_code == 200:
+            return True
+
+        return False
+
     @api.model
     def cancel(self, posId, name):
         ret = 0
@@ -178,8 +203,12 @@ class PosPaymentMethod(models.Model):
         ]
         payments = self.env["pos_paylands.payment"].search(args)
         for payment in payments:
-            res = payment.write({'status': 300})
-            if res:
-                ret = 300
+            if payment['status'] == 300: # already cancelled
+                ret = 1
+            else:
+                posParams = self._getPosParams(posId)
+                res = payment.write({'status': 300})
+                if res:
+                    ret = 300
 
         return ret
