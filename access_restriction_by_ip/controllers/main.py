@@ -45,7 +45,11 @@ class Home(main.Home):
             values['databases'] = None
         if request.httprequest.method == 'POST':
             old_uid = request.uid
-            ip_address = request.httprequest.environ['REMOTE_ADDR']
+            if 'HTTP_X_FORWARDED_FOR' in request.httprequest.environ:
+                ips = request.httprequest.environ['HTTP_X_FORWARDED_FOR'].split(',')
+                ip_address = ips[0]
+            else:
+                ip_address = request.httprequest.environ['REMOTE_ADDR']
             if request.params['login']:
                 user_rec = request.env['res.users'].sudo().search(
                     [('login', '=', request.params['login'])])
