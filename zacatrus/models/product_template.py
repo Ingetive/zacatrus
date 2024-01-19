@@ -10,3 +10,4 @@ class ProductTemplate(models.Model):
     x_deposito = fields.Boolean('Deposito')
     x_discontinued = fields.Boolean('Descatalogado')
     x_sku = fields.Char('SKU')
+    x_manufacturer = fields.Char('SKU')
