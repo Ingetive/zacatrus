@@ -11,15 +11,14 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
     
     @api.model
-    def registrar_pago(self, move_ids, amount, journal_id=None):
-        moves = self.sudo().browse(move_ids)
-        if not moves:
+    def registrar_pago(self, move_id, journal_id=None):
+        move = self.sudo().browse(move_id)
+        if not move:
             return False
         
         payment_register = self.env['account.payment.register'].with_context({
             'active_model': 'account.move',
-            'amount': amount,
-            'active_ids': [(6, 0, moves.ids)],
+            'active_ids': [move.id],
         }).create({})
         
         if journal_id:
