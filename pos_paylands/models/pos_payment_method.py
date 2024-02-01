@@ -100,15 +100,6 @@ class PosPaymentMethod(models.Model):
                 baseUrl = self.env['ir.config_parameter'].get_param('web.base.url')
                 notificationUrl = f"{baseUrl}/payment/paylands/return"
                 hed = {'Authorization': 'Bearer ' + apiKey}
-                _logger.warning(f"Zacalog: paylands data {data}")
-                amountForPaylands = data['amount']
-                _logger.warning(f"Zacalog: aviso 1: {amountForPaylands}" )
-                amountForPaylands = data['amount'] * 100
-                _logger.warning(f"Zacalog: aviso 2: {amountForPaylands}" )
-                amountForPaylands = int(amountForPaylands)
-                _logger.warning(f"Zacalog: aviso 3: {amountForPaylands}" )
-                amountForPaylands = int(round(data['amount']*100))
-                _logger.warning(f"Zacalog: aviso 3: {amountForPaylands}" )
                 postParams = {
                     "signature": signature,
                     "device": posParams['device'],
