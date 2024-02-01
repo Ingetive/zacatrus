@@ -107,10 +107,12 @@ class PosPaymentMethod(models.Model):
                 _logger.warning(f"Zacalog: aviso 2: {amountForPaylands}" )
                 amountForPaylands = int(amountForPaylands)
                 _logger.warning(f"Zacalog: aviso 3: {amountForPaylands}" )
+                amountForPaylands = int(round(data['amount']*100))
+                _logger.warning(f"Zacalog: aviso 3: {amountForPaylands}" )
                 postParams = {
                     "signature": signature,
                     "device": posParams['device'],
-                    "amount": int(data['amount']*100),
+                    "amount": int(round(data['amount']*100)),
                     "description": f"{name}",
                     "url_post": notificationUrl,
                     "reference": orderId,
