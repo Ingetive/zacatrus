@@ -100,6 +100,7 @@ class PosPaymentMethod(models.Model):
                 baseUrl = self.env['ir.config_parameter'].get_param('web.base.url')
                 notificationUrl = f"{baseUrl}/payment/paylands/return"
                 hed = {'Authorization': 'Bearer ' + apiKey}
+                _logger.warning(f"Zacalog: paylands data {data}")
                 postParams = {
                     "signature": signature,
                     "device": posParams['device'],
