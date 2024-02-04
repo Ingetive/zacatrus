@@ -103,7 +103,7 @@ class PosPaymentMethod(models.Model):
                 postParams = {
                     "signature": signature,
                     "device": posParams['device'],
-                    "amount": int(data['amount']*100),
+                    "amount": int(round(data['amount']*100)),
                     "description": f"{name}",
                     "url_post": notificationUrl,
                     "reference": orderId,

@@ -242,6 +242,7 @@ odoo.define("pos_paylands.payment", function (require) {
                 "order": code
                 //"articles": articles
             };
+            console.log(data);
 
             return rpc.query({
                 model: 'pos.payment.method',
