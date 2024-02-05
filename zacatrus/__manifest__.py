@@ -25,7 +25,8 @@
         'stock', 
         'stock_location_children',
         'sale_amazon',
-        'portal'
+        'portal',
+        'account_fiscal_position_partner_type'
     ],
     'data': [
         'security/ir.model.access.csv',
