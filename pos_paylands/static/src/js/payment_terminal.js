@@ -84,7 +84,7 @@ odoo.define("pos_paylands.payment", function (require) {
                 // this promise don't resolve -- that is, it doesn't go to the 'then' clause.
                 return Promise.reject(data);
             }).then(function (res) {
-                console.log("status: "+res['status']);
+                console.log("get_status -> status: "+res['status']);
                 //var notification = status.latest_response;                
                 var order = self.pos.get_order();
                 var line = self.pending_paylands_line() || resolve(false);
@@ -131,7 +131,7 @@ odoo.define("pos_paylands.payment", function (require) {
                         
                         resolve(true);
                     }
-                    else if (res['status'] >= 500) { 
+                    else if (res['status'] >= 500 && res['status'] < 600) { 
                         //var message = additional_response.get('message');
                         Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Denegada...'),});
 
@@ -146,6 +146,12 @@ odoo.define("pos_paylands.payment", function (require) {
                         reject();
                     }
                     else {
+                        //var message = additional_response.get('message');
+                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: res['message'],});
+
+                        line.set_payment_status('retry');
+                        reject();
+
                         // TODO:
                         /*
                         var message = additional_response.get('message');

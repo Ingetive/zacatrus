@@ -3,7 +3,13 @@ import hmac, base64, struct, hashlib, time, os
 import requests
 import logging
 import json
+import re
 _logger = logging.getLogger(__name__)
+
+BLOCK_MSG =f"El datáfono está bloqueado por un intento anterior.\n\n"
+BLOCK_MSG += f"1. Asegurate de que está cancelado en el datáfono.\n"
+BLOCK_MSG += f"2. Puedes esperar (max. 1 minuto) y reintentar.\n"
+BLOCK_MSG += f"3. Puedes introducir el importe a mano en el datáfono y marcar la forma de pago 'tarjeta'.\n"
 
 class PosPaymentMethod(models.Model):
     _inherit = "pos.payment.method"
@@ -86,7 +92,10 @@ class PosPaymentMethod(models.Model):
                                 "amount": int(round(data['amount']*100))
                             })
                         else:
-                            dbPayment.write( {'status' : 0} )
+                            dbPayment.write({
+                                'status' : 0,
+                                "amount": int(round(data['amount']*100))
+                            })
                         #payment.write( {'return_order_id': orderId} )
                     else:
                         code = response.status_code
@@ -121,7 +130,22 @@ class PosPaymentMethod(models.Model):
                 if 'details' in res:
                     message += res['details']
                 code = res['code']
-                if response.status_code == 200:  
+
+                #TODO: remove
+                #code = 400
+                #message = 'Bad RequestDevice 6548a788c50f1886242e2448 have a pending transaction yet!'
+                #_logger.debug(f"Zacalog: CODE IS {code}")
+                if code == 400:
+                    m = re.search('Device ([0-9a-z]+) have a pending transaction yet', message)
+                    if m:
+                        status = 4005
+                        message = BLOCK_MSG
+                        if dbPayment:
+                            dbPayment.write({
+                                'status' : status,
+                                "amount": int(round(data['amount']*100))
+                            })
+                elif response.status_code == 200:
                     ok = True
                     if not dbPayment:
                         self.env["pos_paylands.payment"].create({
@@ -130,7 +154,10 @@ class PosPaymentMethod(models.Model):
                             "amount": int(round(data['amount']*100))
                         })
                     else:
-                        dbPayment.write( {'status' : 0} )
+                        dbPayment.write({
+                            'status' : 0,
+                            "amount": int(round(data['amount']*100))
+                        })
                 else:
                     status = response.status_code
             else:
@@ -160,6 +187,10 @@ class PosPaymentMethod(models.Model):
                 }
             elif payment['status'] == 202:
                 pass
+            elif payment['status'] == 4005:
+                ret['message'] = BLOCK_MSG
+
+        #_logger.debug(f"Zacalog: RET IS "+ json.dumps(ret))
 
         return ret
 
