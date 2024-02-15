@@ -86,7 +86,10 @@ class PosPaymentMethod(models.Model):
                                 "amount": int(round(data['amount']*100))
                             })
                         else:
-                            dbPayment.write( {'status' : 0} )
+                            dbPayment.write({
+                                'status' : 0,
+                                "amount": int(data['amount']*100)
+                            })
                         #payment.write( {'return_order_id': orderId} )
                     else:
                         code = response.status_code
@@ -130,7 +133,10 @@ class PosPaymentMethod(models.Model):
                             "amount": int(round(data['amount']*100))
                         })
                     else:
-                        dbPayment.write( {'status' : 0} )
+                        dbPayment.write({
+                            'status' : 0,
+                            "amount": int(data['amount']*100)
+                        })
                 else:
                     status = response.status_code
             else:
