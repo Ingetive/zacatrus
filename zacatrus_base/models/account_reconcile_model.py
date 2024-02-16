@@ -11,6 +11,8 @@ from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 
 class AccountReconcileModel(models.Model):
+    _inherit = 'account.reconcile.model'
+
     def _get_invoice_matching_query(self, st_lines_with_partner, excluded_ids):
         ''' Returns the query applying the current invoice_matching reconciliation
         model to the provided statement lines.
@@ -117,11 +119,14 @@ class AccountReconcileModel(models.Model):
         # to the query to only search on move lines that are younger than this limit.
         if self.past_months_limit:
             date_limit = fields.Date.context_today(self) - relativedelta(months=self.past_months_limit)
-            past_months_limit2 = self.past_months_limit - 1
-            date_limit2 = fields.Date.context_today(self) - relativedelta(months=past_months_limit2)
-            query += " AND aml.date >= %(aml_date_limit)s AND aml.date < %(aml_date_limit2)s"
+            if self.past_months_limit > 1:
+                past_months_limit2 = self.past_months_limit - 1
+                date_limit2 = fields.Date.context_today(self) - relativedelta(months=past_months_limit2)
+                query += " AND aml.date >= %(aml_date_limit)s AND aml.date < %(aml_date_limit2)s"
+                params['aml_date_limit2'] = date_limit2
+            else:
+                query += " AND aml.date >= %(aml_date_limit)s"
             params['aml_date_limit'] = date_limit
-            params['aml_date_limit2'] = date_limit2            
 
         # Filter out excluded account.move.line.
         if excluded_ids:
