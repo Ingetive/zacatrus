@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 class AccountReconcileModel(models.Model):
     _inherit = 'account.reconcile.model'
 
+    # Desactivado: Parece que en prod no es necesario. El servidor debe de ser más potente y lo hace bien sin necesidad de esto.
     def XXX_get_invoice_matching_query(self, st_lines_with_partner, excluded_ids):
         ''' Returns the query applying the current invoice_matching reconciliation
         model to the provided statement lines.
