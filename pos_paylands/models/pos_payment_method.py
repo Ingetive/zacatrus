@@ -119,11 +119,10 @@ class PosPaymentMethod(models.Model):
                     "customer_ext_id": str(data['client']),
                     "additional": orderId
                 }
-                _logger.warning(f"Zacalog: paylands {postParams}")
                 response = requests.post(f"{url}/posms/payment", headers=hed, json=postParams)
-
                 res = response.json()
-                _logger.warning(f"Zacalog: paylands res: {res}")
+                statusCode = response.status_code
+
                 message = ''
                 if 'message' in res:
                     message = res['message']
@@ -131,10 +130,6 @@ class PosPaymentMethod(models.Model):
                     message += res['details']
                 code = res['code']
 
-                #TODO: remove
-                #code = 400
-                #message = 'Bad RequestDevice 6548a788c50f1886242e2448 have a pending transaction yet!'
-                #_logger.debug(f"Zacalog: CODE IS {code}")
                 if code == 400:
                     m = re.search('Device ([0-9a-z]+) have a pending transaction yet', message)
                     if m:
@@ -145,7 +140,7 @@ class PosPaymentMethod(models.Model):
                                 'status' : status,
                                 "amount": int(round(data['amount']*100))
                             })
-                elif response.status_code == 200:
+                elif statusCode == 200:
                     ok = True
                     if not dbPayment:
                         self.env["pos_paylands.payment"].create({
@@ -159,9 +154,13 @@ class PosPaymentMethod(models.Model):
                             "amount": int(round(data['amount']*100))
                         })
                 else:
-                    status = response.status_code
+                    status = statusCode
             else:
                 ok = True
+        else:
+            ok = False
+            code = 505
+            message = "Solo puedes hacer un cobro con Paylands. Utiliza otro medio de pago o haz dos pedidos. Sorry."
 
         return {"ok": ok, 'code': code, 'message': message, 'status': status}
 

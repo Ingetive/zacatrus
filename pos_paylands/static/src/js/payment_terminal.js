@@ -238,17 +238,14 @@ odoo.define("pos_paylands.payment", function (require) {
             var client = order.get_client();
             var clientId = 'anonymous';
             if (client){
-                console.log(client);
                 clientId = client.id;  
             }
-            console.log("Send payment 2");
             var data = {
                 "client": clientId,
                 "amount": pay_line.amount,
                 "order": code
                 //"articles": articles
             };
-            console.log(data);
 
             return rpc.query({
                 model: 'pos.payment.method',
@@ -266,6 +263,7 @@ odoo.define("pos_paylands.payment", function (require) {
                 Gui.showPopup("ErrorPopup", {title: "Error 20", body: "No puedo procesar el pago.",});
                 return false;
             });
+
             return false;
         },
 
