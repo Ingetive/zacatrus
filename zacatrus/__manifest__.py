@@ -11,7 +11,7 @@
     'author': "Voodoo",
     'website': "http://www.voodoo.es",
     'category': 'Uncategorized',
-    'version': '14.0',
+    'version': '16.0',
     'depends': [
         'account',
         'base',
@@ -23,7 +23,7 @@
         'stock_account',
         'delivery_nacex',
         'stock', 
-        'stock_location_children',
+        # 'stock_location_children', TODO: Migración => No se migra por que V16 ya tiene un campo para los child_ids
         'sale_amazon',
         'portal',
         'account_fiscal_position_partner_type'
@@ -32,16 +32,16 @@
         'security/ir.model.access.csv',
         'report/purchase.xml',
         'views/views.xml',
-        'views/point_of_sale.xml',
+        # 'views/point_of_sale.xml',
         'views/account_move.xml',
         'views/stock_picking.xml',
         'views/stock_valuation_layer.xml',
         'views/purchase_order.xml',
-        'views/sale_order.xml',
+        # 'views/sale_order.xml',
         'report/etiqueta_vit.xml',
         'report/zacatrus_views.xml',
-        'report/report_delivery_document.xml',
-        'views/templates.xml',
+        # 'report/report_delivery_document.xml',
+        # 'views/templates.xml',
     ],
     'demo': [],
 }
