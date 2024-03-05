@@ -36,3 +36,7 @@
 	path = OCA/server-tools
 	url = git@github.com:OCA/server-tools.git
 	branch = 16.0
+[submodule "OCA/delivery-carrier"]
+	path = OCA/delivery-carrier
+	url = git@github.com:OCA/delivery-carrier.git
+	branch = 16.0
