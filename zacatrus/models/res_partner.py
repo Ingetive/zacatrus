@@ -13,13 +13,16 @@ class Partner(models.Model):
     
     @api.onchange("country_id")
     def _onchange_country(self):
+        """ Overwrite base/models/res_partner.py
+        """
         if self.country_id.code == "FR":
             self.fiscal_position_type = "b2c"
     
-    @api.model
-    def create(self, vals):
-        res = super().create(vals)
-        res.actualizar_tipo_pos_fical()
+    @api.model_create_multi
+    def create(self, vals_list):
+        res = super().create(vals_list)
+        for record in res:
+            record.actualizar_tipo_pos_fical()
         return res
     
     def write(self, vals):

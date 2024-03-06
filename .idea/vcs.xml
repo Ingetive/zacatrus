@@ -2,5 +2,14 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/account-financial-reporting" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/account-fiscal-rule" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/bank-payment" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/delivery-carrier" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/l10n-spain" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/reporting-engine" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/server-tools" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/server-ux" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/OCA/stock-logistics-warehouse" vcs="Git" />
   </component>
 </project>
