@@ -10,7 +10,8 @@ _logger = logging.getLogger(__name__)
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
-    def setPartnerCarrier(self):    
+    def setPartnerCarrier(self):
+        # TODO: Migración => Revisar con datos como funcionaria la acción automatizada
         for picking in self:
             if not picking.picking_type_id.id == 5 or not picking.partner_id or not picking.partner_id.property_delivery_carrier_id:
                 return False
@@ -23,6 +24,4 @@ class Picking(models.Model):
                 if picking.origin.endswith("-DHL"):
                     newCarrierId = 14 # DHL Carry
 
-            picking.write({
-              'carrier_id' : newCarrierId
-            })
+            picking.write({'carrier_id' : newCarrierId})
