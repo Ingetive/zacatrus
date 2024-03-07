@@ -145,6 +145,24 @@
                             </div>
                         </div>
                     </div>
+                    <h2>Reonciliation</h2>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="reconcile_one_month_only"
+                            title="Para evitar sobre cargas, solo reconcilia lo del primer mes a partir de la fecha indicada en el modelo.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Solo conciliar un mes" for="reconcile_one_month_only"/>
+                                    <div class="text-muted">
+                                        Para evitar sobre cargas, solo reconcilia lo del primer mes a partir de la fecha indicada en el modelo.
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="reconcile_one_month_only" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </xpath>
         </field>
