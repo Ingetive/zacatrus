@@ -13,7 +13,18 @@ class Picking(models.Model):
     x_tracking = fields.Char("Numero de tracking de la mensajeria")
     x_status = fields.Integer('Estado de sincronización')
     partner_zip = fields.Char(related="partner_id.zip", store=True)
-    
+
+    def _check_immediate(self):
+        """ Inherit stock/models/stock_picking """
+        immediate_pickings = self.browse()
+        # DHL B2B a DHL Carry para que obligue a pedir bultos en Segovia
+        for picking in self:
+            if picking['carrier_id'].id == 14 and picking.picking_type_id.id == 5:
+                immediate_pickings |= picking
+            else:
+                immediate_pickings = super(StockPicking, self)._check_immediate()
+
+        return immediate_pickings
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
