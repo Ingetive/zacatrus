@@ -10,7 +10,8 @@ _logger = logging.getLogger(__name__)
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
-    def setPartnerCarrier(self):    
+    def setPartnerCarrier(self):
+        # Solo para el tipo de operación 'Segovia: Órdenes de entrega' (id 5)
         for picking in self:
             if not picking.picking_type_id.id == 5 or not picking.partner_id or not picking.partner_id.property_delivery_carrier_id:
                 return False
