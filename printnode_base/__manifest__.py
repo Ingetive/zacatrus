@@ -79,7 +79,7 @@
     'qweb': [
         'static/src/xml/*.xml',
     ],
-    'installable': True,
+    'installable': False,
     'application': True,
     "cloc_exclude": [
         "**/*"
