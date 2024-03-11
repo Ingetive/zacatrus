@@ -1,11 +1,12 @@
 # Copyright 2021 VentorTech OU
 # See LICENSE file for full copyright and licensing details.
+
 from datetime import datetime, timedelta
 
 from odoo.tests import common, tagged
 
 
-@tagged('post_install', '-at_install')
+@tagged('post_install', '-at_install', 'pn_job')  # can be run by test-tag
 class TestPrintNodePrintJob(common.TransactionCase):
 
     def test_clean_printjobs(self):
@@ -25,7 +26,11 @@ class TestPrintNodePrintJob(common.TransactionCase):
         PrintNodePrintJob.clean_printjobs(older_than_days=15)
 
         # The only first one should exist
-        assert len(PrintNodePrintJob.search([])) == 1, "More printjobs that should be after cleaning"  # NOQA
+        self.assertEqual(
+            len(PrintNodePrintJob.search([])),
+            1,
+            "More printjobs that should be after cleaning"  # NOQA
+        )
 
     def _update_printjob_create_date(self, id, date):
         """

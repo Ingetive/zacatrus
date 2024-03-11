@@ -41,7 +41,7 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
         Test for the correct naming of the printers
         """
 
-        name = '{} ({})'.format(self.printer.name, self.printer.computer_id.name)
+        name = f'{self.printer.name} ({self.printer.computer_id.name})'
         test_composite_printer_name = [(self.printer.id, name), ]
         composite_printer_name_from_method = self.printer.name_get()
         self.assertEqual(
@@ -56,12 +56,12 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
         """
 
         objects = self.report
-        test_str1 = '{}_1'.format(objects.display_name)
+        test_str1 = f'{objects.display_name}_1'
         title_str = self.printer._format_title(objects, 1)
         self.assertEqual(test_str1, title_str, "Wrong make title string")
 
         objects += objects
-        test_str2 = '{}_2_1'.format(objects._description)
+        test_str2 = f'{objects._description}_2_1'
         title_str = self.printer._format_title(objects, 1)
         self.assertEqual(test_str2, title_str, "Wrong make title string")
 
@@ -83,20 +83,10 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
         """
         Test for the correct composition source name with correct latest version
         """
+        module = self.env['ir.module.module'].search([('name', '=', 'printnode_base')])
+        module.latest_version = '16.0.5.5.5'
 
-        # The following line is recommended in the Odoo documentation.
-        self.env['ir.module.module'].invalidate_cache()
-
-        with self.cr.savepoint():
-            self.env.cr.execute(
-                "UPDATE ir_module_module "
-                "SET latest_version=\'14.0.5.5.5\' "
-                "WHERE name=\'printnode_base\'"
-            )
-            self.assertEqual(self.printer._get_source_name(), 'Odoo Direct Print PRO 5.5.5')
-
-        self.cr.rollback()
-        self.assertNotEqual(self.printer._get_source_name(), 'Odoo Direct Print PRO 5.5.5')
+        self.assertEqual(self.printer._get_source_name(), 'Odoo Direct Print PRO 5.5.5')
 
     def test_post_printnode_job(self):
         """
@@ -128,7 +118,7 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
         mock_requests_post = self._create_patch_object(requests, 'post')
         mock_requests_post.return_value = resp
 
-        job_id = self.printer._post_printnode_job('printjobs', PRINTNODE_JOB_DATA)
+        job_id = self.printer._post_printnode_job(PRINTNODE_JOB_DATA)
 
         self.assertTrue(job_id)
         mock_requests_post.assert_called_once_with(
@@ -157,7 +147,7 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
             json=PRINTNODE_JOB_DATA
         )
         with self.cr.savepoint(), self.assertRaises(UserError) as err:
-            job_id = self.printer._post_printnode_job('printjobs', PRINTNODE_JOB_DATA)
+            job_id = self.printer._post_printnode_job(PRINTNODE_JOB_DATA)
 
         self.assertIsNone(job_id)
         mock_requests_post.call_args_list = [call_args, call_args]
@@ -171,7 +161,7 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
         mock_requests_post.return_value = resp
 
         with self.cr.savepoint(), self.assertRaises(UserError) as err:
-            job_id = self.printer._post_printnode_job('printjobs', PRINTNODE_JOB_DATA)
+            job_id = self.printer._post_printnode_job(PRINTNODE_JOB_DATA)
 
         self.assertIsNone(job_id)
         mock_requests_post.call_args_list = [call_args, call_args, call_args]
@@ -190,37 +180,32 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
             'qty': 1,
             'title': None,
             'source': self.printer._get_source_name(),
-            'contentType': 'pdf_base64',
+            'contentType': 'raw_base64',
             'content': ASCII_DATA,
-            'options': params
+            'options': params,
         }
-        check_call_args_list = []
 
         # Printnode_check returned None
         # Expect called _post_printnode_job method
         mock_printnode_job = self._create_patch_object(type(self.printer), '_post_printnode_job')
         mock_printnode_check = self._create_patch_object(type(self.printer), 'printnode_check')
         mock_printnode_check.return_value = None
-        check_call_args_list.append(call(report=params))
 
         self.printer.printnode_print_b64(ASCII_DATA, params)
 
-        self.assertEqual(mock_printnode_check.call_args_list, check_call_args_list)
-        mock_printnode_job.assert_called_once_with('printjobs', print_b64_data)
+        self.assertEqual(mock_printnode_check.call_args_list, [call(report=params)])
+        mock_printnode_job.assert_called_once_with(print_b64_data)
 
         # Printnode_check returned an error
         # Expect UserError
-        params = {'set_error': 'testError'}
-        check_call_args_list.append(
-            call(report={'set_error': '{}'.format(params.get('set_error'))})
-        )
+        params.update({'set_error': 'testError'})
         mock_printnode_check.return_value = 'Test_Error'
 
         with self.cr.savepoint(), self.assertRaises(UserError) as err:
             self.printer.printnode_print_b64(ASCII_DATA, params)
 
-        self.assertEqual(mock_printnode_check.call_args_list, check_call_args_list)
         mock_printnode_job.assert_called_once()
+        self.assertEqual(mock_printnode_check.call_count, 2)
         self.assertEqual('Test_Error', err.exception.args[0])
 
     def test_printnode_print(self):
@@ -231,7 +216,8 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
         """
 
         ids = self.test_sale_order.mapped('id')
-        content, content_type = self.so_report._render(ids)
+        content, content_type = self.so_report._render(
+            report_ref=self.so_report.xml_id, res_ids=ids, data=None)
 
         params = {}
         print_data = {
@@ -241,7 +227,7 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
             'contentType': 'pdf_base64',
             'content': base64.b64encode(content).decode('ascii'),
             'qty': 1,
-            'options': params
+            'options': params,
         }
 
         with self.cr.savepoint(), patch.object(type(self.printer), '_post_printnode_job') \
@@ -252,6 +238,6 @@ class TestPrintNodePrinter(TestPrintNodeCommon):
             self.printer.printnode_print(self.so_report, self.test_sale_order)
 
             mock_printnode_check_report.assert_called_once_with(self.so_report)
-            mock_printnode_job.assert_called_once_with('printjobs', print_data)
+            mock_printnode_job.assert_called_once_with(print_data)
 
         self.assertTrue(self.test_sale_order.printnode_printed)

@@ -7,15 +7,15 @@
         Print any reports or shipping labels directly to any local,
         Wi-Fi or Bluetooth printer without downloading PDF or ZPL!
     """,
-    'version': '14.0.2.2.0',
+    'version': '16.0.2.6.3',
     'category': 'Tools',
-    "images": ["static/description/images/image1.gif"],
+    "images": ["static/description/images/logo.gif"],
     'author': 'VentorTech',
     'website': 'https://ventor.tech',
     'support': 'support@ventor.tech',
     'license': 'OPL-1',
     'live_test_url': 'https://odoo.ventor.tech/',
-    'price': 199.00,
+    'price': 299.00,
     'currency': 'EUR',
     'depends': [
         'web',
@@ -26,8 +26,6 @@
         'purchase',
     ],
     'data': [
-        # Assets
-        'views/assets.xml',
         # Security
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -45,14 +43,19 @@
         'data/printnode_action_button_data.xml',
         'data/printnode_scenario_data.xml',
         'data/printnode_map_action_server_data.xml',
+        'data/printnode_release_data.xml',
+        'data/printnode_log_type_data.xml',
         # Root menus
         'views/printnode_menus.xml',
         # Wizards
         'wizard/printnode_installer_wizard.xml',
-        'wizard/printnode_report_abstract_wizard.xml',
-        'wizard/product_label_multi_print.xml',
+        'wizard/product_label_layout.xml',
         'wizard/printnode_attach_universal_wizard.xml',
         'wizard/printnode_print_reports_universal_wizard.xml',
+        'wizard/stock_lot_label_layout.xml',
+        'wizard/printnode_print_line_reports_wizard/abstract.xml',
+        'wizard/printnode_print_line_reports_wizard/stock_move.xml',
+        'wizard/printnode_print_line_reports_wizard/sale_order_line.xml',
         # Model Views
         'views/printnode_release_views.xml',
         'views/printnode_account_views.xml',
@@ -66,6 +69,7 @@
         'views/printnode_map_action_server_views.xml',
         'views/printnode_report_policy_views.xml',
         'views/printnode_rule_views.xml',
+        'views/printnode_workstation_views.xml',
         'views/account_move_views.xml',
         'views/purchase_order_views.xml',
         'views/sale_order_views.xml',
@@ -75,13 +79,24 @@
         'views/printnode_scales_views.xml',
         'views/res_config_settings_views.xml',
         'views/res_users_views.xml',
+        'views/printnode_logging_views.xml',
     ],
-    'qweb': [
-        'static/src/xml/*.xml',
-    ],
-    'installable': False,
+    'assets': {
+        'web.assets_backend': [
+            'printnode_base/static/src/js/constants.js',
+            'printnode_base/static/src/js/action_service.js',
+            'printnode_base/static/src/components/*/*.js',
+            'printnode_base/static/src/components/*/*.css',
+            'printnode_base/static/src/components/*/*.xml',
+        ],
+    },
+    'installable': True,
     'application': True,
     "cloc_exclude": [
-        "**/*"
+        "data/*",
+        "models/*",
+        "controllers/*",
+        "reports/*",
+        "wizard/*",
     ]
 }
