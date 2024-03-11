@@ -90,7 +90,7 @@
             'printnode_base/static/src/components/*/*.xml',
         ],
     },
-    'installable': True,
+    'installable': False,
     'application': True,
     "cloc_exclude": [
         "data/*",
