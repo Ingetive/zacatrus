@@ -82,13 +82,13 @@
         # 'views/printnode_logging_views.xml',
     ],
     'assets': {
-        'web.assets_backend': [
-            'printnode_base/static/src/js/constants.js',
-            'printnode_base/static/src/js/action_service.js',
-            'printnode_base/static/src/components/*/*.js',
-            'printnode_base/static/src/components/*/*.css',
-            'printnode_base/static/src/components/*/*.xml',
-        ],
+        # 'web.assets_backend': [
+        #     'printnode_base/static/src/js/constants.js',
+        #     'printnode_base/static/src/js/action_service.js',
+        #     'printnode_base/static/src/components/*/*.js',
+        #     'printnode_base/static/src/components/*/*.css',
+        #     'printnode_base/static/src/components/*/*.xml',
+        # ],
     },
     'installable': True,
     'application': True,
