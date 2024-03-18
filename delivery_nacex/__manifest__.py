@@ -21,8 +21,8 @@
         # 'views/res_config_settings.xml',
         # 'views/stock_picking.xml',
         # 'wizard/envio_nacex_valija.xml',
-        # 'report/nacex_templates.xml',
-        # 'report/nacex_reports.xml',
+        'report/nacex_templates.xml',
+        'report/nacex_reports.xml',
     ],
 'installable': True,
 }
