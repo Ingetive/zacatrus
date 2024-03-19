@@ -16,7 +16,6 @@ Allows you to open cash drawer from product screen.
 """,
     'depends': ['point_of_sale'],
     'data': [
-        # 'security/ir.model.access.csv',
         'views/views.xml',
     ],
     'qweb': [
