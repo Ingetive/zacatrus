@@ -11,10 +11,10 @@
     "category": "Point Of Sale",
     "depends": ["point_of_sale"],
     "data": [
-        # "views/pos_templates.xml",
+        # "views/pos_templates.xml", # TODO: Migración => Evaluar en OWL esta personalización
     ],
     "qweb": [
-        # "static/src/xml/pos.xml",
+        # "static/src/xml/pos.xml", # TODO: Migración => Evaluar en OWL esta personalización
     ],
     "installable": True,
 }
