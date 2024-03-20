@@ -10,10 +10,10 @@
         "point_of_sale",
     ],
     "data": [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         # "views/assets.xml", # TODO: Migración => Evaluar en OWL esta personalización
-        # 'views/pos_config.xml',
-        # 'views/res_config_settings_views.xml',
+        'views/pos_config.xml',
+        'views/res_config_settings_views.xml',
     ],
     "installable": True,
 }
