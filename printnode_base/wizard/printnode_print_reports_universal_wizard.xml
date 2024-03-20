@@ -9,12 +9,30 @@
                 <group>
                     <field name="report_id" required="1" options="{'no_create': True}"/>
                 </group>
+
                 <group name="documents_for_printing">
                     <field name="record_names" readonly="1"/>
                 </group>
-                <group name="quantity to print">
+
+                <group name="quantity_to_print">
+                    <field name="with_custom_qty" />
+                </group>
+
+                <group attrs="{'invisible': [('with_custom_qty', '=', True)]}">
                     <field name="number_copy" required="1"/>
                 </group>
+
+                <group attrs="{'invisible': [('with_custom_qty', '!=', True)]}">
+                    <div colspan="2" class="row justify-content-start">
+                            <field name="record_line_ids" nolabel="1">
+                                <tree editable="bottom" create="false">
+                                    <field name="record_id" readonly="1"/>
+                                    <field name="quantity"/>
+                                </tree>
+                            </field>
+                    </div>
+                </group>
+
                 <group name="printer">
                     <field name="printer_id" options="{'no_create': True, 'no_open': True}"/>
                     <field name="printer_bin" options="{'no_create': True, 'no_open': True}"/>
@@ -24,6 +42,7 @@
                 <p colspan="4" class="text-danger" attrs="{'invisible': [('status', '!=', 'offline')]}">
                     Printer is not available. Please, choose another printer.
                 </p>
+
                 <footer>
                     <button string="Print" name="do_print" type="object" class="oe_highlight"/>
                     <button string="Cancel" class="btn btn-secondary" special="cancel"/>

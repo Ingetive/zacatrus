@@ -25,6 +25,8 @@
                 <tree string="Delivery Carrier" editable="bottom" create="false" delete="false">
                     <field name="name" readonly="1" />
                     <field name="autoprint_paperformat_id" />
+                    <field name="printer_id" options="{'no_create': True}" />
+                    <field name="printer_bin" options="{'no_create': True}" />
                 </tree>
             </field>
         </record>

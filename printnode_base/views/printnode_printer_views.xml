@@ -8,7 +8,7 @@
             <field name="model">printnode.printer</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
-                <form string="Printer" create="false" edit="true" delete="false">
+                <form string="Printer" create="false" edit="true" delete="true">
                     <header>
                     </header>
                     <group>
@@ -34,7 +34,7 @@
             <field name="model">printnode.printer</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="Printers" create="false" edit="false" delete="false">
+                <tree string="Printers" create="false" edit="false" delete="true">
                     <field name="name" />
                     <field name="computer_id" />
                     <field name="account_id" />
@@ -61,7 +61,7 @@
         />
 
         <!-- Print Report Policy - Printer Settings -->
-        <record id="printnode_policy_printer_tree" model="ir.ui.view">
+         <record id="printnode_policy_printer_tree" model="ir.ui.view">
             <field name="name">printnode.policy.printer.tree</field>
             <field name="model">printnode.printer</field>
             <field name="type">tree</field>

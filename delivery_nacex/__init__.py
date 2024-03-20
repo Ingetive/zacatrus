@@ -2,4 +2,4 @@
 # © 2021 Voodoo - <hola@voodoo.es>
 
 from . import models
-from . import wizard
+# from . import wizard

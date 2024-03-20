@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Cybrosys Technologies Pvt. Ltd.
-#    Copyright (C) 2020-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
+#    Copyright (C) 2021-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
 #    you can modify it under the terms of the GNU LESSER
 #    GENERAL PUBLIC LICENSE (AGPL v3), Version 3.
 #    This program is distributed in the hope that it will be useful,
@@ -18,7 +18,7 @@
 {
     'name': 'Access Restriction By IP',
     'summary': """User Can Access His Account Only From Specified IP Address""",
-    'version': '14.0.1.0.0',
+    'version': '16.0.1.0.0',
     'description': """User Can Access His Account Only From Specified IP Address""",
     'live_test_url': 'https://youtu.be/nn6dAL6eKPc',
     'author': 'Cybrosys Techno Solutions',
@@ -34,5 +34,6 @@
     'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
+    'application': False,
 }
 

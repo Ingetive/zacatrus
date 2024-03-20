@@ -1,6 +1,6 @@
 {
     "name": "POS Paylands Payment",
-    "version": "14.0.1.0.0",
+    "version": "16.0.0.0.1",
     "category": "Point Of Sale",
     "summary": "Point of sale: supports Paylands payment",
     'author': "Zacatrus",
@@ -11,7 +11,7 @@
     ],
     "data": [
         'security/ir.model.access.csv',
-        "views/assets.xml",
+        # "views/assets.xml", # TODO: Migración => Evaluar en OWL esta personalización
         'views/pos_config.xml',
         'views/res_config_settings_views.xml',
     ],

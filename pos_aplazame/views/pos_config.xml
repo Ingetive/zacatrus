@@ -6,7 +6,7 @@
         <field name="model">pos.config</field>
         <field name="arch" type="xml">
 
-            <xpath expr="//div[@id='inventory_location']" position="after">
+            <xpath expr="//div[@groups='base.group_system']" position="before">
                 <h2>Aplazame</h2>
                 <div class="row mt16 o_settings_container" id="customers_config">
                     <div class="col-12 col-lg-6 o_setting_box">

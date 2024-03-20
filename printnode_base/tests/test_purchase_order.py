@@ -37,7 +37,8 @@ class TestPrintNodePurchaseOrder(TestPrintNodeCommon):
         })
 
     def test_scenario_print_picking_document_after_po_confirmation(self):
-        """Test printing picking document after PO confirmation
+        """
+        Test printing picking document after PO confirmation
         """
 
         with self.cr.savepoint(), patch.object(type(self.printer), 'printnode_print') \
@@ -63,6 +64,7 @@ class TestPrintNodePurchaseOrder(TestPrintNodeCommon):
 
         with self.cr.savepoint(), patch.object(type(self.purchase_order), 'print_scenarios') \
                 as mock_print_scenarios:
+
             self.purchase_order.button_confirm()
             self.assertEqual(
                 mock_print_scenarios.call_args_list,
