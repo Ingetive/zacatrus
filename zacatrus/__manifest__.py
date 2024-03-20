@@ -22,7 +22,7 @@
         'stock_barcode',
         'stock_account',
         'delivery_nacex',
-        'stock', <
+        'stock',
         # 'stock_location_children', TODO: Migración => No se migra por que V16 ya tiene un campo para los child_ids
         'sale_amazon',
         'portal',
