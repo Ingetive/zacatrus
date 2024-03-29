@@ -6,7 +6,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
 
     const PosComponent = require('point_of_sale.PosComponent');
     const ProductScreen = require('point_of_sale.ProductScreen');
-    const { useListener } = require('web.custom_hooks');
+    const { useListener } = require("@web/core/utils/hooks");
     const Registries = require('point_of_sale.Registries');
     //var models = require('point_of_sale.models');
     var core = require('web.core');
@@ -19,40 +19,49 @@ odoo.define('zacasocios.FichasSystem', function(require) {
     var fichasID = false;
 
     class FichasSystem extends PosComponent {
-        constructor() {
-            super(...arguments);
-            console.log("constructor FichasSystem");
-            useListener('click', this.onClick);
+        self = false;
+        clientId = false;
+        total = false;
+        timer() {
+            var client = self.env.pos.get_order().get_partner();
+            if (client && (!self.clientId || self.clientId != client.id)){ // Partner changed.
+                self.clientId = client.id;
+                console.log("Zacalog: client is "+self.clientId);
+
+                fichas = false;
+
+                console.log("Zacalog: change client. zacasocio: "+zacasocio);
+
+                self._removeFichasFromOrder();
+                self._getClientBalance();
+                self._setText();
+            }
+
+            var total = self.env.pos.get_order().get_total_with_tax();
+            if (!self.total || self.total != total){
+                self.total = total;
+                console.log("Zacalog: total is "+self.total);
+
+                self._onChange()
+            }
         }
-        mounted() {
-            console.log("mounted");
+        setup() {
+            self = this;
+            console.log("constructor FichasSystem");
+            super.setup();
+
+            useListener('click', this.onClick);
+
             this._getClientBalance();
-            if (!hooksSet){                
-                this.env.pos.on('change:selectedClient', () => {
-                    console.log("change:selectedClient");
-                    var client = this.env.pos.get_order().get_client();
-                    fichas = false;
+            if (!hooksSet){
+                setInterval(this.timer, 1000);
 
-                    console.log("change client. zacasocio: "+zacasocio);
-
-                    this._removeFichasFromOrder();
-                    this._getClientBalance();
-                    this._setText();
-                });
-                this.env.pos.on('change:selectedOrder', () => {
-                    console.log("change:selectedOrder");
-                    //this._getClientBalance();
-                    //this._setText();
-                });
-                
-                this.env.pos.get_order().orderlines.on('change', this._onChange, this);
                 core.bus.on('got_fichas', this, this._onGotFichas);
                 core.bus.on('got_fichas_product_id', this, this._onGotId);
 
                 hooksSet = true;
             }
         }
-
         _onGotId(){
             console.log("got id")
             this._getClientBalance();
@@ -82,6 +91,8 @@ odoo.define('zacasocios.FichasSystem', function(require) {
         }
 
         _onChange(){
+            console.log("Zacalog: _onChange");
+
             this._setText();
             if (this._fichasApplied()){
                 this._addFichasToOrder();
@@ -120,7 +131,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             var order = this.env.pos.get_order();
             
             if (this.el.querySelector('#fichas_button').textContent.includes("Canjear")){
-                var client = order.get_client();
+                var client = order.get_partner();
                 if (client == null){
                     this.showPopup('ErrorPopup', {
                         title: this.env._t('Fichas'),
@@ -130,7 +141,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                     });
                 }
                 else{
-                    console.log("zacasocio: "+zacasocio);
+                    console.log("Zacalog: zacasocio: "+zacasocio);
                     if (!zacasocio){
                         this.showPopup('ErrorPopup', {
                             title: this.env._t('Fichas'),
@@ -152,12 +163,14 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                         else {
                             if (!fichas){
                                 this._getClientBalance();
+                                /*
                                 this.showPopup('ErrorPopup', {
                                     title: this.env._t('Fichas'),
                                     body: this.env._t(
                                         "Cargando. Por favor, prueba otra vez."
                                     ),
                                 });
+                                */
                             }
                             else {
                                 this.el.querySelector('#fichas_button').textContent = "Quitar Fichas";
@@ -198,6 +211,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                         }
                     }
                     if (fichas && fichas >= 100 && !modified){
+                        console.log( "Zacalog: fichasID: "+ fichasID );
                         var fichasProduct = this.env.pos.db.get_product_by_id(fichasID); //get_product_by_id
                         console.log( { quantity: val } );
                         console.log( { fichasProduct } );
@@ -271,12 +285,14 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             }
         }
         _getClientBalance(  ) {
+            console.log("Zacalog: _getClientBalance");
+
             if (! fichasID){
                 this._getFichasProductId()
             }
             else {
                 var order = this.env.pos.get_order();
-                var client = order.get_client();
+                var client = order.get_partner();
 
                 //order.set_pricelist(client.pricelist_id);
 
@@ -285,10 +301,9 @@ odoo.define('zacasocios.FichasSystem', function(require) {
                     zacasocio = false;
                     if (client && client.property_product_pricelist[0] == TARIFA_ZACASOCIOS){
                         zacasocio = true;
-                        console.log(client.property_product_pricelist[0]);
                     }
                     if (zacasocio){
-                        console.log("getting Fichas for "+ client.email +"...");
+                        console.log("Zacalog: getting Fichas for "+ client.email +"...");
                         rpc.query({
                             model: 'zacasocios.zacasocios',
                             method: 'getBalance',
@@ -334,8 +349,8 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             }
         }
     }
-    FichasSystem.template = 'Fichas';
 
+    FichasSystem.template = 'Fichas';
     ProductScreen.addControlButton({
         component: FichasSystem,
         condition: function() {
