@@ -14,4 +14,10 @@
         # "views/assets.xml", # TODO: Migración => Evaluar en OWL esta personalización
     ],
     "installable": True,
+    'assets': {
+       'point_of_sale.assets': [
+           'pos_tarjezaca/static/src/js/payment_terminal.js',
+           'pos_tarjezaca/static/src/js/models.js',
+       ],
+    },
 }

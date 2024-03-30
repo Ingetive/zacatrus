@@ -38,7 +38,7 @@ odoo.define('zacasocios.FichasSystem', function(require) {
             }
 
             var total = self.env.pos.get_order().get_total_with_tax();
-            if (!self.total || self.total != total){
+            if (self.total===false || self.total != total){
                 self.total = total;
                 console.log("Zacalog: total is "+self.total);
 

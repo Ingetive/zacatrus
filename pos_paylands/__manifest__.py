@@ -16,4 +16,11 @@
         'views/res_config_settings_views.xml',
     ],
     "installable": True,
+    'assets': {
+       'point_of_sale.assets': [
+           'pos_paylands/views/pos_config.xml',
+           'pos_paylands/static/src/js/payment_terminal.js',
+           'pos_paylands/static/src/js/models.js',
+       ],
+    },
 }
