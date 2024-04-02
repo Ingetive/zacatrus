@@ -17,8 +17,14 @@
     'data': [
         'security/ir.model.access.csv',
     ],
-    # 'qweb': [
+    #'qweb': [
     #     'static/src/xml/Fichas.xml', # TODO: Migración => Evaluar en OWL esta personalización
-    # ],
+    #],
     'installable': True,
+    'assets': {
+       'point_of_sale.assets': [
+           'zacasocios/static/src/xml/Fichas.xml',
+           'zacasocios/static/src/js/FichasSystem.js',
+       ],
+    },
 }

@@ -39,8 +39,7 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                    body: 'Introduce el código.',
                 }).then(({ confirmed, payload: code }) => {
                         if (confirmed) {
-                            console.log(code, 'payload')
-                            console.log("We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
+                            console.log("Zacalog: We are going to redeem  "+ pay_line.amount +" from "+code+" card.");
                             
                             return rpc.query({
                                 model: 'ir.config_parameter',
@@ -48,7 +47,7 @@ odoo.define("pos_tarjezaca.payment", function (require) {
                                 args: [[['key', '=', 'zacatrus_base.card_product_id']], ['key', 'value']],
                             })
                             .then(function(ret){
-                                //console.log(JSON.stringify(ret));
+                                console.log(JSON.stringify(ret));
                                 if (ret.length != 1){
                                     Gui.showPopup("ErrorPopup", {title: "Error", body: "Error de conexión. Por favor, inténtalo más tarde.",});
                                     return false;
