@@ -7,8 +7,8 @@ _logger = logging.getLogger(__name__)
 
 class PaylandsController(http.Controller):
     @http.route('/payment/paylands/return', auth='public', type="json")
-    def handler(self):
-        notification = http.request.jsonrequest
+    def handler(self, **kwargs):
+        notification = json.loads(http.request.httprequest.data)
 
         _logger.info("Zacalog: Paylands callback: "+ str(notification))
 
