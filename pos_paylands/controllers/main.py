@@ -79,19 +79,19 @@ class PaylandsController(http.Controller):
     def _getTicketFooter(self, notification, transaction):
         when = datetime.datetime.strptime(notification['order']['created'], '%Y-%m-%dT%H:%M:%S%z')
         amount = notification['order']['amount']/100
-        ticketFooter = f"------------------------------------------<br />"
-        ticketFooter += f"DATOS TARJETA:<br />"
-        ticketFooter += f"Id. transacción: {notification['order']['uuid']}<br />"
-        ticketFooter += f"Fecha: {when.strftime('%d/%m/%Y')}<br />"
-        ticketFooter += f"Hora: {when.strftime('%H:%M:%S')}<br />"
-        ticketFooter += f"Cantidad: {amount}<br />"
-        ticketFooter += f"Cod. moneda: {notification['order']['currency']}<br />"
-        ticketFooter += f"Servicio: {notification['order']['service']}<br />"
-        ticketFooter += f"Tipo: {transaction['pos']['brand']}<br />"
-        ticketFooter += f"Tarjeta: {transaction['pos']['masked_pan']}<br />"
-        ticketFooter += f"Met. verificación: {transaction['pos']['verification_method']}<br />"
-        ticketFooter += f"Mod. entrada: {transaction['pos']['entry_mode']}<br />"
-        ticketFooter += f"------------------------------------------<br />"
+        ticketFooter = f"------------------------------------------ \n"
+        ticketFooter += f"DATOS TARJETA: \n"
+        ticketFooter += f"Id. transacción: {notification['order']['uuid']} \n"
+        ticketFooter += f"Fecha: {when.strftime('%d/%m/%Y')} \n"
+        ticketFooter += f"Hora: {when.strftime('%H:%M:%S')} \n"
+        ticketFooter += f"Cantidad: {amount} \n"
+        ticketFooter += f"Cod. moneda: {notification['order']['currency']} \n"
+        ticketFooter += f"Servicio: {notification['order']['service']} \n"
+        ticketFooter += f"Tipo: {transaction['pos']['brand']} \n"
+        ticketFooter += f"Tarjeta: {transaction['pos']['masked_pan']} \n"
+        ticketFooter += f"Met. verificación: {transaction['pos']['verification_method']} \n"
+        ticketFooter += f"Mod. entrada: {transaction['pos']['entry_mode']} \n"
+        ticketFooter += f"------------------------------------------ \n"
 
         return ticketFooter
 
