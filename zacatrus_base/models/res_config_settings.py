@@ -17,6 +17,8 @@ class ResConfigSettings(models.TransientModel):
     card_product_id = fields.Many2one('product.product', string="Gift Card product", help="La tarjeta física que se vende en tienda.", readonly=False)
     fichas_product_id = fields.Many2one('product.product', string="Fichas product", help="El producto que se aplica al añadir fichas en el pos.", readonly=False)
 
+    reconcile_one_month_only = fields.Boolean(readonly=False, string="Solo concilia un mes", help="Para evitar sobre cargas, solo reconcilia lo del primer mes a partir de la fecha indicada en el modelo.")
+
 
     @api.model
     def get_values(self):
@@ -36,6 +38,7 @@ class ResConfigSettings(models.TransientModel):
             magento_user = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_user'),
             card_product_id = cardProductId,
             fichas_product_id = fichasProductId,
+            reconcile_one_month_only = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.reconcile_one_month_only'),
             #magento_password = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_password'),
         )
         return res
@@ -46,6 +49,7 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.printnode_key', self.printnode_key)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.dhl_segovia_printer_id', self.dhl_segovia_printer_id)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_user', self.magento_user)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.reconcile_one_month_only', self.reconcile_one_month_only)
         if self.card_product_id and self.card_product_id != "":
             _logger.warning("_TZ: card:"+str(self.card_product_id.id))
             self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.card_product_id', self.card_product_id.id)

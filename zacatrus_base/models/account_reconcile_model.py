@@ -13,7 +13,11 @@ from dateutil.relativedelta import relativedelta
 class AccountReconcileModel(models.Model):
     _inherit = 'account.reconcile.model'
 
-    def XXX_get_invoice_matching_query(self, st_lines_with_partner, excluded_ids):
+    def _get_invoice_matching_query(self, st_lines_with_partner, excluded_ids):
+        oneMonthOnly = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.reconcile_one_month_only')
+        if not oneMonthOnly:
+            return super()._get_invoice_matching_query(st_lines_with_partner, excluded_ids)
+
         ''' Returns the query applying the current invoice_matching reconciliation
         model to the provided statement lines.
 

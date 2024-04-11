@@ -20,7 +20,8 @@ class Attachment(models.Model):
 
                     for picking in pickings:
                         # Es DHL y sale de Segovia
-                        if picking['carrier_id'][0] == 14 and picking['picking_type_id'][0] == 5:
+                        if ((picking['carrier_id'][0] == 14 and picking['picking_type_id'][0] == 5) or #DHL Carry / Segovia: Órdenes de entrega
+                            (picking['carrier_id'][0] in [12,13,14,15,17] and picking['picking_type_id'][0] == 103)): #DHL B2B, DHL B2C France,DHL B2B FR / Distri: Órdenes de entrega
                             data = {
                               "content": attachment.datas ,
                               "printerId": int(printerId),
