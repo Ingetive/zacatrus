@@ -30,11 +30,15 @@ class SaleOrder(models.Model):
                 else:
                     sent = False
                     break
-                #_logger.error(f"Zacalog: {order['name']} {picking['state']}")
+                _logger.error(f"Zacalog: {order['name']} {picking['state']}")
 
             if sent:
                 adv_wiz = self.env['sale.advance.payment.inv'].with_context(active_ids=[order.id]).create({
                   'advance_payment_method': 'delivered'
                 })
                 act = adv_wiz.create_invoices()
-                #TODO: confirm
+
+                # Confirm invoice. From draft to posted (publicado)
+                iorder = self.env['sale.order'].sudo().browse(order.id)
+                for invoiceId in iorder["invoice_ids"]:
+                    invoiceId.action_post()
