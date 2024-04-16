@@ -28,7 +28,7 @@ class StockPicking(models.Model):
         #return immediate_pickings
 
         for picking in self:
-            if picking['carrier_id'].id in [12, 14, 15] and picking.picking_type_id.id in [5, 103]:
+            if picking['carrier_id'].id in [12, 13, 14, 15] and picking.picking_type_id.id in [5, 103]:
                 immediate_pickings |= picking
             else:
                 immediate_pickings = super(StockPicking, self)._check_immediate()
