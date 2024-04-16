@@ -14,6 +14,7 @@ class ResConfigSettings(models.TransientModel):
     magento_secret = fields.Char(readonly=False)
     printnode_key = fields.Char(readonly=False)
     dhl_segovia_printer_id = fields.Char(readonly=False)
+    dhl_distri_printer_id = fields.Char(readonly=False)
     card_product_id = fields.Many2one('product.product', string="Gift Card product", help="La tarjeta física que se vende en tienda.", readonly=False)
     fichas_product_id = fields.Many2one('product.product', string="Fichas product", help="El producto que se aplica al añadir fichas en el pos.", readonly=False)
 
@@ -35,6 +36,7 @@ class ResConfigSettings(models.TransientModel):
             magento_url = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url'),
             printnode_key = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.printnode_key'),
             dhl_segovia_printer_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_segovia_printer_id'),
+            dhl_distri_printer_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_distri_printer_id'),
             magento_user = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_user'),
             card_product_id = cardProductId,
             fichas_product_id = fichasProductId,
@@ -48,6 +50,7 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_url', self.magento_url)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.printnode_key', self.printnode_key)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.dhl_segovia_printer_id', self.dhl_segovia_printer_id)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.dhl_distri_printer_id', self.dhl_distri_printer_id)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_user', self.magento_user)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.reconcile_one_month_only', self.reconcile_one_month_only)
         if self.card_product_id and self.card_product_id != "":

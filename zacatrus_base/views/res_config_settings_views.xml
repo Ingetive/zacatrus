@@ -145,6 +145,23 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="dhl_distri_printer_id"
+                            title="This tax is applied to any new product created in the catalog.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Id de la impresora para DHL en Distri" for="dhl_distri_printer_id"/>
+                                    <div class="text-muted">
+                                        71873255
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="dhl_distri_printer_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <h2>Reonciliation</h2>
                     <div class="row mt16 o_settings_container" name="taxes_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
