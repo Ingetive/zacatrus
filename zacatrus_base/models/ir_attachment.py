@@ -13,7 +13,7 @@ class Attachment(models.Model):
             if attachment.res_model == 'stock.picking':
                 printnodeKey = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.printnode_key')
                 printerId = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_segovia_printer_id')
-                distriPrinterId = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_segovia_printer_id')
+                distriPrinterId = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.dhl_distri_printer_id')
                 if printnodeKey and printerId:
                     pickings = self.env['stock.picking'].sudo().search_read([
                         ('id', '=', attachment.res_id)
