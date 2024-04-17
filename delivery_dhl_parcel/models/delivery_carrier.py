@@ -128,7 +128,7 @@ class DeliveryCarrier(models.Model):
             "CustomsCurrency": "",  # [optional]
             "Format": self.dhl_parcel_label_format,  # [optional]
             "tracking_number": False,
-            "exact_price": 10,
+            "exact_price": 0,
         }
 
     def dhl_parcel_send_shipping(self, pickings):
