@@ -57,8 +57,13 @@
 	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
 	                    Destino: <span t-field="o.sale_id.partner_id.name"/>
 	                </div>
-	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
-	                    Agencia: Transloan
+                    <div t-if="o.sale_id.partner_invoice_id.id == 5661">
+                        <div t-if="o.sale_id.partner_shipping_id.id == 5662">
+                            Agencia: DHL
+                        </div>
+                        <div t-if="o.sale_id.partner_shipping_id.id != 5662">
+                            Agencia: Transportes Nieto
+                        </div>
 	                </div>
 	                <div>
 	                    Fecha: <span t-field="o.date" t-field-options='{"format": "d/MM/y"}'/>
