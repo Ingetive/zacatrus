@@ -13,7 +13,8 @@
         'product',
         'purchase',
         'sale',
-        'zacatrus'
+        'zacatrus',
+        'delivery_dhl_parcel'
     ],
     "data": [
         'security/ir.model.access.csv',
