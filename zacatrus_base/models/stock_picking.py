@@ -27,3 +27,12 @@ class Picking(models.Model):
             picking.write({
               'carrier_id' : newCarrierId
             })
+
+    def send_to_shipper(self):
+        if self.carrier_id.id == 13 and self.number_of_packages > 1:
+            _logger.info(f"Zacalog: send_to_shipper")
+            self.write({
+                'carrier_id' : 15,
+            })
+            
+        return super(Picking, self).send_to_shipper()
