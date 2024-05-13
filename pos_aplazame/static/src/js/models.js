@@ -5,8 +5,6 @@ odoo.define("pos_aplazame.models", function (require) {
 
     var AplazamePayment = require("pos_aplazame.payment");
     models.register_payment_method("aplazame_payment", AplazamePayment);
-    models.load_fields("pos.payment.method", [
-    ]);
 
     var _posmodelproto = models.PosModel.prototype;
     models.PosModel = models.PosModel.extend({
