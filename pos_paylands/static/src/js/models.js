@@ -5,8 +5,6 @@ odoo.define("pos_paylands.models", function (require) {
 
     var PaylandsPayment = require("pos_paylands.payment");
     models.register_payment_method("paylands_payment", PaylandsPayment);
-    models.load_fields("pos.payment.method", [
-    ]);
 
     var _posmodelproto = models.PosModel.prototype;
     models.PosModel = models.PosModel.extend({

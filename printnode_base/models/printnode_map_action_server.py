@@ -77,7 +77,7 @@ class PrintnodeMapActionServer(models.Model):
         self.name = ACTION_NAMES.get(self.print_wizard_type)
 
     @api.onchange('print_wizard_type', 'model_id')
-    def onchange_model_name(self):
+    def _check_model_name(self):
         if self.print_wizard_type == 'reports' and self.model_id:
             model_reports = self.env['ir.actions.report'].search([
                 *REPORT_DOMAIN,
@@ -88,9 +88,12 @@ class PrintnodeMapActionServer(models.Model):
                     _("No reports found for this model!")
                 )
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
         rec = super(PrintnodeMapActionServer, self).create(vals)
+
+        if not rec:
+            return rec
 
         action_server = self.env['ir.actions.server'].sudo().create({
             'state': 'code',
@@ -104,7 +107,9 @@ class PrintnodeMapActionServer(models.Model):
         # Attach ir.model.data record to new action
         self.env['ir.model.data']._update_xmlids([{
             'xml_id': f'printnode_base.printnode_ir_actions_server_{action_server.id}',
-            'record': action_server
+            'record': action_server,
+            # Make it no updatable to avoid deletion on module upgrade
+            'noupdate': True,
         }])
 
         rec.write({'action_server_id': action_server.id})

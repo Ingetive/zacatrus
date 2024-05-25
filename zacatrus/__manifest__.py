@@ -11,7 +11,7 @@
     'author': "Voodoo",
     'website': "http://www.voodoo.es",
     'category': 'Uncategorized',
-    'version': '14.0',
+    'version': '16.0',
     'depends': [
         'account',
         'base',
@@ -23,7 +23,7 @@
         'stock_account',
         'delivery_nacex',
         'stock', 
-        # 'stock_location_children',
+        # 'stock_location_children', TODO: Migración => No se migra por que V16 ya tiene un campo para los child_ids
         'sale_amazon',
         'portal',
         'account_fiscal_position_partner_type'
@@ -41,7 +41,7 @@
         'report/etiqueta_vit.xml',
         'report/zacatrus_views.xml',
         'report/report_delivery_document.xml',
-        'views/templates.xml',
+        # 'views/templates.xml', TODO: Migración => Evaluar si estilos de PdV en V16 son suficientes
     ],
     'demo': [],
 }

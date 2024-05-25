@@ -235,7 +235,7 @@ odoo.define("pos_paylands.payment", function (require) {
             var self = this;
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
-            var client = order.get_client();
+            var client = order.partner;
             var clientId = 'anonymous';
             if (client){
                 clientId = client.id;  

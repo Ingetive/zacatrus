@@ -5,8 +5,6 @@ odoo.define("pos_tarjezaca.models", function (require) {
 
     var TarjezacaPayment = require("pos_tarjezaca.payment");
     models.register_payment_method("tarjezaca_payment", TarjezacaPayment);
-    models.load_fields("pos.payment.method", [
-    ]);
 
     var _posmodelproto = models.PosModel.prototype;
     models.PosModel = models.PosModel.extend({

@@ -3,8 +3,9 @@
 
 from odoo import fields, models
 
+
 REPORT_DOMAIN = [
-    ('model', '=', 'product.product'),
+    '|', ('model', '=', 'product.product'), ('model', '=', 'product.template'),
     ('report_type', 'in', ['qweb-pdf', 'qweb-text', 'py3o']),
     ('report_name', '!=', 'product.report_pricelist'),
 ]
@@ -22,6 +23,19 @@ class Company(models.Model):
         'printnode.printer',
         string='Printer',
     )
+
+    print_labels_format = fields.Selection(
+        [
+            ('dymo', 'Dymo'),
+            ('2x7xprice', '2 x 7 with price'),
+            ('4x7xprice', '4 x 7 with price'),
+            ('4x12', '4 x 12'),
+            ('4x12xprice', '4 x 12 with price'),
+            ('zpl', 'ZPL Labels'),
+            ('zplxprice', 'ZPL Labels with price')
+        ],
+        string="Default Product Labels Format",
+        help='Set default label printing format')
 
     printnode_recheck = fields.Boolean(
         string='Mandatory check Printing Status',
@@ -46,17 +60,6 @@ class Company(models.Model):
     im_a_teapot = fields.Boolean(
         string='Show success notifications',
         default=True,
-    )
-
-    wizard_report_ids = fields.Many2many(
-        'ir.actions.report',
-        string='Available Reports',
-        domain=REPORT_DOMAIN,
-    )
-
-    def_wizard_report_id = fields.Many2one(
-        'ir.actions.report',
-        string='Default Report',
     )
 
     print_package_with_label = fields.Boolean(
@@ -91,4 +94,32 @@ class Company(models.Model):
     printnode_notification_page_limit = fields.Integer(
         string="Direct Print Notification Page Limit",
         default=100,
+    )
+
+    printnode_fit_to_page = fields.Boolean(
+        string='Disable fit to the page size',
+        default=False,
+    )
+
+    debug_logging = fields.Boolean(
+        string='Debug logging',
+        default=False,
+        help='By enabling this feature, all requests will be logged. '
+             'You can find them in "Settings - Technical - Logging" menu.',
+    )
+
+    log_type_ids = fields.Many2many(
+        comodel_name='printnode.log.type',
+        string='Logs to write',
+        required=False,
+    )
+
+    printing_scenarios_from_crons = fields.Boolean(
+        string='Allow to execute printing scenarios from crons',
+        default=True,
+    )
+
+    secure_printing = fields.Boolean(
+        string='Printing without sending documents to the print server',
+        default=False,
     )
