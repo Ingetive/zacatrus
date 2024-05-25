@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f3c15ce5-182c-4a72-ab21-08622d136993" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/OCA/account-financial-reporting" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/account-financial-reporting" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/account-fiscal-rule" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/account-fiscal-rule" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/bank-payment" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/bank-payment" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/l10n-spain" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/l10n-spain" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/reporting-engine" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/reporting-engine" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/server-tools" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/server-tools" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/server-ux" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/server-ux" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OCA/stock-logistics-warehouse" beforeDir="false" afterPath="$PROJECT_DIR$/OCA/stock-logistics-warehouse" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/zacatrus/__manifest__.py" beforeDir="false" afterPath="$PROJECT_DIR$/zacatrus/__manifest__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
