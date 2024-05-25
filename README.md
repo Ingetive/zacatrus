@@ -1,4 +1,4 @@
 # zacatrus
 
-From voodoo.
+From voodoo
 
