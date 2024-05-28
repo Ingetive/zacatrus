@@ -12,10 +12,10 @@
     "installable": True,
     "depends": ["delivery_package_number", "delivery_state"],
     "data": [
-        # "security/ir.model.access.csv",
-        # "views/delivery_carrier_view.xml",
-        # "views/stock_picking_views.xml",
-        # "wizard/dhl_parcel_end_day_wizard_views.xml",
+        "security/ir.model.access.csv",
+        "views/delivery_carrier_view.xml",
+        "views/stock_picking_views.xml",
+        "wizard/dhl_parcel_end_day_wizard_views.xml",
     ],
     "maintainers": ["hildickethan-S73"],
 }
