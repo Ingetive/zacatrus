@@ -10,7 +10,7 @@
     'depends': [
         'delivery',
         'mail',
-        'printnode_base',
+        # 'printnode_base', Comentado para migracion
     ],
     'data': [
         'data/delivery_nacex.xml',

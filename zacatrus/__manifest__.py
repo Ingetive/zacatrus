@@ -23,7 +23,7 @@
         'stock_account',
         'delivery_nacex',
         'stock', 
-        'stock_location_children',
+        # 'stock_location_children', Comentado para migracion
         'sale_amazon',
         'portal',
         'account_fiscal_position_partner_type'
