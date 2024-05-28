@@ -8,7 +8,8 @@ from odoo import models, fields, api
 class Attachment(models.Model):
     _inherit = 'ir.attachment'    
     
-    def remotePrint(self, record = None): 
+    def remotePrint(self, record = None):
+        # TODO: Migración => Revisar con datos como funcionaria la acción automatizada y el cambio de printnode_base
         for attachment in self:
             if attachment.res_model == 'stock.picking':
                 printnodeKey = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.printnode_key')

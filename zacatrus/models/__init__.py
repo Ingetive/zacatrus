@@ -12,7 +12,7 @@ from . import res_users
 from . import stock_move
 from . import stock_valuation_layer
 from . import stock_picking
-from . import stock_orderpoint
+# from . import stock_orderpoint => TODO: Migración => No se identifica origen de personalización, se omite
 from . import purchase_order_line
 from . import pos_session
 from . import pos_payment

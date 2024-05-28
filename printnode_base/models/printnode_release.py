@@ -4,7 +4,7 @@
 import logging
 import requests
 
-from odoo import fields, models, release
+from odoo import api, fields, models, release
 
 
 _logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class PrintNodeRelease(models.Model):
         odoo_version = release.major_version
 
         resp = requests.get(
-            '{}/{}'.format(dpc_url, 'releases'),
+            f"{dpc_url}/{'releases'}",
             {'module_version': module_version, 'odoo_version': odoo_version})
 
         if resp.status_code == 200:
@@ -62,4 +62,24 @@ class PrintNodeRelease(models.Model):
         else:
             # Something went wrong
             _logger.warning(
-                "Direct Print: Can't fetch list of releases ({})".format(resp.status_code))
+                f"Direct Print: Can't fetch list of releases ({resp.status_code})")
+
+    @api.model
+    def clean(self):
+        """
+        Remove information about old new releases. We assume that user updates to the latest
+        available version. But even in case if this is not true he will see information about
+        new versions after scheduled action run (max. 24h, `update_releases` method)
+
+        This method should be called during module upgrade
+        """
+        self.env['printnode.release'].search([]).unlink()
+
+        return True
+
+    @api.model
+    def get_releases(self):
+        """
+        Returns all releases
+        """
+        return self.search_read([])

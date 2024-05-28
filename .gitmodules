@@ -1,39 +1,42 @@
 [submodule "OCA/bank-payment"]
 	path = OCA/bank-payment
 	url = git@github.com:OCA/bank-payment.git
-	branch = 11.0
+	branch = 16.0
 
 [submodule "OCA/stock-logistics-warehouse"]
 	path = OCA/stock-logistics-warehouse
 	url = git@github.com:OCA/stock-logistics-warehouse.git
-	branch = 14.0
+	branch = 16.0
 
 [submodule "OCA/l10n-spain"]
 	path = OCA/l10n-spain
 	url = git@github.com:OCA/l10n-spain.git
-	branch = 14.0
+	branch = 16.0
 
 [submodule "OCA/reporting-engine"]
 	path = OCA/reporting-engine
 	url = git@github.com:OCA/reporting-engine.git
-	branch = 14.0
+	branch = 16.0
 
 [submodule "OCA/account-financial-reporting"]
 	path = OCA/account-financial-reporting
 	url = git@github.com:OCA/account-financial-reporting.git
-	branch = 14.0
+	branch = 16.0
 
 [submodule "OCA/server-ux"]
 	path = OCA/server-ux
 	url = git@github.com:OCA/server-ux.git
-	branch = 14.0
+	branch = 16.0
 
 [submodule "OCA/account-fiscal-rule"]
 	path = OCA/account-fiscal-rule
 	url = git@github.com:OCA/account-fiscal-rule.git
-	branch = 14.0
-
+	branch = 16.0
 [submodule "OCA/server-tools"]
 	path = OCA/server-tools
 	url = git@github.com:OCA/server-tools.git
-	branch = 14.0
+	branch = 16.0
+[submodule "OCA/delivery-carrier"]
+	path = OCA/delivery-carrier
+	url = git@github.com:OCA/delivery-carrier.git
+	branch = 16.0

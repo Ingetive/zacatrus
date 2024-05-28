@@ -5,12 +5,13 @@ from odoo import models, fields, api
 
 class Property(models.Model):
     _inherit = 'ir.property'
-    
-    @api.model
-    def create(self, vals):
-        res = super(Property, self).create(vals)
-        if res.name == 'property_product_pricelist':
-            res.sync_tarifa_companies()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        res = super(Property, self).create(vals_list)
+        for record in res:
+            if record.name == 'property_product_pricelist':
+                record.sync_tarifa_companies()
         return res
     
     def write(self, vals):

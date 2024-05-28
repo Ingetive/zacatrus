@@ -24,7 +24,7 @@ odoo.define("pos_aplazame.payment", function (require) {
             var order = this.pos.get_order();
             var pay_line = order.selected_paymentline;
             var orderlines = order.get_orderlines();
-            var client = order.get_client();
+            var client = order.partner;
             if (pay_line.amount < this.pos.config.x_min_amount){
                 Gui.showPopup("ErrorPopup", {title: "Error", body: "Ops, el importe mínimo para financiar es "+this.pos.config.x_min_amount+" euros.",});
                 return false;

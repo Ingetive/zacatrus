@@ -11,8 +11,16 @@
                     <field name="action" options="{'no_create': True}" />
                     <field name="domain" readonly="1" />
                     <field name="description" />
-                    <field name="reports_model_id" invisible="1" />
-                    <field name="report_id" options="{'no_create': True}" domain="[('model_id', '=', reports_model_id)]" />
+                    <field name="reports_model_id" readonly="1" />
+                    <field name="report_id" options="{'no_create': True}"
+                                            domain="[
+                                                ('model_id', '=', reports_model_id),
+                                                ('report_type', 'in', ['qweb-pdf', 'qweb-text', 'py3o']),
+                                                ('report_name', 'not in', [
+                                                    'sale.report_saleorder_pro_forma',
+                                                    'product.report_pricelist',
+                                                ]),
+                                            ]"/>
                     <field name="number_of_copies" />
                     <field name="printer_id" options="{'no_create': True}" />
                     <field name="printer_bin" options="{'no_create': True}" />

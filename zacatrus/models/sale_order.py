@@ -13,11 +13,12 @@ class SaleOrder(models.Model):
     x_droppoint = fields.Integer('Punto Nacexshop')
     x_status = fields.Integer('Estado de importación (magento)')
     x_tarjezaca = fields.Float('Cantidad pagada con Tarjezaca')
-    
-    @api.model
-    def create(self, vals):
-        res = super(SaleOrder, self).create(vals)
-        res.change_delivery()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        res = super(SaleOrder, self).create(vals_list)
+        for record in res:
+            record.change_delivery()
         return res
 
     def change_delivery(self):
@@ -49,9 +50,9 @@ class SaleOrder(models.Model):
                     carrier_id = carrier_nacex_peninsula.id
                 elif carrier_dhl_b2c_francia in available_carrier_ids.ids:
                     carrier_id = carrier_dhl_b2c_francia
-                elif False: #TODO: Asignar carriers externos para Transloan (Distri, Francia, ...) y activar
+                elif False: # TODO: Asignar carriers externos para Transloan (Distri, Francia, ...) y activar
                     for carrierId in available_carrier_ids:
-                        #TODO: Discriminar por partner_shipping_id (ECI, Fnac, ...), picking_type_id y pais
+                        # TODO: Discriminar por partner_shipping_id (ECI, Fnac, ...), picking_type_id y pais
                         carrier_id = carrierId
                         _logger.info(f"Zacalog: Asignado carrier {carrier_id}.")
                         break

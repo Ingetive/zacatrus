@@ -12,7 +12,7 @@
                     <field name="print_wizard_type" options="{'no_create_edit': True}" attrs="{'readonly': [('action_server_id', '!=', False)]}"/>
                     <field name="name" />
                     <field name="model_name" />
-                    <field name="action_server_id" groups="base.group_no_one" readonly="1"/>
+                    <field name="action_server_id" readonly="1"/>
                     <field name="active" widget="boolean_toggle" />
                 </tree>
             </field>

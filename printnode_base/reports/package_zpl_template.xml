@@ -27,7 +27,7 @@
 ^FO0,<t t-esc="str(margin)"/>^GB800,1,1^FS
         <t t-set="margin" t-value="int(margin) + 15"/>
     </t>
-^FB400,20^FO30,<t t-esc="str(margin)"/>^AdN,22,12^FH^FD<t t-raw="quant.product_id.display_name.replace('^', '_5E').replace('~', '_7E')"/>^FS
+^FB400,20^FO30,<t t-esc="str(margin)"/>^AdN,22,12^FH^FD<t t-out="quant.product_id.display_name.replace('^', '_5E').replace('~', '_7E')"/>^FS
 
 ^FB400,20^FO660,<t t-esc="str(margin)"/>^AdN,22,12^FD<t t-esc="quant.quantity"/>^FS
 <t t-set="margin" t-value="int(margin) + 30"/>

@@ -3,5 +3,5 @@
 
 from . import res_config_settings
 from . import delivery_nacex
-from . import product_packaging
+from . import stock_package_type
 from . import stock_picking

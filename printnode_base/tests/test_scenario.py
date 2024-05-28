@@ -165,6 +165,7 @@ class TestPrintNodeScenario(TestPrintNodeCommon):
             self.assertTrue(printed)
 
             mock_scenario_print.assert_called_once_with(
+                scenario=self.scenario,
                 report_id=self.scenario.report_id,
                 printer_id=self.printer,
                 number_of_copies=1,
@@ -191,6 +192,7 @@ class TestPrintNodeScenario(TestPrintNodeCommon):
             self.assertTrue(printed)
 
             mock_scenario_print.assert_called_once_with(
+                scenario=self.scenario,
                 report_id=self.scenario.report_id,
                 printer_id=self.printer,
                 number_of_copies=1,
@@ -225,7 +227,7 @@ class TestPrintNodeScenario(TestPrintNodeCommon):
         self.assertTrue('UserError' in err.exception.args[0])
 
         # Expect return False
-        self.assertFalse(self.sale_order.with_context(from_cron=True).print_scenarios(
+        self.assertFalse(self.sale_order.with_context(printnode_from_cron=True).print_scenarios(
             'print_something',
         ))
 
