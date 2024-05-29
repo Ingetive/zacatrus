@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Heredar y modificar la acción stock_barcode_batch_picking_action_kanban -->
+        <record id="stock_barcode_picking_batch.stock_barcode_batch_picking_action_kanban" model="ir.actions.act_window">
+            <field name="context" eval="{
+                'search_default_in_progress': 1,
+                'search_default_to_do_transfers': 0,
+            }"/>
+        </record>
+    </data>
+</odoo>
