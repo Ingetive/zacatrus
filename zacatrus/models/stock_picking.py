@@ -7,7 +7,7 @@ from odoo import models, fields, api
 _logger = logging.getLogger(__name__)
 
 
-class Picking(models.Model):
+class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
     x_tracking = fields.Char("Numero de tracking de la mensajeria")
