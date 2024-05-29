@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record model="ir.ui.view" id="pos_config_view_form_zacatrus">
-        <field name="name">pos.config.form.zacatrus</field>
+    <record model="ir.ui.view" id="pos_config_view_form_pos_aplazame">
+        <field name="name">pos.config.form.pos_aplazame</field>
         <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
         <field name="model">pos.config</field>
         <field name="arch" type="xml">
-
             <xpath expr="//div[@groups='base.group_system']" position="before">
-                <h2>Aplazame</h2>
-                <div class="row mt16 o_settings_container" id="customers_config">
-                    <div class="col-12 col-lg-6 o_setting_box">
-                        <div class="o_setting_right_pane">
-                            <label for="x_aplazame_key" string="Private api key" />
-                            <div class="text-muted">
-                                Localízala en el panel de control de Aplazame (una por tienda)
-                            </div>
-                            <div class="content-group mt16">
-                                <field name="x_aplazame_key" />
-                            </div>
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="x_aplazame_key" string="Private api key" />
+                        <div class="text-muted">
+                            Localízala en el panel de control de Aplazame (una por tienda)
+                        </div>
+                        <div class="content-group mt16">
+                            <field name="x_aplazame_key" />
                         </div>
                     </div>
                 </div>
-                <div class="row mt16 o_settings_container" id="customers_config">
+
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                    </div>
                     <div class="col-12 col-lg-6 o_setting_box">
                         <div class="o_setting_right_pane">
                             <label for="x_shop_code" string="Shop code" />
@@ -34,7 +35,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="row mt16 o_settings_container" id="customers_config">
+
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                    </div>
                     <div class="col-12 col-lg-6 o_setting_box">
                         <div class="o_setting_right_pane">
                             <label for="x_min_amount" string="Min. amount" />
@@ -48,7 +52,6 @@
                     </div>
                 </div>
             </xpath>
-
         </field>
     </record>  
 </odoo>
