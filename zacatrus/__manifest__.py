@@ -45,4 +45,9 @@
         # 'views/templates.xml', TODO: Migración => Evaluar si estilos de PdV en V16 son suficientes
     ],
     'demo': [],
+    'assets': {
+        'web.assets_backend': [
+            'zacatrus/static/src/models/lazy_barcode_cache.js',
+        ],
+    },
 }
