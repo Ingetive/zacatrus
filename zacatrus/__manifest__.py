@@ -29,6 +29,7 @@
         'account_fiscal_position_partner_type'
     ],
     'data': [
+        'security/point_of_sale.xml',
         'security/ir.model.access.csv',
         'report/purchase.xml',
         'views/views.xml',

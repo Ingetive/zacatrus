@@ -53,6 +53,11 @@ class PosSession(models.Model):
                         'payment_method_id': int(payment_method_id),
                         'importe': total
                     })
+
+    def _get_pos_ui_pos_config(self, params):
+        res = super()._get_pos_ui_pos_config(params)
+        res['has_cash_move_permission'] = self.user_has_groups('zacatrus.group_pos_in_out')
+        return res
                     
                     
 class PosPaymentGroupMethod(models.Model):
@@ -63,3 +68,4 @@ class PosPaymentGroupMethod(models.Model):
     payment_method_id = fields.Many2one("pos.payment.method", string="Métodos de pago")
     importe = fields.Monetary("Total")
     currency_id = fields.Many2one("res.currency", related="session_id.currency_id")
+    
