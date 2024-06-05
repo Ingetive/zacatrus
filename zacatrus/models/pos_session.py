@@ -59,6 +59,10 @@ class PosSession(models.Model):
         if self.user_has_groups('zacatrus.group_pos_in_out'):
             res['has_cash_move_permission'] = res['cash_control'] = True
         return res
+
+    def try_cash_in_out(self, _type, amount, reason, extras):
+        # Elevar permisos para ejecutar metodo como administrador y evitar errores en Entrada y salida de efectivo
+        return super(PosSession, self.sudo()).try_cash_in_out(_type, amount, reason, extras)
                     
                     
 class PosPaymentGroupMethod(models.Model):
