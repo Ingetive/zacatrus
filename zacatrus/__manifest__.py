@@ -50,5 +50,8 @@
         'web.assets_backend': [
             'zacatrus/static/src/models/lazy_barcode_cache.js',
         ],
+        'point_of_sale.assets': [
+            'zacatrus/static/src/js/Chrome.js',
+        ],
     },
 }

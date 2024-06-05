@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_pos_payment_group_method,access_pos_payment_group_method,model_pos_payment_group_method,base.group_user,1,1,1,1
+access_account_move_pos,account.move,model_account_move,group_pos_in_out,1,1,1,0
+access_account_move_line_pos,account.move.line,model_account_move_line,group_pos_in_out,1,1,1,0

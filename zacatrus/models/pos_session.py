@@ -56,7 +56,8 @@ class PosSession(models.Model):
 
     def _get_pos_ui_pos_config(self, params):
         res = super()._get_pos_ui_pos_config(params)
-        res['has_cash_move_permission'] = self.user_has_groups('zacatrus.group_pos_in_out')
+        if self.user_has_groups('zacatrus.group_pos_in_out'):
+            res['has_cash_move_permission'] = res['cash_control'] = True
         return res
                     
                     
