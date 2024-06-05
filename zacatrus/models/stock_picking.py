@@ -25,6 +25,7 @@ class StockPicking(models.Model):
                 immediate_pickings = super(StockPicking, self)._check_immediate()
 
         return immediate_pickings
+        
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
