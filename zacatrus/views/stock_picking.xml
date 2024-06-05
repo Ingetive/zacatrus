@@ -50,4 +50,13 @@
             </xpath>
         </field>
     </record>
+
+    <record id="stock_barcode.stock_picking_action_kanban" model="ir.actions.act_window">
+        <field name="context">{
+            'form_view_initial_mode': 'edit',
+            'contact_display': 'partner_address',
+            'search_default_available': 1,
+            'force_detailed_view': True
+        }</field>
+    </record>
 </odoo>
