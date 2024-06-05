@@ -20,10 +20,10 @@
                         <!-- Orderlines -->
                         <table class="table table-sm">
                             <tbody>
-                                <t t-set="lines" t-value="o.move_line_ids.filtered(lambda x: x.reserved_uom_qty)"/>
+                                <t t-set="lines" t-value="o.move_ids.filtered(lambda x: x.product_uom_qty)"/>
                                 <tr t-foreach="lines" t-as="line">
                                     <t t-set="internal_reference" t-value="line.product_id['code'] and '[%s] ' % line.product_id['code'] or ''"/>
-                                    <td><t t-esc="'{0:,.0f}'.format(line.reserved_uom_qty)"/>x <t t-esc="internal_reference"/><t t-esc="line.product_id['name']"/></td>
+                                    <td><t t-esc="'{0:,.0f}'.format(line.product_uom_qty)"/>x <t t-esc="internal_reference"/><t t-esc="line.product_id['name']"/></td>
                                 </tr>
                             </tbody>
                         </table>
