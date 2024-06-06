@@ -26,7 +26,7 @@ class Picking(models.Model):
     def _compute_tracking(self):
         for r in self:
             try:
-                r.x_tracking = re.search('[0-9]{4}\/[0-9]{8}', r.etiqueta_envio_zpl).group(0)
+                r.x_tracking = re.search('[0-9]{4}\\/[0-9]{8}', r.etiqueta_envio_zpl).group(0)
             except:
                 r.x_tracking = False
     
@@ -55,8 +55,11 @@ class Picking(models.Model):
         }
         return action
     
-    def obtener_etiqueta(self, codigo_expedicion=None):
+    def obtener_etiqueta_nacex(self, codigo_expedicion=None):
         for r in self.sudo():
+            if r.carrier_id.delivery_type != "nacex":
+                continue
+                
             if not codigo_expedicion:
                 codigo_expedicion = r.codigo_expedicion
             

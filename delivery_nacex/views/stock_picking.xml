@@ -8,9 +8,9 @@
             <xpath expr="//button[@name='cancel_shipment']" position="after">
                 <button type="object" 
                         class="fa fa-arrow-right oe_link" 
-                        name="obtener_etiqueta" 
+                        name="obtener_etiqueta_nacex" 
                         string="Obtener etiqueta" 
-                        attrs="{'invisible':['|','|','|','|',('etiqueta_envio_zpl','!=', False),('carrier_tracking_ref','=',False),('delivery_type','in', ['fixed', 'base_on_rule']),('delivery_type','=',False),('state','not in',('done'))]}"/>
+                        attrs="{'invisible':['|','|','|','|','|',('delivery_type', '!=', 'nacex'),('etiqueta_envio_zpl','!=', False),('carrier_tracking_ref','=',False),('delivery_type','in', ['fixed', 'base_on_rule']),('delivery_type','=',False),('state','not in',('done'))]}"/>
             </xpath>
             
             <xpath expr="//field[@name='carrier_id']" position="after">

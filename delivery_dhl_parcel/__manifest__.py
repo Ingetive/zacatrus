@@ -19,4 +19,5 @@
         "wizard/dhl_parcel_end_day_wizard_views.xml",
     ],
     "maintainers": ["hildickethan-S73"],
+    'license': 'Other proprietary',
 }

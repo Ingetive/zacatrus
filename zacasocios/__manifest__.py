@@ -21,6 +21,7 @@
     #     'static/src/xml/Fichas.xml', # TODO: Migración => Evaluar en OWL esta personalización
     #],
     'installable': True,
+    'license': 'Other proprietary',
     'assets': {
        'point_of_sale.assets': [
            'zacasocios/static/src/xml/Fichas.xml',

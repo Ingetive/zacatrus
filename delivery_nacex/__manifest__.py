@@ -24,5 +24,6 @@
         'report/nacex_templates.xml',
         'report/nacex_reports.xml',
     ],
-'installable': True,
+    'installable': True,
+    'license': 'Other proprietary',
 }

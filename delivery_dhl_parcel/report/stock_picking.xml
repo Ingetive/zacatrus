@@ -3,7 +3,7 @@
     <template id="label_etiqueta_template_view">
         <t t-foreach="docs" t-as="picking">
             <t t-translation="off">
-                <t t-esc="picking.dhl_parcel_get_label('txt')"/>
+                <t t-esc="picking.dhl_parcel_get_label()"/>
             </t>
         </t>
     </template>

@@ -1,8 +1,11 @@
 # Copyright 2021 Studio73 - Ethan Hildick <ethan@studio73.es>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
+import logging
 
 from odoo import _, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class StockPicking(models.Model):
@@ -17,12 +20,14 @@ class StockPicking(models.Model):
         tracking_ref = self.carrier_tracking_ref
         if self.delivery_type != "dhl_parcel" or not tracking_ref:
             return
+
         label = base64.b64decode(self.carrier_id.dhl_parcel_get_label(tracking_ref))
         label_format = self.carrier_id.dhl_parcel_label_format.lower()
         label_name = "dhl_parcel_{}.{}".format(
             tracking_ref,
             "pdf" if label_format == "pdf" else "txt",
         )
+
         self.message_post(
             body=(_("DHL Parcel label for %s") % tracking_ref),
             attachments=[(label_name, label)],
