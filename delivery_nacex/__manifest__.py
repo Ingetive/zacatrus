@@ -16,7 +16,7 @@
     ],
     'data': [
         'data/delivery_nacex.xml',
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/delivery_nacex.xml',
         'views/res_config_settings.xml',
         'views/stock_picking.xml',
