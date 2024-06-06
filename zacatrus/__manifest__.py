@@ -29,6 +29,7 @@
         'account_fiscal_position_partner_type'
     ],
     'data': [
+        'security/point_of_sale.xml',
         'security/ir.model.access.csv',
         'report/purchase.xml',
         'views/views.xml',
@@ -48,6 +49,9 @@
     'assets': {
         'web.assets_backend': [
             'zacatrus/static/src/models/lazy_barcode_cache.js',
+        ],
+        'point_of_sale.assets': [
+            'zacatrus/static/src/js/Chrome.js',
         ],
     },
 }

@@ -53,6 +53,16 @@ class PosSession(models.Model):
                         'payment_method_id': int(payment_method_id),
                         'importe': total
                     })
+
+    def _get_pos_ui_pos_config(self, params):
+        res = super()._get_pos_ui_pos_config(params)
+        if self.user_has_groups('zacatrus.group_pos_in_out'):
+            res['has_cash_move_permission'] = res['cash_control'] = True
+        return res
+
+    def try_cash_in_out(self, _type, amount, reason, extras):
+        # Elevar permisos para ejecutar metodo como administrador y evitar errores en Entrada y salida de efectivo
+        return super(PosSession, self.sudo()).try_cash_in_out(_type, amount, reason, extras)
                     
                     
 class PosPaymentGroupMethod(models.Model):
@@ -63,3 +73,4 @@ class PosPaymentGroupMethod(models.Model):
     payment_method_id = fields.Many2one("pos.payment.method", string="Métodos de pago")
     importe = fields.Monetary("Total")
     currency_id = fields.Many2one("res.currency", related="session_id.currency_id")
+    
