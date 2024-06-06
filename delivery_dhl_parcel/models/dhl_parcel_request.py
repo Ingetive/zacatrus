@@ -1,10 +1,13 @@
 # Copyright 2021 Studio73 - Ethan Hildick <ethan@studio73.es>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)..
-
+import logging
 import requests
 
 from odoo import _, fields
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
+
 
 DHL_PARCEL_DELIVERY_STATES_STATIC = {
     "A": "shipping_recorded_in_carrier",  # Assigned
@@ -44,11 +47,13 @@ class DhlParcelRequest(object):
             if request_type == "GET":
                 res = requests.get(url=url, headers=auth, timeout=60)
             elif request_type == "POST":
+                
                 res = requests.post(url=url, json=data, headers=auth, timeout=60)
             else:
                 raise UserError(
                     _("Unsupported request type, please only use 'GET' or 'POST'")
                 )
+
             res.raise_for_status()
             dhl_parcel_last_request = ("Request type: {}\nURL: {}\nData: {}").format(
                 request_type, url, data
@@ -63,6 +68,7 @@ class DhlParcelRequest(object):
             raise UserError(
                 _("{}\n{}".format(e, res.json().get("Message", "") if res.text else ""))
             )
+
         return res
 
     def _get_new_auth_token(self, username, password):
@@ -149,6 +155,7 @@ class DhlParcelRequest(object):
                 )
             ),
         )
+
         return res.json().get("Label", False)
 
     def cancel_shipment(self, reference=False):

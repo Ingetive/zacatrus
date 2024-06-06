@@ -54,4 +54,5 @@
             'zacatrus/static/src/js/Chrome.js',
         ],
     },
+    'license': 'Other proprietary',
 }

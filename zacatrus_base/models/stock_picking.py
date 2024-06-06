@@ -35,3 +35,17 @@ class Picking(models.Model):
             })
 
         return super(Picking, self).send_to_shipper()
+
+    def get_label_dhl_txt(self):
+        if self.carrier_id.delivery_type == 'dhl_parcel':
+            attach = self.env['ir.attachment'].sudo().search([
+                ('res_model', '=', 'stock.picking'),
+                ('res_id', '=', self.id),
+                ('index_content', '!=', False),
+                ('mimetype', '=', 'text/plain'),
+                ('type', '=', 'binary')
+            ], order="create_date desc", limit=1)
+            if attach:
+                return attach.index_content
+        return None
+

@@ -13,10 +13,10 @@
     "depends": ["delivery_package_number", "delivery_state"],
     "data": [
         "security/ir.model.access.csv",
-        "report/stock_picking.xml",
         "views/delivery_carrier_view.xml",
         "views/stock_picking_views.xml",
         "wizard/dhl_parcel_end_day_wizard_views.xml",
     ],
     "maintainers": ["hildickethan-S73"],
+    'license': 'Other proprietary',
 }

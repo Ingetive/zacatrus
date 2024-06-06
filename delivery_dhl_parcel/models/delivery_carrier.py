@@ -2,15 +2,17 @@
 # Copyright 2022 Tecnativa - Víctor Martínez
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
-
+import logging
+from odoo.exceptions import ValidationError
 from odoo import _, fields, models
 from odoo.tools import float_compare
-
 from .dhl_parcel_request import (
     DHL_PARCEL_DELIVERY_STATES_STATIC,
     DHL_PARCEL_INCOTERMS_STATIC,
     DhlParcelRequest,
 )
+
+_logger = logging.getLogger(__name__)
 
 
 class DeliveryCarrier(models.Model):
@@ -227,11 +229,17 @@ class DeliveryCarrier(models.Model):
         :param str carrier_tracking_ref - tracking reference
         :returns base64 encoded label
         """
+        _logger.warning("dhl_parcel_get_label")
         self.ensure_one()
         if not carrier_tracking_ref:
             return False
         dhl_parcel_request = DhlParcelRequest(self)
-        label = dhl_parcel_request.print_shipment(carrier_tracking_ref)
+        response = dhl_parcel_request.print_shipment(carrier_tracking_ref)
+        _logger.warning("respuesta")
+        _logger.warning(response.status_code)
+        if response.status_code != 200:
+            raise ValidationError(f"Error al obtener la etiqueta de DHL: \n {response}")
+        
         return label or False
 
     def dhl_parcel_hold_shipment(self, carrier_tracking_ref):

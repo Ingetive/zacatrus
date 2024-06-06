@@ -284,9 +284,6 @@ class NacexRequest():
         
         self.debug_logger("\n%s\n%s" % (self.base_url, params), action)
         
-        _logger.warning(self.base_url)
-        _logger.warning(params)
-        
         try:
             response = requests.request("GET", self.base_url, headers={}, params=params, timeout=15)
         except requests.exceptions.Timeout:
@@ -296,7 +293,4 @@ class NacexRequest():
         if result[0] == "ERROR":
             raise UserError(_("El servicio de Nacex ha dado error. \nMensaje del error: %s\nCódigo del error: %s" % (result[1], result[2])))
         
-        _logger.warning(response)
-#         self.debug_logger("%s\n%s" % (response.status_code, response.text), 'bpost_response_%s' % action)
-
         return response.status_code, result
