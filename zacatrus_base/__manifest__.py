@@ -21,6 +21,7 @@
         'views/res_config_settings_views.xml',
         'report/report_deliveryslip_ticket.xml',
         'report/zacatrus_base_views.xml',
+        'report/stock_picking.xml'
     ],
     "installable": True,
 }

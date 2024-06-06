@@ -3,7 +3,7 @@
     <template id="label_etiqueta_template_view">
         <t t-foreach="docs" t-as="picking">
             <t t-translation="off">
-                <t t-esc="picking.dhl_parcel_get_label()"/>
+                <t t-esc="picking.get_label_dhl_txt()"/>
             </t>
         </t>
     </template>
@@ -12,8 +12,8 @@
         <field name="name">Etiqueta DHL (ZPL)</field>
         <field name="model">stock.picking</field>
         <field name="report_type">qweb-text</field>
-        <field name="report_name">delivery_dhl_parcel.label_etiqueta_template_view</field>
-        <field name="report_file">delivery_dhl_parcel.label_etiqueta_template_view</field>
+        <field name="report_name">zacatrus_base.label_etiqueta_template_view</field>
+        <field name="report_file">zacatrus_base.label_etiqueta_template_view</field>
         <field name="print_report_name">'Etiqueta DHL - %s' % (object.name)</field>
         <field name="binding_model_id" ref="stock.model_stock_picking"/>
         <field name="binding_type">report</field>
