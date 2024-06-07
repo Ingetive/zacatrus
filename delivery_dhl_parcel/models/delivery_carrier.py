@@ -229,17 +229,12 @@ class DeliveryCarrier(models.Model):
         :param str carrier_tracking_ref - tracking reference
         :returns base64 encoded label
         """
-        _logger.warning("dhl_parcel_get_label")
+
         self.ensure_one()
         if not carrier_tracking_ref:
             return False
         dhl_parcel_request = DhlParcelRequest(self)
-        response = dhl_parcel_request.print_shipment(carrier_tracking_ref)
-        _logger.warning("respuesta")
-        _logger.warning(response.status_code)
-        if response.status_code != 200:
-            raise ValidationError(f"Error al obtener la etiqueta de DHL: \n {response}")
-        
+        label = dhl_parcel_request.print_shipment(carrier_tracking_ref)
         return label or False
 
     def dhl_parcel_hold_shipment(self, carrier_tracking_ref):
