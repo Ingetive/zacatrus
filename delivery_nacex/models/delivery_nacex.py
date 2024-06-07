@@ -184,7 +184,7 @@ class ProviderNacex(models.Model):
                     shipping['fecha_prevista'].strftime("%d/%m/%Y")
             ))
             
-            picking.obtener_etiqueta(codigo_expedicion)
+            picking.obtener_etiqueta_nacex(codigo_expedicion)
             #Para poner el codigo barras izquierdo más grande sustituir ^FO10,600^BY4,2 po r^FO10,515^BY4,3
             
             picking.message_post(body=logmessage)
