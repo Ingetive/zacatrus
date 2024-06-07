@@ -19,7 +19,7 @@ class StockPicking(models.Model):
         immediate_pickings = self.browse()
         # DHL B2B a DHL Carry para que obligue a pedir bultos en Segovia
         for picking in self:
-            if picking['carrier_id'].delivery_type == "dhl_parcel":
+            if picking['carrier_id'].delivery_type == "dhl_parcel" and picking.picking_type_id.id in [5, 103]:
                 immediate_pickings |= picking
             else:
                 immediate_pickings = super(StockPicking, self)._check_immediate()
