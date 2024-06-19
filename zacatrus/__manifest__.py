@@ -26,7 +26,8 @@
         # 'stock_location_children', TODO: Migración => No se migra por que V16 ya tiene un campo para los child_ids
         'sale_amazon',
         'portal',
-        'account_fiscal_position_partner_type'
+        'account_fiscal_position_partner_type',
+        'account_accountant'
     ],
     'data': [
         'security/point_of_sale.xml',
