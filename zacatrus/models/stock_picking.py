@@ -40,5 +40,8 @@ class StockPicking(models.Model):
                         vals.update({'location_id': 936, 'location_dest_id': 14})
                     elif picking_type.id == 5:
                         vals.update({'location_id': 14, 'location_dest_id': 9})
+                    elif picking_type.id in [104, 103]:
+                        _logger.info(f"Zacalog: Picking create: Assign carrier")
+                        vals.update({'carrier_id': 13})
                     
         return super().create(vals_list)
