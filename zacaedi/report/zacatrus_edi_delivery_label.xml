@@ -2,8 +2,8 @@
 <odoo>
 
 <template id="etiqueta_edi">
-  <t t-call="web.html_container">
-  <t t-call="web.external_layout">
+<t t-call="web.html_container">
+  <t t-call="zacaedi.external_layout">
     <t t-foreach="docs" t-as="o">
         <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})"/>
         <div class="page" style="border: 4px solid black;">
@@ -13,14 +13,14 @@
             </div>
             
             <t t-set="warehouse" t-if="o.partner_id.name" t-value="o.partner_id.name.split('-')"/>
-            <t t-set="dest" t-if="o.partner_id.name" t-value="o.partner_id.name.split('-')"/>
+            <t t-set="dest" t-if="o.sale_id.partner_id.name" t-value="o.sale_id.partner_id.name.split('-')"/>
             
             
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%; min-height:100px;">LUGAR DE ENTREGA</div>
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 60%; min-height:100px;text-align: center;">
                 <div><span t-if="o.partner_id.parent_id" t-esc="o.partner_id.parent_id.name"/></div>
-                <div><span t-if="warehouse and len(warehouse) > 1" t-esc="warehouse[1]"/></div>
+                <div><span t-if="warehouse and len(warehouse) &gt; 1" t-esc="warehouse[1]"/></div>
                 <div><span t-esc="o.partner_id.street"/>, <span t-esc="o.partner_id.city"/> <span t-esc="o.partner_id.zip"/></div>
               </div>
               <div style="float:left; padding:12px;text-align: center;">
@@ -34,35 +34,66 @@
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:100px;">DESTINO MERCANCÍA</div>
               <div style="float:left; padding:12px; width: 28%;  min-height:100px;">
                 <div><span t-if="o.partner_id.parent_id" t-esc="o.partner_id.parent_id.name"/></div>
-                <div><span t-if="dest and len(dest) > 1" t-esc="dest[1]"/></div>
+                <div><span t-if="dest and len(dest) &gt; 1" t-esc="dest[1]"/></div>
                 <div><span t-esc="o.sale_id.partner_id.street"/></div>
               </div>
-              <div style="float:left; padding:12px; font-size: 40px;">
+              <div style="float:left; padding:12px; font-size: 40px;width: 20%;">
                   <strong><span t-if="dest" t-esc="dest[0]"/></strong>
               </div>
-              <div style="float:left; padding:12px; font-size: 40px;">
-                  <img alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus('o.sale_id.client_order_ref' or ''), 300, 50)" style="width:300px;height:50px;margin:12px;"/>
+              <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
+                <div>
+                <t t-set="barcode1" t-value="'91'+'01'+ dest[0]"/> 
+                  <img alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode1 or ''), 280, 80)"/>
+                </div>
+                <div><span t-esc="'('+barcode1[:2]+') '+barcode1[2:]"/></div>
               </div>
             </div>
 
 
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:100px;">DATOS ASOCIADOS A LA EMPRESA</div>
-              <div style="float:left; padding:12px;  min-height:100px;">
+              <div style="float:left; padding:12px;  min-height:100px;width: 40%;">
                 <div>DPTO-P.VENTA: 831 - 00</div>
-                <div>PEDIDO: <span t-esc="o.sale_id.client_order_ref"/></div>
-                <div>ALBARÁN: <span t-esc="o.sale_id.origin"/></div>
+                <div>PEDIDO: <span t-esc="int(o.sale_id.client_order_ref)"/></div>
+                <div>ALBARÁN: <span t-esc="int(o.sale_id.origin)"/></div>
+              </div>
+              <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
+                <t t-set="barcode2" t-value="'98'+'831'+'00'+ o.sale_id.client_order_ref + str(int(o.sale_id.origin))"/>
+                <div>
+                  <img alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode2 or ''), 300, 80)"/>
+                </div>
+                <div><span t-esc="'('+barcode2[:2]+') '+barcode2[2:]"/></div>
               </div>
             </div>
             
 
-            <div>
-                <img alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(o.sale_id.client_order_ref or ''), 300, 50)" style="width:300px;height:50px;margin:12px;"/>
-                (<span t-esc="o.sale_id.client_order_ref"/>)
+            <div style="text-align: center;">
+              <t t-set="barcode3" t-value="'00'+'9'+'8613318'+str(o.sale_id.id).zfill(9)"/>
+              
+              <!-- search of the control digit -->
+              <t t-set="odd" t-value="True"/>
+              <t t-set="result" t-value="0"/>
+              <t t-foreach="barcode3[::-1]" t-as="digit">
+                <t t-set="result" t-if="odd" t-value="result + int(digit) * 3"/>
+                <t t-set="result" t-if="not odd" t-value="result + int(digit) * 1"/>
+                <t t-set="odd" t-value="not odd"/>
+              </t>
+                <t t-set="dec" t-value="int(result/10)*10"/>
+                <t t-set="dec" t-if="not (result % 10 == 0)" t-value="dec+10"/>
+                <t t-set="digit" t-value="dec - result"/>
+              <!-- / search of the control digit -->
+              
+              <t t-set="barcode3" t-value="barcode3 + str(digit)"/>
+              <div>
+                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode3 or ''), 500, 100)"/>
+              </div>
+              <div>
+                <span t-esc="'('+barcode3[:2]+') '+barcode3[2:]"/>
+              </div>
             </div>
         </div>
        </t>
   </t>
-  </t>
+</t>
 </template>
 </odoo>
