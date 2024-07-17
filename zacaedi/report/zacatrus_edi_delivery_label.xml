@@ -6,7 +6,7 @@
   <t t-call="zacaedi.external_layout">
     <t t-foreach="docs" t-as="o">
         <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})"/>
-        <div class="page" style="border: 4px solid black;">
+        <div class="page" style="border: 4px solid black;page-break-before:always;">
             <div style="border-bottom: 1px solid black;padding:12px;">
               <div><span t-esc="res_company.name"/></div>
               <div><span t-esc="res_company.street"/>, <span t-esc="res_company.city"/> - <span t-esc="res_company.zip"/></div>
