@@ -13,6 +13,7 @@
         'security/ir.model.access.csv',
         'report/zacaedi_views.xml',
         'report/zacatrus_edi_delivery_label.xml',
+        'report/zacatrus_edi_external_layout.xml',
     ],
     "installable": True,
 }
