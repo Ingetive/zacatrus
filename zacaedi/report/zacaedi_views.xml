@@ -26,6 +26,39 @@
             <field name="binding_model_id" ref="stock.model_stock_picking"/>
             <field name="binding_type">report</field>
             <field name="paperformat_id" ref="zacaedi.paperformat_zedi_label"/>
-        </record>   
+        </record>
+
+
+        <record id="bundle_wizard_view_form" model="ir.ui.view">
+        	<field name="name">bundle.wizard.form</field>
+        	<field name="model">zacaedi.bundle</field>
+        	<field name="arch" type="xml">
+            	<form string="Bundle Wizard">
+                	<group class="oe_title">
+                        <field name="order_ids" widget="many2many"/>
+                        <field name="url" widget="url"/>
+                	</group>
+                    <footer>
+                        <button type="object" name="generateCSV" class="btn btn-primary" string="CSV"/>
+                        <button string="Cerrar" special="cancel"/>
+                    </footer>
+               </form>
+        	</field>
+    	</record>
+        <record id="edi_bundle_wizard" model="ir.actions.act_window">
+            <field name="name">Cerrar albaranes EDI y generar CSV</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">zacaedi.bundle</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bundle_wizard_view_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem id="edi_bundle_wizard_item"
+            sequence="100"
+            parent="sale.sale_order_menu"
+            name="EDI Bundle" action="edi_bundle_wizard"/>
+
+
+
     </data>
 </odoo>

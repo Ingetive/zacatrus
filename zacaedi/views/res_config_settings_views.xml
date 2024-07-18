@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.zacaedi</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="110"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Zacatrus EDI" string="Zacatrus EDI" data-key="zacaedi">
+                    
+                    <h2>Seres</h2>
+                    <div class="row mt16 o_settings_container" name="seres_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="ftpserver"
+                            title="Dirección del servidor">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Servidor ftp" for="ftpserver"/>
+                                    <div class="text-muted">
+                                        Ftp Server
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="ftpserver" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="seres_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="ftpuser"
+                            title="Usuario">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Usuario ftp" for="ftpuser"/>
+                                    <div class="text-muted">
+                                        User
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="ftpuser" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="seres_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="ftppassword"
+                            title="Password">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Contraseña ftp" for="ftppassword"/>
+                                    <div class="text-muted">
+                                        Password
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="ftppassword" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Config</h2>
+
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_pos_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'zacaedi', 'bin_size': False}</field>
+    </record>
+
+</odoo>
