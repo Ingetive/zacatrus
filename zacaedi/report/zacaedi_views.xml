@@ -35,7 +35,8 @@
         	<field name="arch" type="xml">
             	<form string="Bundle Wizard">
                 	<group class="oe_title">
-                        <field name="order_ids" widget="many2many"/>
+                        <field name="name"/>
+                        <field name="order_ids" widget="many2many" readonly="1" />
                         <field name="url" widget="url"/>
                 	</group>
                     <footer>
@@ -45,10 +46,13 @@
                </form>
         	</field>
     	</record>
+
+
         <record id="edi_bundle_wizard" model="ir.actions.act_window">
             <field name="name">Cerrar albaranes EDI y generar CSV</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">zacaedi.bundle</field>
+            <field name="res_id">1</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="bundle_wizard_view_form"/>
             <field name="target">new</field>
@@ -56,7 +60,7 @@
         <menuitem id="edi_bundle_wizard_item"
             sequence="100"
             parent="sale.sale_order_menu"
-            name="EDI Bundle" action="edi_bundle_wizard"/>
+            name="EDI Bundle" action="id_act_server"/>
 
 
 

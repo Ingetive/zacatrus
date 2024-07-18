@@ -6,7 +6,7 @@ from .EdiWriter import EdiWriter
 
 _logger = logging.getLogger(__name__)
 
-class BundleWizard(models.TransientModel):
+class BundleWizard(models.Model):
     _name = 'zacaedi.bundle'
     #_inherit = 'zacaedi.bundle'
 
@@ -30,6 +30,7 @@ class BundleWizard(models.TransientModel):
             'type': 'ir.actions.act_window',
             'res_id': self.id,
             'target': 'new',
+            'flags': {'initial_mode': 'view'}
         }
     
     def _getFtp(env):
@@ -46,6 +47,29 @@ class BundleWizard(models.TransientModel):
                 _logger.error("EdiTalker: Cannot connect to sftp.")
         except Exception as err:
             raise Exception(err)
+        
+    def getId(env):
+        bundles =  env['zacaedi.bundle'].search_read([])
+        id = False
+        for bundle in bundles:
+            id = bundle['id']
+            break
+        if not id:
+            bundle = env['zacaedi.bundle'].create( {'name': 'Estado EDI'} )
+            id = bundle['id']
+        
+        return id
+
+    def loadWizard(self):
+        return {
+            "type" : "ir.actions.act_window",
+            "res_model" : self._name,
+            "view_mode": "form", 
+            "res_id": BundleWizard.getId(self.env),
+            "action": "edi_bundle_wizard",
+            "view_mode": "form",
+            "target": "new"
+        }
     
     @api.model
     def getAllPendingOrders(self):

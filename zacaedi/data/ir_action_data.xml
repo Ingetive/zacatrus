@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+        <record model="ir.actions.server" id="id_act_server"> 
+            <field name="name">Launch edi bundle window</field> 
+            <field name="model_id" ref="model_zacaedi_bundle"/>
+            <field name="state">code</field> 
+            <field name="code">
+                action = model.sudo().loadWizard() 
+            </field> 
+        </record>
+
+</odoo>

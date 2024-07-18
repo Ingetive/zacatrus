@@ -15,9 +15,10 @@
         'views/res_config_settings_views.xml',
         'views/sale_order.xml',
         'security/ir.model.access.csv',
-        'report/zacaedi_views.xml',
         'report/zacatrus_edi_delivery_label.xml',
         'report/zacatrus_edi_external_layout.xml',
+        'data/ir_action_data.xml',
+        'report/zacaedi_views.xml',
     ],
     "installable": True,
 }
