@@ -8,10 +8,12 @@
     "license": "AGPL-3",
     "depends": [
         'base',
-        'sale'
+        'sale_management',
+        'stock'
     ],
     "data": [
         'views/res_config_settings_views.xml',
+        'views/sale_order.xml',
         'security/ir.model.access.csv',
         'report/zacaedi_views.xml',
         'report/zacatrus_edi_delivery_label.xml',

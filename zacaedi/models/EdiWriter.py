@@ -46,19 +46,21 @@ class EdiWriter ():
             raise Exception(f"Order already processed: {ediOrder['data']['orderNumber']}")
 
         _order = {
-           'partner_id': buyerPartner,
-           'partner_invoice_id': invoicingPartner,
-           'partner_shipping_id': shippingPartner,
-           'date_order': datetime.date.today().strftime("%Y-%m-%d"),
-           #'location_id': DISTRI_LOCATION_ID, #self.locations[self.myEnv]["out"],
-           'warehouse_id': DISTRI_WAREHOUSE_ID,
-           'pricelist_id': 6,
-           'client_order_ref': ediOrder['data']['orderNumber'],
-           'origin': ediOrder['header']['shipmentId'],
-           'state': 'draft',
-           'team_id': DISTRI_TEAM_ID,
-           'payment_term_id': 5,
-           'user_id': EDI_USER_ID
+            'partner_id': buyerPartner,
+            'partner_invoice_id': invoicingPartner,
+            'partner_shipping_id': shippingPartner,
+            'date_order': datetime.date.today().strftime("%Y-%m-%d"),
+            #'location_id': DISTRI_LOCATION_ID, #self.locations[self.myEnv]["out"],
+            'warehouse_id': DISTRI_WAREHOUSE_ID,
+            'pricelist_id': 6,
+            'client_order_ref': ediOrder['data']['orderNumber'],
+            'origin': ediOrder['header']['shipmentId'],
+            'state': 'draft',
+            'team_id': DISTRI_TEAM_ID,
+            'payment_term_id': 5,
+            'user_id': EDI_USER_ID,
+            'x_edi_order': ediOrder['data']['orderNumber'],
+            'x_edi_shipment': ediOrder['header']['shipmentId']
         }
         createdOrder = env['sale.order'].create(_order)
 
@@ -98,14 +100,16 @@ class EdiWriter ():
                 #print item['barcode']
                 taxes = [1] # IVA21
                 order_line = {
-                   'order_id': createdOrder['id'],
-                   'name': product['name'],
-                   'product_uom_qty': item['orderedQty'],   
-                   #'type': 'make_to_stock',
-                   #'notes': '',
-                   #'date_planned': datetime.date.today().strftime("%Y-%m-%d"),
-                   'tax_id': [(6, 0, taxes)],
-                   "product_id": product["id"]
+                    'order_id': createdOrder['id'],
+                    'name': product['name'],
+                    'product_uom_qty': item['orderedQty'],   
+                    #'type': 'make_to_stock',
+                    #'notes': '',
+                    #'date_planned': datetime.date.today().strftime("%Y-%m-%d"),
+                    'tax_id': [(6, 0, taxes)],
+                    "product_id": product["id"],
+                    "x_edi_line": item['lineNumber'],
+                    "x_edi_product": item['buyerProductNumber']
                 }
                 if not discount: #float(item['unitGrossPrice']) != 0:
                     raise Exception(f"Edi error: Producto sin tarifa asignada {product['name']} ({product['default_code']})")
