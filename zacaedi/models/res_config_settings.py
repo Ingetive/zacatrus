@@ -11,6 +11,7 @@ class ResConfigSettings(models.TransientModel):
     ftpserver = fields.Char(string='localhost', readonly=False)
     ftpuser = fields.Char(readonly=False)
     ftppassword = fields.Char(readonly=False)
+    inputpath = fields.Char(readonly=False)
 
     @api.model
     def get_values(self):
@@ -20,6 +21,7 @@ class ResConfigSettings(models.TransientModel):
             ftpserver = self.env['ir.config_parameter'].sudo().get_param('zacaedi.ftpserver'),
             ftpuser = self.env['ir.config_parameter'].sudo().get_param('zacaedi.ftpuser'),
             ftppassword = self.env['ir.config_parameter'].sudo().get_param('zacaedi.ftppassword'),
+            inputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath'),
         )
         return res
 
@@ -28,5 +30,6 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftpserver', self.ftpserver)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftpuser', self.ftpuser)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftppassword', self.ftppassword)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.inputpath', self.inputpath)
 
         super(ResConfigSettings, self).set_values()

@@ -1,8 +1,10 @@
-import base64, os
+import base64, os, logging
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
 from .EdiWriter import EdiWriter
+
+_logger = logging.getLogger(__name__)
 
 class BundleWizard(models.TransientModel):
     _name = 'zacaedi.bundle'
@@ -18,8 +20,6 @@ class BundleWizard(models.TransientModel):
             record.url = '/web/content/zacaedi.bundle/%s/file/%s?download=true' % (self.id, "orders.csv")
     
     def generateCSV(self):
-        print("Zacalog: EDI: Generate CSV")
-
         data = "Your text goes here"
         self.file = base64.b64encode(data.encode())
 
@@ -43,20 +43,21 @@ class BundleWizard(models.TransientModel):
             if transport:
                 return paramiko.SFTPClient.from_transport(transport)
             else:
-                print("EdiTalker: Cannot connect to sftp.")
+                _logger.error("EdiTalker: Cannot connect to sftp.")
         except Exception as err:
             raise Exception(err)
     
     @api.model
     def getAllPendingOrders(self):
-        path = '/recepcion/orders_d96a'
+        path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath') #'/lamp0/web/vhosts/estasjugando.com/recepcion/orders_d96a'
+        _logger.info(f"Zacalog: EDI: seeking {path}...")
 
         fileList = BundleWizard._getFtp(self.env).listdir( path )
         ret = []
 
-        print("Zacalog: EDI: getting files...")
+        _logger.info("Zacalog: EDI: getting files...")
         for fileName in fileList:
-            print(f"Zacalog: EDI: getting {fileName}...")
+            _logger.info(f"Zacalog: EDI: getting {fileName}...")
             #fileName = file.split('/')[3]
             ret.append(fileName)
             try:
@@ -66,13 +67,12 @@ class BundleWizard(models.TransientModel):
                 buffer = file.read().decode("utf-8")
                 orders = EdiTalker.readBuffer( buffer )
                 for order in orders:
-                    print("ORDER")
-                    print(order['data']['orderNumber'])
+                    _logger.info(order['data']['orderNumber'])
                     try:
-                        orderId = EdiWriter.createSaleOrderFromEdi( self.env, order, file )
+                        order = EdiWriter.createSaleOrderFromEdi( self.env, order, file )
                     except Exception as e: 
                         msg = "Zacalog: EDI: getOrdersFromSeres. Exception: " +str(e)
-                        print (msg)
+                        _logger.error (msg)
                         raise(e)
                         #self._getSlack().sendWarn( msg, "test2") #TODO:
 
@@ -80,5 +80,5 @@ class BundleWizard(models.TransientModel):
                 #    self.deleteFile(file)
 
             except Exception as e:
-                print (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved.")
+                _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved.")
 

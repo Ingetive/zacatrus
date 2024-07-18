@@ -1,21 +1,23 @@
-import datetime
+import datetime, logging
 from odoo import models, fields, api
 
 DISTRI_WAREHOUSE_ID = 21
 DISTRI_TEAM_ID = 2
 EDI_USER_ID = 127
 
+_logger = logging.getLogger(__name__)
+
 class EdiWriter ():
     def createOrRetrieveECIClient(env, aPartner):
         args = [('ref', '=', aPartner["code"])] #query clause
         #ids = self.sock.execute(self.dbname, self.uid, self.pwd, 'res.partner', 'search', args)
-        ids = env['res.partner'].search(args)
-        if len(ids) == 0:
+        partners = env['res.partner'].search(args)
+        if len(partners) == 0:
             raise Exception("Client does not exist: "+ aPartner["code"]) # we don't create it anymore
         else:
-            _id = ids[0]
+            partner = partners[0]
 
-        return _id
+        return partner['id']
     
     def createSaleOrderFromEdi(env, ediOrder, filename):
         #userId = 127
@@ -33,7 +35,7 @@ class EdiWriter ():
             #print (partner)
 
         if invoicingPartner not in [5661, 5967, 5758]: # ECI, Juguettos, Fnac
-            raise Exception("wrong client 1")
+            raise Exception(f"wrong client {invoicingPartner}")
 
         if not shippingPartner:
             raise Exception("wrong shipping address")
@@ -58,9 +60,9 @@ class EdiWriter ():
            'payment_term_id': 5,
            'user_id': EDI_USER_ID
         }
-        _id = env['sale.order'].create(_order)
+        createdOrder = env['sale.order'].create(_order)
 
-        partners =  env['res.partner'].read(invoicingPartner, ['property_product_pricelist'] )
+        partners =  env['res.partner'].search_read( [ ('id', '=', invoicingPartner) ], ['property_product_pricelist'] )
         priceListItems = None;
         for partner in partners:
             if "property_product_pricelist" in partner and partner["property_product_pricelist"]:
@@ -96,7 +98,7 @@ class EdiWriter ():
                 #print item['barcode']
                 taxes = [1] # IVA21
                 order_line = {
-                   'order_id': _id,
+                   'order_id': createdOrder['id'],
                    'name': product['name'],
                    'product_uom_qty': item['orderedQty'],   
                    #'type': 'make_to_stock',
@@ -115,6 +117,7 @@ class EdiWriter ():
                 elif discount:
                     order_line['discount'] = discount
 
+                _logger.info(order_line)
                 lineId =  env['sale.order.line'].create(order_line)
 
-        return _id
+        return createdOrder
