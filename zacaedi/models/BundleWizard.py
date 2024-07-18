@@ -30,7 +30,6 @@ class BundleWizard(models.Model):
             'type': 'ir.actions.act_window',
             'res_id': self.id,
             'target': 'new',
-            'flags': {'initial_mode': 'view'}
         }
     
     def _getFtp(env):
