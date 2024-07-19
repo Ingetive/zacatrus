@@ -41,7 +41,7 @@
                         <field name="url" widget="url"/>
                 	</group>
                     <footer>
-                        <button type="object" name="generateCSV" class="btn btn-primary" string="CSV"/>
+                        <button type="object" name="send" class="btn btn-primary" string="Enviar"/>
                         <button string="Cerrar" special="cancel"/>
                     </footer>
                </form>

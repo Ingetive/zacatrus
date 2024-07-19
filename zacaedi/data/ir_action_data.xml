@@ -2,13 +2,23 @@
 <odoo>
 
 
-        <record model="ir.actions.server" id="id_act_server"> 
-            <field name="name">Launch edi bundle window</field> 
-            <field name="model_id" ref="model_zacaedi_bundle"/>
-            <field name="state">code</field> 
-            <field name="code">
-                action = model.sudo().loadWizard() 
-            </field> 
-        </record>
+    <record model="ir.actions.server" id="id_act_server"> 
+        <field name="name">Launch edi bundle window</field> 
+        <field name="model_id" ref="model_zacaedi_bundle"/>
+        <field name="state">code</field> 
+        <field name="code">
+            action = model.sudo().loadWizard() 
+        </field> 
+    </record>
+
+    <record id="zacaedi_sync" model="ir.cron">
+        <field name="name">Zacatrus EDI: Syncronize with Seres</field>
+        <field name="model_id" ref="model_zacaedi_bundle"/>
+        <field name="state">code</field>
+        <field name="code">model.getAllPendingOrders()</field>
+        <field name='interval_number'>5</field>
+        <field name='interval_type'>minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
 
 </odoo>

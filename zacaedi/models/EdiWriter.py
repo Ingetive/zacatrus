@@ -1,5 +1,6 @@
-import datetime, logging
+import datetime, logging, re, os, csv
 from odoo import models, fields, api
+import zipfile, base64
 
 DISTRI_WAREHOUSE_ID = 21
 DISTRI_TEAM_ID = 2
@@ -22,6 +23,15 @@ class EdiWriter ():
 
         return partner['id']
     
+    def deleteError(env, ediOrder):
+        from .BundleWizard import BundleWizard
+        bundle = BundleWizard.getCurrentBundle(env)
+        args = [
+            ('origin', '=', ediOrder['data']['orderNumber']),
+            ('bundle_id', '=', bundle['id']),
+        ]
+        env['zacaedi.error'].search( args ).unlink()
+
     def saveError(env, code, ediOrder, msg):
         from .BundleWizard import BundleWizard
         bundle = BundleWizard.getCurrentBundle(env)
@@ -154,3 +164,76 @@ class EdiWriter ():
                 lineId =  env['sale.order.line'].create(order_line)
 
         return createdOrder
+    
+
+    def _generateCSVs(env, orders, bundleId):
+        #path= f"bundle{bundleId}"
+        #oOdersIDs = []
+        #for orderId in bundle["orders"]:
+        #    orders = db.orders.find({"_id": orderId})
+        #    for order in orders:
+        #        oOdersIDs.append(int(order["odoo_order_id"]))
+        count = {}
+        for oOrder in orders:
+            regExp = ',[ ]*([0-9]+)[ ]*-'
+            m = re.search(regExp, oOrder["partner_shipping_id"][1])
+            client = re.search(regExp, oOrder["partner_id"][1])
+            if m:
+                if client:
+                    destCode = m.group(1)
+                    clientCode = client.group(1)
+
+                    fileName = f"B86133188_1010997_{destCode}"
+                    if not fileName in count:
+                        count[fileName] = 0
+                    with open(f"{fileName}.csv", mode='w' if count[fileName] == 0 else 'a') as abstractFile:
+                        abstractwriter = csv.writer(abstractFile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        if (count[fileName] == 0):
+                            abstractwriter.writerow([
+                                'Proveedor', 'Empresa Recepción','Lugar Recepción', 'Empresa Destino', 'Lugar destino','Uneco',
+                                'Pedido','Albarán', 'Bultos','Embalaje', 'Transportista', 'Expedición'
+                            ])
+                        count[fileName] += 1
+                        abstractwriter.writerow([
+                            1010997, 
+                            1, # Empresa de recepción
+                            int(destCode), # Lugar de recepción
+                            1, # Empresa destino
+                            int(clientCode), #Lugar destino
+                            831, #Uneco
+                            int(oOrder["client_order_ref"]), #pedido
+                            int(oOrder["origin"]), # albarán
+                            1, # Bultos
+                            'b', # Embalaje. 'b': Caja/bulto
+                            'Transloan', # Transportista
+                            '0' # Expedición
+                        ])
+                else:
+                    _logger.error( f"No client code in {oOrder['partner_id'][1]} in order {oOrder['client_order_ref']}." )
+            else:
+                _logger.error( f"No dest. code in {oOrder['partner_shipping_id'][1]} in order {oOrder['client_order_ref']}." )
+
+        #Loop over all files to add TOTAL LINEAS
+        for fileName in count:
+            with open(f"{fileName}.csv", mode='a') as abstractFile:
+                abstractwriter = csv.writer(abstractFile, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                abstractwriter.writerow([
+                    '', '', '', '', '', '', '', '', '', '', 
+                    'TOTAL LINEAS',
+                    count[fileName]
+                ])
+
+        zipf = zipfile.ZipFile(f"bundle{bundleId}.zip", 'w', zipfile.ZIP_DEFLATED)
+
+        _logger.info( f"Zacalog: EDI: zip creado bundle{bundleId}.zip." )
+
+        for fileName in count:
+            zipf.write(f"{fileName}.csv", f"{fileName}.csv")
+        zipf.close()
+            
+        with open(f"bundle{bundleId}.zip", mode="rb") as f:
+            data = f.read()
+            return base64.b64encode(data)
+
+
+

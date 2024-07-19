@@ -1,4 +1,5 @@
 import base64, os, logging
+from datetime import datetime, timedelta
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
@@ -22,20 +23,7 @@ class BundleWizard(models.Model):
     url = fields.Char("Ficheros", compute="_compute_url")
     def _compute_url(self):
         for record in self:
-            record.url = '/web/content/zacaedi.bundle/%s/file/%s?download=true' % (self.id, "orders.csv")
-    
-    def generateCSV(self):
-        data = "Your text goes here"
-        self.file = base64.b64encode(data.encode())
-
-        return {
-            'name': 'Cerrar albaranes EDI y generar CSV',
-            'view_mode': 'form',    
-            'res_model': 'zacaedi.bundle',
-            'type': 'ir.actions.act_window',
-            'res_id': self.id,
-            'target': 'new',
-        }
+            record.url = '/web/content/zacaedi.bundle/%s/file/%s?download=true' % (self.id, f"bundle.zip")
     
     def _getFtp(env):
         try:
@@ -66,7 +54,7 @@ class BundleWizard(models.Model):
         orders =  self.env['sale.order'].search_read([('x_edi_status', '=', EdiWriter.EDI_STATUS_INIT)], order="id desc", limit=1)
         orderList = []
         for order in orders:
-            orderList.append( (4, [order['id']]) )
+            orderList.append( (4, order['id']) )
 
         #Errors to show
         errors =  self.env['zacaedi.error'].search_read([('bundle_id', '=', currentBundle['id'])])
@@ -74,7 +62,10 @@ class BundleWizard(models.Model):
         for error in errors:
             error_msgs += f"{error['message']}\n"
 
-        currentBundle.write({'error_msgs':error_msgs})
+        
+        file = EdiWriter._generateCSVs(self.env, orders, currentBundle['id'])
+        currentBundle.write({'order_ids': orderList, 'error_msgs':error_msgs, 'file': file})
+
 
         return {
             'name': 'Enviar albaranes EDI y generar CSV',
@@ -84,10 +75,9 @@ class BundleWizard(models.Model):
             "res_id": currentBundle['id'],
             "action": "edi_bundle_wizard",
             "view_mode": "form",
-            "target": "new",
-            "context": {'tal': 'cual'}
+            "target": "new"
         }
-    
+        
     @api.model
     def getAllPendingOrders(self):
         path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath') #'/lamp0/web/vhosts/estasjugando.com/recepcion/orders_d96a'
@@ -106,17 +96,29 @@ class BundleWizard(models.Model):
                 buffer = file.read().decode("utf-8")
                 orders = EdiTalker.readBuffer( buffer )
                 for order in orders:
+                    orderDate = datetime.strptime(order['data']['time'], "%Y%m%d")
+                    past = datetime.now() - timedelta(days=6)
+                    if orderDate < past:
+                        msg = "El pedido es demasiado antiguo (>6 días) "
+                        _logger.error (f"Zacalog: EDI: {msg}")
+                        EdiWriter.saveError(self.env, 201, order, msg)
+                        #TODO: Delete from ftp
+                        #BundleWizard._getFtp(self.env).remove(os.path.join(path, fileName))
+                        raise Exception (msg)
+                        
                     try:
-                        order = EdiWriter.createSaleOrderFromEdi( self.env, order, file )
+                        EdiWriter.createSaleOrderFromEdi( self.env, order, file )
+                        EdiWriter.deleteError(self.env, order)
                     except Exception as e: 
                         msg = "Zacalog: EDI: getOrdersFromSeres. Exception: " +str(e)
                         _logger.error (msg)
                         raise(e)
                         #self._getSlack().sendWarn( msg, "test2") #TODO:
 
-                #TODO: if deleteFromFTP:
-                #    self.deleteFile(file)
+                BundleWizard._getFtp(self.env).remove(os.path.join(path, fileName))
 
             except Exception as e:
                 _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved.")
 
+    def send(self):
+        pass #TODO: Generate and send all files to Seres
