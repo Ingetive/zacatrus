@@ -1,3 +1,14 @@
+import datetime, logging
+
+_logger = logging.getLogger(__name__)
+
+EDI_PARTNER = {
+    5663: "8422416200508",
+    5662: "8422416200621",
+    5663: "8422416200560",
+    5661: "8422416000016" #central
+}
+
 class EdiTalker ():
     def _due(line): #ERE1V
         data = {
@@ -234,6 +245,323 @@ class EdiTalker ():
         orders.append(order)
 
         return orders
+
+    def getPickingFromOrder(env, order):
+        args = [
+            ('sale_id', '=', order['id']),
+            ('picking_type_id', '=', 103), # Distri ordenes de entrega
+            ('state', '=', 'done'),
+        ]
+        pickings = env['stock.picking'].search_read(args)
+        for picking in pickings:
+            return picking
+
+        raise Exception("Pedido no encontrado: " + str(order['name']))
+
+    def getPickingLinesFromOrderId(env, order_id):
+        args = [('order_id', '=', order_id)]
+        lines = env['sale.order.line'].search_read(args)
+        
+        return lines
+    
+    def loadProduct(env, product_id):
+        args = [('id', '=', product_id)]
+        products = env['product.product'].search_read(args)
+
+        for product in products:
+            return product
+    
+    def getGLNFromPartnerId(env, partner_id):
+        args = [
+            ('id', '=', partner_id)
+        ]
+        partners = env['res.partner'].search_read(args)
+        for partner in partners:
+            return partner
+
+        raise Exception("wrong client")
+    
+    def writeEncoded(line, writeReturn = True):
+        #_line = formatString.format(line.decode('utf8').encode('iso-8859-1'))
+        char_to_replace = {'Á': 'A','É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U'}
+        for key, value in char_to_replace.items():
+            line = line.replace(key, value)
+
+        #file.write( line )
+        if writeReturn:
+            line += "\n"
+
+        return line
+
+    def _getHeader(shipmentId, mode, partnerGLN):
+        now = datetime.datetime.now()
+
+        #if mode == 'INVOIC':
+        #    _id = str(10000000000 + int(shipmentId))
+        #else:
+        #    _id = shipmentId
+
+
+        line = '{:<6}'.format('RECTL')
+        line = line + '{:<6}'.format( mode )
+        line = line + '{:<35}'.format('B86133188') # ES este nuestro GLN_PROVEEDOR ?????
+        line = line + '{:<35}'.format( partnerGLN )
+        line = line + '{:<40}'.format( shipmentId )
+        line = line + '{:<12}'.format(now.strftime("%Y%m%d%H%M"))
+
+        return line
+    
+    def _getGlobalData(picking, shipmentId, orderId):
+        now = datetime.datetime.now()
+        #oday = datetime.date.fromtimestamp(time.time())
+        deliveryDate = now + datetime.timedelta(days=3)
+
+        line = '{:<6}'.format('SEH1C')
+        line = line + '{:<6}'.format('351')
+        line = line + '{:<17}'.format(shipmentId)
+        line = line + '{:<6}'.format('9')
+        line = line + '{:<12}'.format(now.strftime("%Y%m%d%H%M"))
+        line = line + '{:<12}'.format(deliveryDate.strftime("%Y%m%d%H%M")) # Fecha prevista de entrega
+        line = line + '{:<3}'.format('') # empty
+        line = line + '{:<12}'.format('') # empty
+        line = line + '{:<3}'.format('') # empty
+        line = line + '{:<12}'.format('') # empty
+        line = line + '{:<6}'.format('') # empty
+        line = line + '{:<17}'.format( orderId ) # debe de ser el número de pedido EDI?
+        line = line + '{:<12}'.format('') # empty
+        line = line + '{:<17}'.format(shipmentId)
+        line = line + '{:<12}'.format(now.strftime("%Y%m%d%H%M"))
+        line = line + '{:<3}'.format('AAK')
+        line = line + '{:<17}'.format('') #Numero de aviso de expedición que reemplazamos. Obligatorio si BGM.,1225=5
+        line = line + '{:<12}'.format('')
+        line = line + '{:<3}'.format('AAK')
+        line = line + '{:<17}'.format('')
+        line = line + '{:<12}'.format('')
+        line = line + '{:<3}'.format('')
+        line = line + '{:<3}'.format('')
+        line = line + '{:<70}'.format('')
+        line = line + '{:<3}'.format('')
+        line = line + '{:<13}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<17}'.format('')
+        line = line + '{:<17}'.format('')
+        line = line + '{:<70}'.format('')
+
+        return line
+
+    def _getPartner(picking, atype, partner_id):
+        line = '{:<6}'.format('SEH1D')
+        line = line + '{:<3}'.format(atype)
+        if partner_id in EDI_PARTNER:
+            gln = EDI_PARTNER[partner_id]
+        else:
+            try:
+                _partner = EdiTalker.getGLNFromPartnerId(partner_id)
+                gln = _partner["ref"]
+            except Exception as e:
+                gln = partner_id
+        line = line + '{:<17}'.format( gln )
+        line = line + '{:<3}'.format('9')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<9}'.format('')
+        line = line + '{:<9}'.format('')
+        line = line + '{:<3}'.format('')
+        if atype == 'BY' or atype == 'DP':
+            line = line + '{:<3}'.format('API')
+            line = line + '{:<35}'.format('831')
+        else:
+            line = line + '{:<3}'.format('')
+            line = line + '{:<35}'.format('')
+        line = line + '{:<3}'.format('')
+        line = line + '{:<17}'.format('')
+
+        return line
+
+    def _getBundles(picking, idx, sscc = False):
+        line = '{:<6}'.format('SEH1P')
+        line = line + '{:<12}'.format( idx )
+        if idx == 1:
+            line = line + '{:<12}'.format('') 
+        else:
+            line = line + '{:<12}'.format(str(idx - 1))
+        packages = 1
+        if idx == 3 and picking['number_of_packages']:
+            packages = picking['number_of_packages']
+        line = line + '{:<8}'.format( packages ) # número de paquetes (BULTOS)
+        line = line + '{:<6}'.format('')
+        line = line + '{:<6}'.format('')
+        code = ''
+        if idx == 1:
+            code = '201'
+        if idx == 2:
+            code = 'BE'
+        if idx == 3:
+            code = 'CT'
+        line = line + '{:<6}'.format(code)
+        line = line + '{:<35}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:18}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:16}'.format('')
+        line = line + '{:6}'.format('')
+        line = line + '{:70}'.format('')
+        line = line + '{:35}'.format('')
+        line = line + '{:35}'.format('')
+        line = line + '{:35}'.format('')
+        line = line + '{:35}'.format('')
+
+        if sscc:
+            line = line + '{:35}'.format(EdiTalker._generateSSCC( sscc )) #sscc
+        else:
+            line = line + '{:35}'.format('') #sscc
+
+        return line
+
+    def _getCD(number):
+        even = False
+        calc = 0
+        for pos in range (0, len(number)):
+            multipler = 0
+            if even:
+                multipler = 1
+            else:
+                multipler = 3
+
+            even = not even
+            calc = calc + int(number[pos]) * multipler
+
+        return (10 - (calc % 10)) % 10
+
+    def _generateSSCC(number):
+        # Ej.: 986133180000011054
+        ret = "98613318" + '{0:09}'.format( int(number) )
+        return ret + str(EdiTalker._getCD( ret ))
+
+    def _getLines(env, picking, orderNumber, lineNumber, buyerProductNumber):
+        product = EdiTalker.loadProduct( env, picking['product_id'][0] )
+
+        line = '{:<6}'.format('SEH1L')
+        line = line + '{:<6}'.format( str(lineNumber) )
+        line = line + '{:<15}'.format( str(product['barcode']) )
+        line = line + '{:<70}'.format( str(product['name'])[:70] )
+        line = line + '{:<7}'.format( '' )
+        line = line + '{:<15}'.format( str(product['barcode']) ) #sku
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<35}'.format( '' )
+        line = line + '{:<15}'.format( buyerProductNumber ) #Número de articulo del comprador (IN)
+        line = line + '{:<16}'.format( str('{0:.3f}'.format( (picking['product_qty']) )) )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<16}'.format( '1' ) # UC Unidades de consumo en unidad de expedición
+        line = line + '{:<12}'.format( '' )
+        line = line + '{:<6}'.format( 'ON' )
+        line = line + '{:<17}'.format( orderNumber ) # Número de pedido
+        line = line + '{:<12}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<17}'.format( '' )
+        line = line + '{:<12}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<17}'.format( '' )
+        line = line + '{:<12}'.format( '' )
+        line = line + '{:<16}'.format( '' )
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<16}'.format( '' )
+        line = line + '{:<3}'.format( '' )
+        line = line + '{:<16}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<35}'.format( '' )
+        line = line + '{:<35}'.format( '' ) 
+        line = line + '{:<6}'.format( lineNumber ) # Número de línea del pedido
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<16}'.format( '' )
+        line = line + '{:<3}'.format( '' )
+        line = line + '{:<18}'.format( '' )
+        line = line + '{:<18}'.format( '' )
+        line = line + '{:<3}'.format( '' )
+        line = line + '{:<18}'.format( '' )
+        line = line + '{:<18}'.format( '' )
+        line = line + '{:<3}'.format( '' )
+        #print line
+        #sys.exit(0)
+        #print product
+        return line
+    
+    def savePickingsToSeres(env, order):#, original_order, path, bundleName, upload = False):
+        #saleOrder = self.loadSaleOrder(int(original_order['odoo_order_id']))
+        
+        picking = EdiTalker.getPickingFromOrder( env, order )
+
+        orderNumber = order["x_edi_order"]
+        #fileName = os.path.join(path, str(picking['id'])+'.txt')
+        data = EdiTalker.getGLNFromPartnerId(env, order['partner_invoice_id']['id'])
+
+        #file = open(fileName,"w") 
+
+        line = ""
+        line += EdiTalker.writeEncoded(EdiTalker._getHeader( order["x_edi_shipment"], 'DESADV', data["ref"]) )
+        line += EdiTalker.writeEncoded(EdiTalker._getGlobalData(picking, order["x_edi_shipment"], orderNumber)  )
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'MS', 'B86133188')  ) # Emisor
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'SU', 'B86133188')  ) # Receptor del mensaje
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'MR', order['partner_invoice_id']['id'])  ) # Receptor del mensaje
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'IV', order['partner_invoice_id']['id'])  ) # Receptor del mensaje 
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'DP', order['partner_shipping_id']['id'])  ) # Almacén 5663 por ejemplo
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'BY', order["partner_id"]['id'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
+
+        #logistics
+        ssccNumber = str(order['id']).zfill(9) #TODO: revisar
+
+        line += EdiTalker.writeEncoded(EdiTalker._getBundles(picking, 1)  )
+        line += EdiTalker.writeEncoded(EdiTalker._getBundles(picking, 2)  )
+        line += EdiTalker.writeEncoded(EdiTalker._getBundles(picking, 3, ssccNumber)  )
+
+        lines = EdiTalker.getPickingLinesFromOrderId(env, order['id'])
+        for aline in lines:
+            if aline['product_id'][0] == 186797:
+                done = True
+            else:
+                product = EdiTalker.loadProduct(env, aline['product_id'][0])
+                done = False
+                #for ori_line in original_order['line']:
+                    #if (int(ori_line["barcode"]) == int(product["barcode"])):
+                lineNumber = aline['x_edi_line'] #ori_line['lineNumber']
+                buyerProductNumber = aline['x_edi_product']
+                l = EdiTalker._getLines(env, aline, order["x_edi_shipment"], lineNumber, buyerProductNumber)
+                line += EdiTalker.writeEncoded( l  )
+                
+        return line
 
 
 

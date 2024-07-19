@@ -8,6 +8,8 @@ from .EdiWriter import EdiWriter
 _logger = logging.getLogger(__name__)
 
 EDI_BUNDLE_STATUS_INIT = 1
+EDI_BUNDLE_STATUS_READY = 10
+EDI_BUNDLE_STATUS_SENT = 20
 
 class BundleWizard(models.Model):
     _name = 'zacaedi.bundle'
@@ -80,7 +82,20 @@ class BundleWizard(models.Model):
             "view_mode": "form",
             "target": "new"
         }
-        
+
+
+    @api.model
+    def createSeresPickings(self, upload = False):
+        bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_READY)], order="id desc", limit=1)
+
+        for bundle in bundles:
+            for order in bundle.order_ids:
+                EdiTalker.savePickingsToSeres(self.env, order)
+                return #TODO
+
+            #TODO: Si no ha fallado ninguno
+            #bundle.write({'status': EDI_BUNDLE_STATUS_SENT)
+
     @api.model
     def getAllPendingOrders(self):
         path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath') #'/lamp0/web/vhosts/estasjugando.com/recepcion/orders_d96a'
@@ -126,4 +141,7 @@ class BundleWizard(models.Model):
                 _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved: " + str(e))
 
     def send(self):
-        pass #TODO: Generate and send all files to Seres
+        for order in self.order_ids:
+            order.write({'x_edi_status': EdiWriter.EDI_STATUS_READY})
+        self.write({'status': EDI_BUNDLE_STATUS_READY})
+        
