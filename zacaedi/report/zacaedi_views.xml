@@ -35,7 +35,8 @@
         	<field name="arch" type="xml">
             	<form string="Bundle Wizard">
                 	<group class="oe_title">
-                        <field name="name"/>
+                        <field name="error_msgs" readonly="1" widget="text" />
+                        
                         <field name="order_ids" widget="many2many" readonly="1" />
                         <field name="url" widget="url"/>
                 	</group>

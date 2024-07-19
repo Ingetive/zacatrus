@@ -5,19 +5,38 @@ DISTRI_WAREHOUSE_ID = 21
 DISTRI_TEAM_ID = 2
 EDI_USER_ID = 127
 
+
 _logger = logging.getLogger(__name__)
 
 class EdiWriter ():
+    EDI_STATUS_INIT = 1
+
     def createOrRetrieveECIClient(env, aPartner):
         args = [('ref', '=', aPartner["code"])] #query clause
         #ids = self.sock.execute(self.dbname, self.uid, self.pwd, 'res.partner', 'search', args)
         partners = env['res.partner'].search(args)
         if len(partners) == 0:
-            raise Exception("Client does not exist: "+ aPartner["code"]) # we don't create it anymore
+            raise Exception("No tenemos cliente creado para este código: "+ aPartner["code"]) # we don't create it anymore
         else:
             partner = partners[0]
 
         return partner['id']
+    
+    def saveError(env, code, ediOrder, msg):
+        from .BundleWizard import BundleWizard
+        bundle = BundleWizard.getCurrentBundle(env)
+        args = [
+            ('origin', '=', ediOrder['data']['orderNumber']),
+            ('bundle_id', '=', bundle['id']),
+        ]
+        count = env['zacaedi.error'].search_count( args )
+        if count == 0:
+            error = env['zacaedi.error'].create({
+                'origin': ediOrder['data']['orderNumber'],
+                'code': code,
+                'message': f"Pedido {ediOrder['data']['orderNumber']}: {msg}",
+                'bundle_id': bundle['id']
+            })
     
     def createSaleOrderFromEdi(env, ediOrder, filename):
         #userId = 127
@@ -25,24 +44,32 @@ class EdiWriter ():
         invoicingPartner = ""
         shippingPartner = False
         buyerPartner = False
-        for partner in ediOrder['partner']:
-            if partner ['calificator'] == "IV":
-                invoicingPartner = EdiWriter.createOrRetrieveECIClient( env, partner )
-            if partner ['calificator'] == "DP":
-                shippingPartner = EdiWriter.createOrRetrieveECIClient( env, partner )
-            if partner ['calificator'] == "BY":
-                buyerPartner = EdiWriter.createOrRetrieveECIClient( env, partner )
-            #print (partner)
+        try:
+            for partner in ediOrder['partner']:
+                if partner ['calificator'] == "IV":
+                    invoicingPartner = EdiWriter.createOrRetrieveECIClient( env, partner )
+                if partner ['calificator'] == "DP":
+                    shippingPartner = EdiWriter.createOrRetrieveECIClient( env, partner )
+                if partner ['calificator'] == "BY":
+                    buyerPartner = EdiWriter.createOrRetrieveECIClient( env, partner )
+                #print (partner)
+        except Exception as e:
+            EdiWriter.saveError(env, 101, ediOrder, str(e))
+            raise e
+
 
         if invoicingPartner not in [5661, 5967, 5758]: # ECI, Juguettos, Fnac
+            EdiWriter.saveError(env, 102, ediOrder, "No es ninguno de los clientes de EDI.")
             raise Exception(f"wrong client {invoicingPartner}")
 
         if not shippingPartner:
+            EdiWriter.saveError(env, 103, ediOrder, "Dirección de envío incorrecta.")
             raise Exception("wrong shipping address")
       
         args = [('client_order_ref', '=', ediOrder['data']['orderNumber'])]
         dups = env['sale.order'].search(args)
         if len(dups) > 0:
+            EdiWriter.saveError(env, 104, ediOrder, "Este pedido ya está creado.")
             raise Exception(f"Order already processed: {ediOrder['data']['orderNumber']}")
 
         _order = {
@@ -60,7 +87,8 @@ class EdiWriter ():
             'payment_term_id': 5,
             'user_id': EDI_USER_ID,
             'x_edi_order': ediOrder['data']['orderNumber'],
-            'x_edi_shipment': ediOrder['header']['shipmentId']
+            'x_edi_shipment': ediOrder['header']['shipmentId'],
+            'x_edi_status': EdiWriter.EDI_STATUS_INIT
         }
         createdOrder = env['sale.order'].create(_order)
 
@@ -78,6 +106,7 @@ class EdiWriter ():
             fields = ['name', 'categ_id', 'default_code']
             products =  env['product.product'].search_read(args, fields)
             if len(products) == 0:
+                EdiWriter.saveError(env, 105, ediOrder, "El producto con código de barras {item['barcode']} no existe.")
                 raise Exception(f"Product not found with barcode {item['barcode']}.")
 
             onlyVirus = True
