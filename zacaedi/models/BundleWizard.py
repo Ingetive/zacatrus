@@ -51,7 +51,7 @@ class BundleWizard(models.Model):
         currentBundle = BundleWizard.getCurrentBundle(self.env)
 
         # Assign orders not sent
-        orders =  self.env['sale.order'].search_read([('x_edi_status', '=', EdiWriter.EDI_STATUS_INIT)], order="id desc", limit=1)
+        orders =  self.env['sale.order'].search_read([('x_edi_status', '=', EdiWriter.EDI_STATUS_INIT)], order="id desc")
         orderList = []
         for order in orders:
             orderList.append( (4, order['id']) )
@@ -61,6 +61,9 @@ class BundleWizard(models.Model):
         error_msgs = ""
         for error in errors:
             error_msgs += f"{error['message']}\n"
+
+        if not error_msgs:
+            error_msgs = "No hay :-)"
 
         
         file = EdiWriter._generateCSVs(self.env, orders, currentBundle['id'])
@@ -82,7 +85,9 @@ class BundleWizard(models.Model):
     def getAllPendingOrders(self):
         path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath') #'/lamp0/web/vhosts/estasjugando.com/recepcion/orders_d96a'
 
-        fileList = BundleWizard._getFtp(self.env).listdir( path )
+        ftp = BundleWizard._getFtp(self.env)
+
+        fileList = ftp.listdir( path )
         ret = []
 
         for fileName in fileList:
@@ -90,10 +95,10 @@ class BundleWizard(models.Model):
             #fileName = file.split('/')[3]
             ret.append(fileName)
             try:
-                file = BundleWizard._getFtp(self.env).file(
+                file = ftp.file(
                     os.path.join(path, fileName), 
                 )
-                buffer = file.read().decode("utf-8")
+                buffer = file.read().decode('unicode_escape')
                 orders = EdiTalker.readBuffer( buffer )
                 for order in orders:
                     orderDate = datetime.strptime(order['data']['time'], "%Y%m%d")
@@ -103,7 +108,7 @@ class BundleWizard(models.Model):
                         _logger.error (f"Zacalog: EDI: {msg}")
                         EdiWriter.saveError(self.env, 201, order, msg)
                         #TODO: Delete from ftp
-                        #BundleWizard._getFtp(self.env).remove(os.path.join(path, fileName))
+                        #ftp.remove(os.path.join(path, fileName))
                         raise Exception (msg)
                         
                     try:
@@ -115,10 +120,10 @@ class BundleWizard(models.Model):
                         raise(e)
                         #self._getSlack().sendWarn( msg, "test2") #TODO:
 
-                BundleWizard._getFtp(self.env).remove(os.path.join(path, fileName))
+                ftp.remove(os.path.join(path, fileName))
 
             except Exception as e:
-                _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved.")
+                _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved: " + str(e))
 
     def send(self):
         pass #TODO: Generate and send all files to Seres
