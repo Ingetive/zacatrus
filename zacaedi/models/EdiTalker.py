@@ -359,14 +359,14 @@ class EdiTalker ():
 
         return line
 
-    def _getPartner(picking, atype, partner_id):
+    def _getPartner(env, picking, atype, partner_id):
         line = '{:<6}'.format('SEH1D')
         line = line + '{:<3}'.format(atype)
         if partner_id in EDI_PARTNER:
             gln = EDI_PARTNER[partner_id]
         else:
             try:
-                _partner = EdiTalker.getGLNFromPartnerId(partner_id)
+                _partner = EdiTalker.getGLNFromPartnerId(env, partner_id)
                 gln = _partner["ref"]
             except Exception as e:
                 gln = partner_id
@@ -543,12 +543,12 @@ class EdiTalker ():
         line = ""
         line += EdiTalker.writeEncoded(EdiTalker._getHeader( order["x_edi_shipment"], 'DESADV', data["ref"]) )
         line += EdiTalker.writeEncoded(EdiTalker._getGlobalData(picking, order["x_edi_shipment"], orderNumber)  )
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'MS', 'B86133188')  ) # Emisor
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'SU', 'B86133188')  ) # Receptor del mensaje
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'MR', order['partner_invoice_id']['id'])  ) # Receptor del mensaje
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'IV', order['partner_invoice_id']['id'])  ) # Receptor del mensaje 
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'DP', order['partner_shipping_id']['id'])  ) # Almacén 5663 por ejemplo
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(picking, 'BY', order["partner_id"]['id'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'MS', 'B86133188')  ) # Emisor
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'SU', 'B86133188')  ) # Receptor del mensaje
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'MR', order['partner_invoice_id']['id'])  ) # Receptor del mensaje
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'IV', order['partner_invoice_id']['id'])  ) # Receptor del mensaje 
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'DP', order['partner_shipping_id']['id'])  ) # Almacén 5663 por ejemplo
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'BY', order["partner_id"]['id'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
 
         #logistics
         ssccNumber = str(order['id']).zfill(9) #TODO: revisar
@@ -805,7 +805,7 @@ class EdiTalker ():
         for invoice in invoices:
             return invoice
         
-        raise Exception("El pedido ")
+        raise Exception(f"El pedido {order['name']} no tiene factura creada")
 
     def _getInvoiceData(invoice, order):
         if not invoice['invoice_date']:
@@ -818,7 +818,7 @@ class EdiTalker ():
         line = line + '{:<17}'.format(invoice['name']) # N. Factura
         line = line + '{:<6}'.format( '9' ) # tipo Factura comercial
         #print (invoice)
-        line = line + '{:<8}'.format(invoice['invoice_date'].replace("-", "")) # F. Factura
+        line = line + '{:<8}'.format(str(invoice['invoice_date']).replace("-", "")) # F. Factura
         line = line + '{:<16}'.format( '' ) # Fecha del albarán
         line = line + '{:<6}'.format('60') # Modo de pago: Pagaré
         line = line + '{:<3}'.format('') 
@@ -833,7 +833,7 @@ class EdiTalker ():
         line = line + '{:<17}'.format('') 
 
         line = line + '{:<6}'.format('EUR')
-        line = line + '{:<8}'.format(invoice['invoice_date_due'].replace("-", "")) 
+        line = line + '{:<8}'.format(str(invoice['invoice_date_due']).replace("-", "")) 
         line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_untaxed'] ))
         line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_untaxed'] ))  # Base imponible
         line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_untaxed'] ))  # Importe bruto
@@ -850,10 +850,10 @@ class EdiTalker ():
 
         return line
 
-    def _getInvoicePartner(invoice, atype, partner_id):
+    def _getInvoicePartner(env, invoice, atype, partner_id):
         line = '{:<6}'.format('SINCP')
         line = line + '{:<3}'.format(atype)
-        _partner = EdiTalker.getGLNFromPartnerId(partner_id)
+        _partner = EdiTalker.getGLNFromPartnerId(env, partner_id)
         gln = _partner["ref"]
 
         line = line + '{:<17}'.format( gln )
@@ -907,14 +907,14 @@ class EdiTalker ():
         line = line + '{:<15}'.format( '' )
         line = line + '{:<15}'.format( '' )
         line = line + '{:<15}'.format( '' )
-        line = line + '{:<16}'.format( str('{0:.3f}'.format( int(_line['quantity']) )) )
+        line = line + '{:<16}'.format( str('{0:.3f}'.format( int(_line['product_qty']) )) )
         line = line + '{:<16}'.format( '' )
         line = line + '{:<6}'.format( '' )
         line = line + '{:<16}'.format( '' )
         line = line + '{:<16}'.format( '' )
 
         line = line + '{:<18}'.format( str('{0:.3f}'.format( _line['price_subtotal'] )) )
-        _unitPrice = float( int(_line['price_subtotal'] * 1000 / _line['quantity']) ) / 1000
+        _unitPrice = float( int(_line['price_subtotal'] * 1000 / _line['product_qty']) ) / 1000
         line = line + '{:<16}'.format( str('{0:.3f}'.format( _unitPrice )) )
         line = line + '{:<16}'.format( str('{0:.3f}'.format( _unitPrice )) )
         line = line + '{:<6}'.format( '' )
@@ -946,7 +946,7 @@ class EdiTalker ():
     def saveInvoicesToSeres(env, order, direct = False):
         if order["state"] != 'cancel':
             invoice = EdiTalker.getInvoiceFromOrder( env, order )
-            partner = EdiTalker.getGLNFromPartnerId(env, order['partner_invoice_id'][0])
+            partner = EdiTalker.getGLNFromPartnerId(env, order['partner_invoice_id']['id'])
             if direct:
                 if not partner or not 'ref' in partner or not partner['ref'] or partner['ref'] == '':
                     raise Exception("Edi partner error sending invoice")
@@ -958,16 +958,16 @@ class EdiTalker ():
             line += EdiTalker.writeEncoded(EdiTalker._getHeader( order['x_edi_shipment'], 'INVOIC', partner['ref'] ))
             line += EdiTalker.writeEncoded(EdiTalker._getInvoiceData( invoice, order )  )
 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'II', 1)  ) # Emisor 1 = Zacatrus
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'SU', 1)  ) # Proveedor
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'SCO', 1)  ) # Proveedor
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'IV', order['partner_invoice_id'][0])  ) 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'PR', order['partner_invoice_id'][0])  ) 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'BCO', order['partner_invoice_id'][0])  ) 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'BY', order["partner_id"][0])  ) # Tienda compradora (destino final - viene del EDI del pedido)
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'DP', order['partner_shipping_id'][0])  ) # Almacén 5663 por ejemplo
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'II', 1)  ) # Emisor 1 = Zacatrus
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'SU', 1)  ) # Proveedor
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'SCO', 1)  ) # Proveedor
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'IV', order['partner_invoice_id']['id'])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'PR', order['partner_invoice_id']['id'])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'BCO', order['partner_invoice_id']['id'])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'BY', order["partner_id"]['id'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'DP', order['partner_shipping_id']['id'])  ) # Almacén 5663 por ejemplo
 
-            lines = EdiTalker.getInvoiceLines(env, invoice['id'])
+            lines = EdiTalker.getPickingLinesFromOrderId(env, order['id'])
             idx = 0
             for aline in lines:
                 idx += 1
@@ -983,7 +983,7 @@ class EdiTalker ():
                         if aline['product_id'][0] == 186797: # Se filtra DHL para evitar errores
                             done = True
                         else:
-                            l = EdiTalker._getInvoiceLine(env, aline, order['x_edi_shipment'], line['x_edi_line'], line['x_edi_product'])
+                            l = EdiTalker._getInvoiceLine(env, aline, order['x_edi_shipment'], aline['x_edi_line'], aline['x_edi_product'])
                             line += EdiTalker.writeEncoded(  l  )
                                     
             l = EdiTalker._getInvoiceTax( 1, invoice )

@@ -113,7 +113,7 @@ class BundleWizard(models.Model):
                 if order.x_edi_status == EdiTalker.EDI_STATUS_SENT:
                     try:
                         path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath')
-                        buffer = self.saveInvoicesToSeres(self.env, order)
+                        buffer = EdiTalker.saveInvoicesToSeres(self.env, order)
                         idx += 1
                         if idx == 1:
                             ftp = BundleWizard._getFtp(self.env)
@@ -121,7 +121,7 @@ class BundleWizard(models.Model):
                             file.write(buffer)
                         order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED})
                     except Exception as e:
-                        _logger.error(f"Zacalog: EDI: Courld not send invoice for order {order['name']}...")
+                        _logger.error(f"Zacalog: EDI: Courld not send invoice for order {order['name']}: "+str(e))
                         isError = True
 
             if not isError and bundle.status == EDI_BUNDLE_STATUS_SENT:
