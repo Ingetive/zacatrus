@@ -97,32 +97,34 @@ class BundleWizard(models.Model):
 
     @api.model
     def sync(self):
-        self.createSeresInvoices()
         self.createSeresPickings()
+        self.createSeresInvoices()
         self.getAllPendingOrders()
 
     @api.model
     def createSeresInvoices(self):
-        bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_SENT)], order="id desc")
+        bundles =  self.env['zacaedi.bundle'].search([('status', 'in', [EDI_BUNDLE_STATUS_READY, EDI_BUNDLE_STATUS_SENT])], order="id desc")
 
         idx = 0
         for bundle in bundles:
             _logger.info(f"Zacalog: EDI: Invoicing bundle {bundle['id']}...")
             isError = False
             for order in bundle.order_ids:
-                try:
-                    path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath')
-                    buffer = self.saveInvoicesToSeres(self.env, order)
-                    idx += 1
-                    if idx == 1:
-                        ftp = BundleWizard._getFtp(self.env)
-                    with ftp.file(os.path.join(path, "F"+str(order['id'])+'.txt'), "wb") as file:
-                        file.write(buffer)
-                except Exception as e:
-                    _logger.error(f"Zacalog: EDI: Courld not send invoice for order {order['name']}...")
-                    isError = True
+                if order.x_edi_status == EdiTalker.EDI_STATUS_SENT:
+                    try:
+                        path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath')
+                        buffer = self.saveInvoicesToSeres(self.env, order)
+                        idx += 1
+                        if idx == 1:
+                            ftp = BundleWizard._getFtp(self.env)
+                        with ftp.file(os.path.join(path, "F"+str(order['id'])+'.txt'), "wb") as file:
+                            file.write(buffer)
+                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED})
+                    except Exception as e:
+                        _logger.error(f"Zacalog: EDI: Courld not send invoice for order {order['name']}...")
+                        isError = True
 
-            if not isError:
+            if not isError and bundle.status == EDI_BUNDLE_STATUS_SENT:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
 
     @api.model
