@@ -54,15 +54,16 @@ class BundleWizard(models.Model):
         # Assign orders not sent
         args = [
             ('x_edi_status', '=', EdiTalker.EDI_STATUS_INIT),
-            ('state', '=', 'done'),
+            ('state', '=', 'sale'),
         ]
         orders =  self.env['sale.order'].search_read(args, order="id desc")
         orderList = []
         for order in orders:
-            pickings = EdiTalker.getPickingFromOrder(self.env, order)
-            for picking in pickings:
+            try:
+                picking = EdiTalker.getPickingFromOrder(self.env, order)
                 orderList.append( (4, order['id']) )
-                break
+            except:
+                pass
 
         #Errors to show
         errors =  self.env['zacaedi.error'].search_read([('bundle_id', '=', currentBundle['id'])])
@@ -116,9 +117,6 @@ class BundleWizard(models.Model):
 
             #TODO: Si no ha fallado ninguno
             #bundle.write({'status': EDI_BUNDLE_STATUS_SENT)
-            
-        if ftp:
-            ftp.quit()
 
     @api.model
     def getAllPendingOrders(self):
@@ -161,8 +159,6 @@ class BundleWizard(models.Model):
 
             except Exception as e:
                 _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved: " + str(e))
-
-        ftp.quit()
 
     def send(self):
         for order in self.order_ids:
