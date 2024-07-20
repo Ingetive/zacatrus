@@ -606,7 +606,7 @@ class EdiTalker ():
                 'bundle_id': bundle['id']
             })
     
-    def createSaleOrderFromEdi(env, ediOrder, filename):
+    def createSaleOrderFromEdi(env, ediOrder):
         #userId = 127
 
         invoicingPartner = ""

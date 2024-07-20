@@ -52,10 +52,17 @@ class BundleWizard(models.Model):
         currentBundle = BundleWizard.getCurrentBundle(self.env)
 
         # Assign orders not sent
-        orders =  self.env['sale.order'].search_read([('x_edi_status', '=', EdiTalker.EDI_STATUS_INIT)], order="id desc")
+        args = [
+            ('x_edi_status', '=', EdiTalker.EDI_STATUS_INIT),
+            ('state', '=', 'done'),
+        ]
+        orders =  self.env['sale.order'].search_read(args, order="id desc")
         orderList = []
         for order in orders:
-            orderList.append( (4, order['id']) )
+            pickings = EdiTalker.getPickingFromOrder(self.env, order)
+            for picking in pickings:
+                orderList.append( (4, order['id']) )
+                break
 
         #Errors to show
         errors =  self.env['zacaedi.error'].search_read([('bundle_id', '=', currentBundle['id'])])
@@ -66,10 +73,14 @@ class BundleWizard(models.Model):
         if not error_msgs:
             error_msgs = "No hay :-)"
 
-        
-        file = EdiTalker._generateCSVs(self.env, orders, currentBundle['id'])
-        currentBundle.write({'order_ids': orderList, 'error_msgs':error_msgs, 'file': file})
+        data = {'order_ids': orderList, 'error_msgs':error_msgs}
+        try:
+            file = EdiTalker._generateCSVs(self.env, orders, currentBundle['id'])
+            data['file'] = file
+        except Exception as e:
+            _logger.info(f"Zacalog: EDI: Cannot generate zip file: "+str(e))
 
+        currentBundle.write(data)
 
         return {
             'name': 'Enviar albaranes EDI y generar CSV',
@@ -123,10 +134,8 @@ class BundleWizard(models.Model):
             #fileName = file.split('/')[3]
             ret.append(fileName)
             try:
-                file = ftp.file(
-                    os.path.join(path, fileName), 
-                )
-                buffer = file.read().decode('unicode_escape')
+                with ftp.file(os.path.join(path, fileName)) as file:
+                    buffer = file.read().decode('unicode_escape')
                 orders = EdiTalker.readBuffer( buffer )
                 for order in orders:
                     orderDate = datetime.strptime(order['data']['time'], "%Y%m%d")
@@ -140,7 +149,7 @@ class BundleWizard(models.Model):
                         raise Exception (msg)
                         
                     try:
-                        EdiTalker.createSaleOrderFromEdi( self.env, order, file )
+                        EdiTalker.createSaleOrderFromEdi( self.env, order )
                         EdiTalker.deleteError(self.env, order)
                     except Exception as e: 
                         msg = "Zacalog: EDI: getOrdersFromSeres. Exception: " +str(e)
