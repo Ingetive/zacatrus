@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
-from .EdiWriter import EdiWriter
 
 _logger = logging.getLogger(__name__)
 
@@ -53,7 +52,7 @@ class BundleWizard(models.Model):
         currentBundle = BundleWizard.getCurrentBundle(self.env)
 
         # Assign orders not sent
-        orders =  self.env['sale.order'].search_read([('x_edi_status', '=', EdiWriter.EDI_STATUS_INIT)], order="id desc")
+        orders =  self.env['sale.order'].search_read([('x_edi_status', '=', EdiTalker.EDI_STATUS_INIT)], order="id desc")
         orderList = []
         for order in orders:
             orderList.append( (4, order['id']) )
@@ -68,7 +67,7 @@ class BundleWizard(models.Model):
             error_msgs = "No hay :-)"
 
         
-        file = EdiWriter._generateCSVs(self.env, orders, currentBundle['id'])
+        file = EdiTalker._generateCSVs(self.env, orders, currentBundle['id'])
         currentBundle.write({'order_ids': orderList, 'error_msgs':error_msgs, 'file': file})
 
 
@@ -88,13 +87,27 @@ class BundleWizard(models.Model):
     def createSeresPickings(self, upload = False):
         bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_READY)], order="id desc", limit=1)
 
+        idx = 0
+        ftp = False
         for bundle in bundles:
             for order in bundle.order_ids:
-                EdiTalker.savePickingsToSeres(self.env, order)
+                idx += 1
+                if idx == 1:
+                    ftp = BundleWizard._getFtp(self.env)
+                    path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath')
+
+                buffer = EdiTalker.savePickingsToSeres(self.env, order)
+
+                with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
+                    file.write(buffer)
+
                 return #TODO
 
             #TODO: Si no ha fallado ninguno
             #bundle.write({'status': EDI_BUNDLE_STATUS_SENT)
+            
+        if ftp:
+            ftp.quit()
 
     @api.model
     def getAllPendingOrders(self):
@@ -121,14 +134,14 @@ class BundleWizard(models.Model):
                     if orderDate < past:
                         msg = "El pedido es demasiado antiguo (>6 días) "
                         _logger.error (f"Zacalog: EDI: {msg}")
-                        EdiWriter.saveError(self.env, 201, order, msg)
+                        EdiTalker.saveError(self.env, 201, order, msg)
                         #TODO: Delete from ftp
                         #ftp.remove(os.path.join(path, fileName))
                         raise Exception (msg)
                         
                     try:
-                        EdiWriter.createSaleOrderFromEdi( self.env, order, file )
-                        EdiWriter.deleteError(self.env, order)
+                        EdiTalker.createSaleOrderFromEdi( self.env, order, file )
+                        EdiTalker.deleteError(self.env, order)
                     except Exception as e: 
                         msg = "Zacalog: EDI: getOrdersFromSeres. Exception: " +str(e)
                         _logger.error (msg)
@@ -140,8 +153,10 @@ class BundleWizard(models.Model):
             except Exception as e:
                 _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved: " + str(e))
 
+        ftp.quit()
+
     def send(self):
         for order in self.order_ids:
-            order.write({'x_edi_status': EdiWriter.EDI_STATUS_READY})
+            order.write({'x_edi_status': EdiTalker.EDI_STATUS_READY})
         self.write({'status': EDI_BUNDLE_STATUS_READY})
         

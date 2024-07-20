@@ -12,6 +12,8 @@ class ResConfigSettings(models.TransientModel):
     ftpuser = fields.Char(readonly=False)
     ftppassword = fields.Char(readonly=False)
     inputpath = fields.Char(readonly=False)
+    outputpath = fields.Char(readonly=False)
+    invoicesoutputpath = fields.Char(readonly=False)
 
     @api.model
     def get_values(self):
@@ -22,6 +24,8 @@ class ResConfigSettings(models.TransientModel):
             ftpuser = self.env['ir.config_parameter'].sudo().get_param('zacaedi.ftpuser'),
             ftppassword = self.env['ir.config_parameter'].sudo().get_param('zacaedi.ftppassword'),
             inputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath'),
+            outputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath'),
+            invoicesoutputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath'),
         )
         return res
 
@@ -31,5 +35,7 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftpuser', self.ftpuser)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftppassword', self.ftppassword)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.inputpath', self.inputpath)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.outputpath', self.outputpath)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.invoicesoutputpath', self.invoicesoutputpath)
 
         super(ResConfigSettings, self).set_values()
