@@ -16,8 +16,9 @@ EDI_USER_ID = 127
 
 class EdiTalker ():
     EDI_STATUS_INIT = 1
-    EDI_STATUS_SENT = 2
-    EDI_STATUS_READY = 10
+    EDI_STATUS_SENT = 10
+    EDI_STATUS_READY = 20
+    EDI_STATUS_INVOICED = 30
 
     def _due(line): #ERE1V
         data = {
@@ -795,7 +796,201 @@ class EdiTalker ():
             data = f.read()
             return base64.b64encode(data)
 
+    def getInvoiceFromOrder(env, order):
+        args = [
+            ('invoice_origin', '=', order["display_name"]),
+            ('state', '=', 'posted'),
+        ]
+        invoices = env['account.move'].search_read(args)
+        for invoice in invoices:
+            return invoice
+        
+        raise Exception("El pedido ")
 
+    def _getInvoiceData(invoice, order):
+        if not invoice['invoice_date']:
+            raise Exception(f"La factura del pedido {invoice['invoice_origin']} no tiene la fecha. ¿La habéis confirmado?")
+
+        now = datetime.datetime.now()
+
+        line = '{:<6}'.format('SINCC')
+        line = line + '{:<6}'.format( '380' ) # tipo Factura comercial
+        line = line + '{:<17}'.format(invoice['name']) # N. Factura
+        line = line + '{:<6}'.format( '9' ) # tipo Factura comercial
+        #print (invoice)
+        line = line + '{:<8}'.format(invoice['invoice_date'].replace("-", "")) # F. Factura
+        line = line + '{:<16}'.format( '' ) # Fecha del albarán
+        line = line + '{:<6}'.format('60') # Modo de pago: Pagaré
+        line = line + '{:<3}'.format('') 
+        line = line + '{:<3}'.format('') 
+        line = line + '{:<17}'.format( order['x_edi_order'] ) # N. Pedido
+        line = line + '{:<17}'.format( order['x_edi_shipment'] ) #N. Albarán
+
+        line = line + '{:<3}'.format('') 
+        line = line + '{:<17}'.format('') 
+
+        line = line + '{:<17}'.format('') 
+        line = line + '{:<17}'.format('') 
+
+        line = line + '{:<6}'.format('EUR')
+        line = line + '{:<8}'.format(invoice['invoice_date_due'].replace("-", "")) 
+        line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_untaxed'] ))
+        line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_untaxed'] ))  # Base imponible
+        line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_untaxed'] ))  # Importe bruto
+        line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_tax'] ))  
+        line = line + '{:<18}'.format('{0:.3f}'.format( invoice['amount_total_signed'] ))  
+        line = line + '{:<18}'.format('')  
+        line = line + '{:<18}'.format('')  
+        line = line + '{:<18}'.format('')  
+        line = line + '{:<16}'.format('')  
+        line = line + '{:<8}'.format('')
+
+        line = line + '{:<12}'.format(now.strftime("%Y%m%d"))
+        line = line + '{:<17}'.format('')
+
+        return line
+
+    def _getInvoicePartner(invoice, atype, partner_id):
+        line = '{:<6}'.format('SINCP')
+        line = line + '{:<3}'.format(atype)
+        _partner = EdiTalker.getGLNFromPartnerId(partner_id)
+        gln = _partner["ref"]
+
+        line = line + '{:<17}'.format( gln )
+        line = line + '{:<3}'.format('9')
+        line = line + '{:<35}'.format(_partner['name'][:35])
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format(_partner['street'][:35])
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format(_partner['city'][:35])
+        if _partner['state_id']:
+            _state = _partner['state_id'][1]
+        else:
+            _state = ''
+        line = line + '{:<9}'.format( _state[:9] )
+        line = line + '{:<9}'.format(_partner['zip'])
+        line = line + '{:<3}'.format('')
+        line = line + '{:<35}'.format(_partner['vat'][:35])
+        line = line + '{:<35}'.format(831)
+        line = line + '{:<3}'.format('')
+        line = line + '{:<17}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<70}'.format('')
+        line = line + '{:<35}'.format('')
+        line = line + '{:<3}'.format('')
+        line = line + '{:<35}'.format('')
+
+        return line
+    
+    def getInvoiceLines(env, invoice_id):
+        args = [('move_id', '=', invoice_id)]
+        return env['account.move.line'].search_read(args)
+
+    def _getInvoiceLine(env, _line, orderNumber, lineNumber, buyerProductNumber):
+        product = EdiTalker.loadProduct(env, _line['product_id'][0] )
+
+        line = '{:<6}'.format('SINCL')
+        line = line + '{:<6}'.format( str(lineNumber) )
+        line = line + '{:<15}'.format( str(product['barcode']) )
+        line = line + '{:<35}'.format( str(product['name'])[:35] )
+        line = line + '{:<1}'.format( 'M' )
+        line = line + '{:<15}'.format( str(product['barcode']) ) #sku
+        line = line + '{:<15}'.format( buyerProductNumber ) #Número de articulo del comprador (IN)
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<15}'.format( '' )
+        line = line + '{:<16}'.format( str('{0:.3f}'.format( int(_line['quantity']) )) )
+        line = line + '{:<16}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<16}'.format( '' )
+        line = line + '{:<16}'.format( '' )
+
+        line = line + '{:<18}'.format( str('{0:.3f}'.format( _line['price_subtotal'] )) )
+        _unitPrice = float( int(_line['price_subtotal'] * 1000 / _line['quantity']) ) / 1000
+        line = line + '{:<16}'.format( str('{0:.3f}'.format( _unitPrice )) )
+        line = line + '{:<16}'.format( str('{0:.3f}'.format( _unitPrice )) )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<6}'.format( 'VAT' )
+        vatAmount = 21
+        line = line + '{:<6}'.format( str('{0:.3f}'.format( vatAmount )) )
+        line = line + '{:<18}'.format( str('{0:.3f}'.format( _line['price_subtotal'] * vatAmount/100 )) )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<18}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<6}'.format( '' )
+        line = line + '{:<18}'.format( '' )
+        line = line + '{:<17}'.format( '' )
+        line = line + '{:<17}'.format( orderNumber ) #N. Albarán
+
+        return line
+
+    def _getInvoiceTax(idx, invoice):
+        line = '{:<6}'.format('SINCI')
+        line = line + '{:<2}'.format( idx )
+        line = line + '{:<6}'.format( 'VAT' )
+        vatAmount = 21
+        line = line + '{:<6}'.format( str('{0:.3f}'.format( vatAmount )) )
+        line = line + '{:<18}'.format( str('{0:.3f}'.format( invoice['amount_tax'] ))) #Impuesto
+        line = line + '{:<18}'.format( str('{0:.3f}'.format( invoice['amount_untaxed'] ))) #Base
+
+        return line
+    
+    def saveInvoicesToSeres(env, order, direct = False):
+        if order["state"] != 'cancel':
+            invoice = EdiTalker.getInvoiceFromOrder( env, order )
+            partner = EdiTalker.getGLNFromPartnerId(env, order['partner_invoice_id'][0])
+            if direct:
+                if not partner or not 'ref' in partner or not partner['ref'] or partner['ref'] == '':
+                    raise Exception("Edi partner error sending invoice")
+                shippingPartner = EdiTalker.getGLNFromPartnerId(env, order['partner_shipping_id'][0])
+                if not shippingPartner or not 'ref' in shippingPartner or not shippingPartner['ref'] or shippingPartner['ref'] == '':
+                    raise Exception("Edi partner error sending invoice")
+
+            line = ""
+            line += EdiTalker.writeEncoded(EdiTalker._getHeader( order['x_edi_shipment'], 'INVOIC', partner['ref'] ))
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoiceData( invoice, order )  )
+
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'II', 1)  ) # Emisor 1 = Zacatrus
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'SU', 1)  ) # Proveedor
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'SCO', 1)  ) # Proveedor
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'IV', order['partner_invoice_id'][0])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'PR', order['partner_invoice_id'][0])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'BCO', order['partner_invoice_id'][0])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'BY', order["partner_id"][0])  ) # Tienda compradora (destino final - viene del EDI del pedido)
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(invoice, 'DP', order['partner_shipping_id'][0])  ) # Almacén 5663 por ejemplo
+
+            lines = EdiTalker.getInvoiceLines(env, invoice['id'])
+            idx = 0
+            for aline in lines:
+                idx += 1
+                #print (line)
+                if aline['product_id']:
+                    #product = EdiTalker.loadProduct(env, line['product_id'][0])
+                    if direct:
+                        lineNumber = str(idx)
+                        l = EdiTalker._getInvoiceLine(env, line, order['x_edi_shipment'], str(idx), "")
+                        line += EdiTalker.writeEncoded(l)
+                    else:
+                        done = False
+                        if aline['product_id'][0] == 186797: # Se filtra DHL para evitar errores
+                            done = True
+                        else:
+                            l = EdiTalker._getInvoiceLine(env, aline, order['x_edi_shipment'], line['x_edi_line'], line['x_edi_product'])
+                            line += EdiTalker.writeEncoded(  l  )
+                                    
+            l = EdiTalker._getInvoiceTax( 1, invoice )
+            line += EdiTalker.writeEncoded( l  )
+
+        return line
+    
 class WrongFileException(Exception):
     def __init__(self, value):
         self.value = value
