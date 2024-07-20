@@ -16,6 +16,8 @@ EDI_USER_ID = 127
 
 class EdiTalker ():
     EDI_STATUS_INIT = 1
+    EDI_STATUS_SENT = 2
+    EDI_STATUS_READY = 10
 
     def _due(line): #ERE1V
         data = {
@@ -763,7 +765,7 @@ class EdiTalker ():
                             int(oOrder["origin"]), # albarán
                             1, # Bultos
                             'b', # Embalaje. 'b': Caja/bulto
-                            'Transloan', # Transportista
+                            'Transportes Nieto, S.L.', # Transportista
                             '0' # Expedición
                         ])
                 else:

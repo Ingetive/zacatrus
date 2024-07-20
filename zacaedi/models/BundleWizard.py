@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 EDI_BUNDLE_STATUS_INIT = 1
 EDI_BUNDLE_STATUS_READY = 10
 EDI_BUNDLE_STATUS_SENT = 20
+EDI_BUNDLE_STATUS_INVOICED = 30
 
 class BundleWizard(models.Model):
     _name = 'zacaedi.bundle'
@@ -97,30 +98,39 @@ class BundleWizard(models.Model):
 
     @api.model
     def createSeresPickings(self, upload = False):
-        bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_READY)], order="id desc", limit=1)
+        bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_READY)], order="id desc")
 
         idx = 0
         ftp = False
+        isError = False
+        _logger.info(f"Zacalog: EDI: Seeking bundle...")
         for bundle in bundles:
+            _logger.info(f"Zacalog: EDI: Sending bundle {bundle['id']}...")
             for order in bundle.order_ids:
-                idx += 1
-                if idx == 1:
-                    ftp = BundleWizard._getFtp(self.env)
-                    path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath')
+                if order.x_edi_status == EdiTalker.EDI_STATUS_READY:
+                    try:
+                        path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath')
+                        idx += 1
+                        if idx == 1:
+                            ftp = BundleWizard._getFtp(self.env)
+        
+                        buffer = EdiTalker.savePickingsToSeres(self.env, order)
+        
+                        with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
+                            file.write(buffer)
+                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT})
+                    except Exception as e:
+                        _logger.error(f"Zacalog: EDI: Courld not send order {order['name']}...")
+                        isError = True
 
-                buffer = EdiTalker.savePickingsToSeres(self.env, order)
-
-                with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
-                    file.write(buffer)
-
-                return #TODO
-
-            #TODO: Si no ha fallado ninguno
-            #bundle.write({'status': EDI_BUNDLE_STATUS_SENT)
+            if not isError:
+                bundle.write({'status': EDI_BUNDLE_STATUS_SENT})
 
     @api.model
     def getAllPendingOrders(self):
         path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath') #'/lamp0/web/vhosts/estasjugando.com/recepcion/orders_d96a'
+        if not path:
+            return
 
         ftp = BundleWizard._getFtp(self.env)
 
