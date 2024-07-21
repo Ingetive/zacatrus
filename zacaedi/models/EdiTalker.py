@@ -16,8 +16,8 @@ EDI_USER_ID = 127
 
 class EdiTalker ():
     EDI_STATUS_INIT = 1
-    EDI_STATUS_SENT = 10
-    EDI_STATUS_READY = 20
+    EDI_STATUS_READY = 10
+    EDI_STATUS_SENT = 20
     EDI_STATUS_INVOICED = 30
 
     def _due(line): #ERE1V

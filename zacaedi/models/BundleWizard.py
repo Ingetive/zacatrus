@@ -25,7 +25,7 @@ class BundleWizard(models.Model):
     url = fields.Char("Ficheros", compute="_compute_url")
     def _compute_url(self):
         for record in self:
-            record.url = '/web/content/zacaedi.bundle/%s/file/%s?download=true' % (self.id, f"bundle.zip")
+            record.url = '/web/content/zacaedi.bundle/%s/file/%s?download=true' % (record.id, f"bundle.zip")
     
     def _getFtp(env):
         try:
