@@ -659,7 +659,7 @@ class EdiTalker ():
             'x_edi_order': ediOrder['data']['orderNumber'],
             'x_edi_shipment': ediOrder['header']['shipmentId'],
             'x_edi_status': EdiTalker.EDI_STATUS_INIT,
-            'x_edi_status_updated': datetime.now()
+            'x_edi_status_updated': datetime.datetime.now()
         }
         createdOrder = env['sale.order'].create(_order)
 
