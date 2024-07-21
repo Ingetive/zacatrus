@@ -658,7 +658,8 @@ class EdiTalker ():
             'user_id': EDI_USER_ID,
             'x_edi_order': ediOrder['data']['orderNumber'],
             'x_edi_shipment': ediOrder['header']['shipmentId'],
-            'x_edi_status': EdiTalker.EDI_STATUS_INIT
+            'x_edi_status': EdiTalker.EDI_STATUS_INIT,
+            'x_edi_status_updated': datetime.now()
         }
         createdOrder = env['sale.order'].create(_order)
 

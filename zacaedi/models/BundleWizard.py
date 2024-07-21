@@ -121,7 +121,7 @@ class BundleWizard(models.Model):
                             ftp = BundleWizard._getFtp(self.env)
                         with ftp.file(os.path.join(path, "F"+str(order['id'])+'.txt'), "wb") as file:
                             file.write(buffer)
-                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED})
+                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED, 'x_edi_status_updated': datetime.now()})
                     except Exception as e:
                         _logger.error(f"Zacalog: EDI: Courld not send invoice for order {order['name']}: "+str(e))
                         isError = True
@@ -151,7 +151,7 @@ class BundleWizard(models.Model):
         
                         with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
                             file.write(buffer)
-                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT})
+                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT, 'x_edi_status_updated': datetime.now()})
                     except Exception as e:
                         _logger.error(f"Zacalog: EDI: Could not send order {order['name']}: " + str(e))
                         isError = True
@@ -205,6 +205,6 @@ class BundleWizard(models.Model):
 
     def send(self):
         for order in self.order_ids:
-            order.write({'x_edi_status': EdiTalker.EDI_STATUS_READY})
+            order.write({'x_edi_status': EdiTalker.EDI_STATUS_READY, 'x_edi_status_updated': datetime.now()})
         self.write({'status': EDI_BUNDLE_STATUS_READY})
         
