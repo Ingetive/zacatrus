@@ -151,7 +151,7 @@ class BundleWizard(models.Model):
                             file.write(buffer)
                         order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT})
                     except Exception as e:
-                        _logger.error(f"Zacalog: EDI: Courld not send order {order['name']}...")
+                        _logger.error(f"Zacalog: EDI: Could not send order {order['name']}: " + str(e))
                         isError = True
 
             if not isError:

@@ -365,11 +365,14 @@ class EdiTalker ():
         if partner_id in EDI_PARTNER:
             gln = EDI_PARTNER[partner_id]
         else:
-            try:
-                _partner = EdiTalker.getGLNFromPartnerId(env, partner_id)
-                gln = _partner["ref"]
-            except Exception as e:
+            if isinstance(partner_id, str):
                 gln = partner_id
+            else:
+                try:
+                    _partner = EdiTalker.getGLNFromPartnerId(env, partner_id)
+                    gln = _partner["ref"]
+                except Exception as e:
+                    gln = partner_id
         line = line + '{:<17}'.format( gln )
         line = line + '{:<3}'.format('9')
         line = line + '{:<35}'.format('')
@@ -530,12 +533,9 @@ class EdiTalker ():
         return line
     
     def savePickingsToSeres(env, order):#, original_order, path, bundleName, upload = False):
-        #saleOrder = self.loadSaleOrder(int(original_order['odoo_order_id']))
-        
         picking = EdiTalker.getPickingFromOrder( env, order )
 
         orderNumber = order["x_edi_order"]
-        #fileName = os.path.join(path, str(picking['id'])+'.txt')
         data = EdiTalker.getGLNFromPartnerId(env, order['partner_invoice_id']['id'])
 
         #file = open(fileName,"w") 
@@ -575,14 +575,12 @@ class EdiTalker ():
 
     def createOrRetrieveECIClient(env, aPartner):
         args = [('ref', '=', aPartner["code"])] #query clause
-        #ids = self.sock.execute(self.dbname, self.uid, self.pwd, 'res.partner', 'search', args)
-        partners = env['res.partner'].search(args)
-        if len(partners) == 0:
-            raise Exception("No tenemos cliente creado para este código: "+ aPartner["code"]) # we don't create it anymore
-        else:
-            partner = partners[0]
-
-        return partner['id']
+        partners = env['res.partner'].search_read(args)
+        for partner in partners:
+            return partner['id']
+        
+        raise Exception("Zacalog: EDI: No tenemos cliente creado para este código: "+ aPartner["code"]) # we don't create it anymore
+        
     
     def deleteError(env, ediOrder):
         from .BundleWizard import BundleWizard
@@ -721,7 +719,6 @@ class EdiTalker ():
                 elif discount:
                     order_line['discount'] = discount
 
-                _logger.info(order_line)
                 lineId =  env['sale.order.line'].create(order_line)
 
         return createdOrder
@@ -770,9 +767,9 @@ class EdiTalker ():
                             '0' # Expedición
                         ])
                 else:
-                    _logger.error( f"No client code in {oOrder['partner_id'][1]} in order {oOrder['client_order_ref']}." )
+                    _logger.error( f"Zacalog: EDI: No client code in {oOrder['partner_id'][1]} in order {oOrder['client_order_ref']}." )
             else:
-                _logger.error( f"No dest. code in {oOrder['partner_shipping_id'][1]} in order {oOrder['client_order_ref']}." )
+                _logger.error( f"Zacalog: EDI: No dest. code in {oOrder['partner_shipping_id'][1]} in order {oOrder['client_order_ref']}." )
 
         #Loop over all files to add TOTAL LINEAS
         for fileName in count:
@@ -950,7 +947,7 @@ class EdiTalker ():
             if direct:
                 if not partner or not 'ref' in partner or not partner['ref'] or partner['ref'] == '':
                     raise Exception("Edi partner error sending invoice")
-                shippingPartner = EdiTalker.getGLNFromPartnerId(env, order['partner_shipping_id'][0])
+                shippingPartner = EdiTalker.getGLNFromPartnerId(env, order['partner_shipping_id']['id'])
                 if not shippingPartner or not 'ref' in shippingPartner or not shippingPartner['ref'] or shippingPartner['ref'] == '':
                     raise Exception("Edi partner error sending invoice")
 
