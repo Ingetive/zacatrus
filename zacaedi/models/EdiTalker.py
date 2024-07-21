@@ -559,17 +559,18 @@ class EdiTalker ():
 
         lines = EdiTalker.getPickingLinesFromOrderId(env, order['id'])
         for aline in lines:
-            if aline['product_id'][0] == 186797:
-                done = True
-            else:
-                product = EdiTalker.loadProduct(env, aline['product_id'][0])
-                done = False
-                #for ori_line in original_order['line']:
-                    #if (int(ori_line["barcode"]) == int(product["barcode"])):
-                lineNumber = aline['x_edi_line'] #ori_line['lineNumber']
-                buyerProductNumber = aline['x_edi_product']
-                l = EdiTalker._getLines(env, aline, order["x_edi_shipment"], lineNumber, buyerProductNumber)
-                line += EdiTalker.writeEncoded( l  )
+            if aline['x_edi_line']:
+                if aline['product_id'][0] == 186797:
+                    done = True
+                else:
+                    product = EdiTalker.loadProduct(env, aline['product_id'][0])
+                    done = False
+                    #for ori_line in original_order['line']:
+                        #if (int(ori_line["barcode"]) == int(product["barcode"])):
+                    lineNumber = aline['x_edi_line'] #ori_line['lineNumber']
+                    buyerProductNumber = aline['x_edi_product']
+                    l = EdiTalker._getLines(env, aline, order["x_edi_shipment"], lineNumber, buyerProductNumber)
+                    line += EdiTalker.writeEncoded( l  )
                 
         return line
 
@@ -577,7 +578,7 @@ class EdiTalker ():
         args = [('ref', '=', aPartner["code"])] #query clause
         partners = env['res.partner'].search_read(args)
         for partner in partners:
-            return partner['id']
+            return partner
         
         raise Exception("Zacalog: EDI: No tenemos cliente creado para este código: "+ aPartner["code"]) # we don't create it anymore
         
@@ -610,7 +611,7 @@ class EdiTalker ():
     def createSaleOrderFromEdi(env, ediOrder):
         #userId = 127
 
-        invoicingPartner = ""
+        invoicingPartner = False
         shippingPartner = False
         buyerPartner = False
         try:
@@ -627,9 +628,9 @@ class EdiTalker ():
             raise e
 
 
-        if invoicingPartner not in [5661, 5967, 5758]: # ECI, Juguettos, Fnac
+        if invoicingPartner['id'] not in [5661, 5967, 5758]: # ECI, Juguettos, Fnac
             EdiTalker.saveError(env, 102, ediOrder, "No es ninguno de los clientes de EDI.")
-            raise Exception(f"wrong client {invoicingPartner}")
+            raise Exception(f"wrong client {invoicingPartner['id']}")
 
         if not shippingPartner:
             EdiTalker.saveError(env, 103, ediOrder, "Dirección de envío incorrecta.")
@@ -642,9 +643,9 @@ class EdiTalker ():
             raise Exception(f"Order already processed: {ediOrder['data']['orderNumber']}")
 
         _order = {
-            'partner_id': buyerPartner,
-            'partner_invoice_id': invoicingPartner,
-            'partner_shipping_id': shippingPartner,
+            'partner_id': buyerPartner['id'],
+            'partner_invoice_id': invoicingPartner['id'],
+            'partner_shipping_id': shippingPartner['id'],
             'date_order': datetime.date.today().strftime("%Y-%m-%d"),
             #'location_id': DISTRI_LOCATION_ID, #self.locations[self.myEnv]["out"],
             'warehouse_id': DISTRI_WAREHOUSE_ID,
@@ -661,7 +662,7 @@ class EdiTalker ():
         }
         createdOrder = env['sale.order'].create(_order)
 
-        partners =  env['res.partner'].search_read( [ ('id', '=', invoicingPartner) ], ['property_product_pricelist'] )
+        partners =  env['res.partner'].search_read( [ ('id', '=', invoicingPartner['id']) ], ['property_product_pricelist'] )
         priceListItems = None;
         for partner in partners:
             if "property_product_pricelist" in partner and partner["property_product_pricelist"]:
@@ -692,7 +693,7 @@ class EdiTalker ():
                     for plitem in priceListItems:
                         if "categ_id" in plitem  and plitem["categ_id"] and product["categ_id"][0] == plitem["categ_id"][0]:
                             discount = plitem['percent_price']
-                if onlyVirus and discount > 38 and invoicingPartner == 5967: #OJO: solo Juguettos (5967)
+                if onlyVirus and discount > 38 and invoicingPartner['id'] == 5967: #OJO: solo Juguettos (5967)
                     discount = 38
 
                 #print item['barcode']
@@ -720,6 +721,10 @@ class EdiTalker ():
                     order_line['discount'] = discount
 
                 lineId =  env['sale.order.line'].create(order_line)
+
+            if invoicingPartner['property_delivery_carrier_id']:
+                delivery_method = env["delivery.carrier"].search( [("id", "=", invoicingPartner['property_delivery_carrier_id'][0])] )
+                createdOrder.set_delivery_line(delivery_method, delivery_method.fixed_price)
 
         return createdOrder
     
@@ -752,6 +757,9 @@ class EdiTalker ():
                                 'Pedido','Albarán', 'Bultos','Embalaje', 'Transportista', 'Expedición'
                             ])
                         count[fileName] += 1
+                        carrier = "Zacatrus"
+                        if oOrder['carrier_id']:
+                            carrier = oOrder['carrier_id'][1]
                         abstractwriter.writerow([
                             1010997, 
                             1, # Empresa de recepción
@@ -763,7 +771,7 @@ class EdiTalker ():
                             int(oOrder["origin"]), # albarán
                             1, # Bultos
                             'b', # Embalaje. 'b': Caja/bulto
-                            'Transportes Nieto, S.L.', # Transportista
+                            carrier, # Transportista
                             '0' # Expedición
                         ])
                 else:
@@ -969,7 +977,7 @@ class EdiTalker ():
             for aline in lines:
                 idx += 1
                 #print (line)
-                if aline['product_id']:
+                if aline['product_id'] and (aline['x_edi_line'] or direct):
                     #product = EdiTalker.loadProduct(env, line['product_id'][0])
                     if direct:
                         lineNumber = str(idx)

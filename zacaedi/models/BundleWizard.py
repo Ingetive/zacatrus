@@ -55,6 +55,7 @@ class BundleWizard(models.Model):
         # Assign orders not sent
         args = [
             ('x_edi_status', '=', EdiTalker.EDI_STATUS_INIT),
+            ('client_order_ref', '!=', False),
             ('state', '=', 'sale'),
         ]
         orders =  self.env['sale.order'].search_read(args, order="id desc")
@@ -80,7 +81,8 @@ class BundleWizard(models.Model):
             file = EdiTalker._generateCSVs(self.env, orders, currentBundle['id'])
             data['file'] = file
         except Exception as e:
-            _logger.info(f"Zacalog: EDI: Cannot generate zip file: "+str(e))
+            _logger.error(f"Zacalog: EDI: Cannot generate zip file: "+str(e))
+            raise e
 
         currentBundle.write(data)
 
