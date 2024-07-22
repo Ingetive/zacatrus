@@ -13,6 +13,7 @@ EDI_BUNDLE_STATUS_INVOICED = 30
 
 class BundleWizard(models.Model):
     _name = 'zacaedi.bundle'
+    _description = 'Paquete de pedidos EDI a procesar completamente'
     #_inherit = 'zacaedi.bundle'
 
     name = fields.Char(string='name')
@@ -82,7 +83,6 @@ class BundleWizard(models.Model):
             data['file'] = file
         except Exception as e:
             _logger.error(f"Zacalog: EDI: Cannot generate zip file: "+str(e))
-            raise e
 
         currentBundle.write(data)
 
@@ -202,6 +202,27 @@ class BundleWizard(models.Model):
 
             except Exception as e:
                 _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved: " + str(e))
+
+    def sendInvoice(self):
+        ids = self.env.context.get('active_ids')
+        _logger.info (f"Zacalog: EDI: Send Invoice {self._name} "+ str(BundleWizard.getCurrentBundle(self.env)['id']))
+
+        args = [('id', 'in', ids)]
+        invoices =  self.env['sale.order'].search_read(args, order="id desc")
+        for invoice in invoices:
+            _logger.info (f"Zacalog: EDI: Sending invoice: {invoice['name']}")
+
+        
+        return {
+            'name': 'Enviar facturas EDI',
+            "type" : "ir.actions.act_window",
+            "res_model" : self._name,
+            "view_mode": "form",
+            "res_id": BundleWizard.getCurrentBundle(self.env)['id'],
+            "action": "edi_bundle_wizard",
+            "view_mode": "form",
+            "target": "new"
+        }
 
     def send(self):
         for order in self.order_ids:
