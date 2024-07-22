@@ -22,7 +22,7 @@
     </record>
 
     <record id="zacaedi_sync" model="ir.cron">
-        <field name="name">Zacatrus EDI: Syncronize with Seres</field>
+        <field name="name">Zacatrus EDI: Syncronize orders</field>
         <field name="model_id" ref="model_zacaedi_bundle"/>
         <field name="state">code</field>
         <field name="code">model.sync()</field>
@@ -32,7 +32,7 @@
     </record>
 
     <record model="ir.actions.server" id="zacaedi_send_invoice_action">
-        <field name="name">Send to Seres</field> 
+        <field name="name">Zacatrus EDI: Send direct invoices</field> 
         <field name="model_id" ref="model_zacaedi_invoice_bundle"/>
         <field name="binding_model_id" ref="account.model_account_move"></field>
         <field name="state">code</field> 

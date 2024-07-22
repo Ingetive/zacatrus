@@ -902,6 +902,8 @@ class EdiTalker ():
 
     def _getInvoiceLine(env, _line, orderNumber, lineNumber, buyerProductNumber):
         product = EdiTalker.loadProduct(env, _line['product_id'][0] )
+        if not product['barcode'] and _line['price_subtotal'] == 0:
+            return False
 
         line = '{:<6}'.format('SINCL')
         line = line + '{:<6}'.format( str(lineNumber) )
@@ -982,15 +984,17 @@ class EdiTalker ():
                     #product = EdiTalker.loadProduct(env, line['product_id'][0])
                     if direct:
                         lineNumber = str(idx)
-                        l = EdiTalker._getInvoiceLine(env, line, order['x_edi_shipment'], str(idx), "")
-                        line += EdiTalker.writeEncoded(l)
+                        l = EdiTalker._getInvoiceLine(env, aline, order['x_edi_shipment'], str(idx), "")
+                        if l:
+                            line += EdiTalker.writeEncoded(l)
                     else:
                         done = False
                         if aline['product_id'][0] == 186797: # Se filtra DHL para evitar errores
                             done = True
                         else:
                             l = EdiTalker._getInvoiceLine(env, aline, order['x_edi_shipment'], aline['x_edi_line'], aline['x_edi_product'])
-                            line += EdiTalker.writeEncoded(  l  )
+                            if l:
+                                line += EdiTalker.writeEncoded(  l  )
                                     
             l = EdiTalker._getInvoiceTax( 1, invoice )
             line += EdiTalker.writeEncoded( l  )

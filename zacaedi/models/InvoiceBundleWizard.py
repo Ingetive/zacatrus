@@ -47,12 +47,12 @@ class InvoiceBundleWizard(models.Model):
             isError = False
             for invoice in bundle.invoice_ids:
                 args = [('name', '=', invoice['invoice_origin'])]
-                orders =  self.env['sale.order'].search_read(args, order="id desc")
+                orders =  self.env['sale.order'].search(args, order="id desc")
                 for order in orders:
                     if order.x_edi_status == EdiTalker.EDI_STATUS_READY:
                         try:
                             path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath')
-                            buffer = EdiTalker.saveInvoicesToSeres(self.env, order)
+                            buffer = EdiTalker.saveInvoicesToSeres(self.env, order, True)
                             idx += 1
                             if idx == 1:
                                 ftp = InvoiceBundleWizard._getFtp(self.env)
@@ -60,7 +60,7 @@ class InvoiceBundleWizard(models.Model):
                                 file.write(buffer)
                             order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED, 'x_edi_status_updated': datetime.now()})
                         except Exception as e:
-                            _logger.error(f"Zacalog: EDI: Courld not send invoice for order {order['name']}: "+str(e))
+                            _logger.error(f"Zacalog: EDI: Could not send invoice for order {order['name']}: "+str(e))
                             isError = True
 
             if not isError:
@@ -103,12 +103,12 @@ class InvoiceBundleWizard(models.Model):
     def send(self):
         for invoice in self.invoice_ids:
             args = [('name', '=', invoice['invoice_origin'])]
-            orders =  self.env['sale.order'].search_read(args, order="id desc")
+            orders =  self.env['sale.order'].search(args, order="id desc")
             for order in orders:
                 if not order['x_edi_status']:
                     order.write({'x_edi_status': EdiTalker.EDI_STATUS_READY, 'x_edi_status_updated': datetime.now()})
                 else:
-                    _logger.error("Zacalog: EDI: El pedido {order['name']} ya se estaba procesando.")
+                    _logger.error(f"Zacalog: EDI: El pedido {order['name']} ya se estaba procesando.")
 
         self.write({'status': EDI_BUNDLE_STATUS_READY})
         

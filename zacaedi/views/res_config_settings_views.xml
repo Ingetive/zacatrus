@@ -9,7 +9,7 @@
             <xpath expr="//div[hasclass('settings')]" position="inside">
                 <div class="app_settings_block" data-string="Zacatrus EDI" string="Zacatrus EDI" data-key="zacaedi">
                     
-                    <h2>Seres</h2>
+                    <h2>EDI</h2>
                     <div class="row mt16 o_settings_container" name="seres_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="ftpserver"

@@ -2,7 +2,7 @@
     "name": "Zacatrus EDI",
     "version": "16.0.0.0.1",
     "category": "Sales",
-    "summary": "EDI reports",
+    "summary": "EDI connector and labels",
     'author': "Zacatrus",
     'website': "https://zacatrus.es",
     "license": "AGPL-3",
