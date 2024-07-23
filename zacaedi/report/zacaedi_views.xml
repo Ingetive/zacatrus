@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="paperformat_zedi_label" model="report.paperformat">
+            <field name="name">Zacatrus EDI Label A5</field>
+            <field name="default" eval="True"/>
+            <field name="format">A5</field> 
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Landscape</field>
+            <field name="margin_top">2</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_left">4</field>
+            <field name="margin_right">4</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">35</field>
+            <field name="dpi">90</field>
+        </record>
+        <record id="zacatrus_label_edi" model="ir.actions.report">
+            <field name="name">Zacatrus EDI Label</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">zacaedi.etiqueta_edi</field>
+            <field name="report_file">zacaedi.etiqueta_edi</field>
+            <field name="print_report_name">'Label - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="zacaedi.paperformat_zedi_label"/>
+        </record>
+
+
+        <record id="bundle_wizard_view_form" model="ir.ui.view">
+        	<field name="name">bundle.wizard.form</field>
+        	<field name="model">zacaedi.bundle</field>
+        	<field name="arch" type="xml">
+            	<form string="Bundle Wizard">
+                	<group class="oe_title">
+                        <field name="error_msgs" readonly="1" widget="text" />
+                        
+                        <field name="order_ids" widget="many2many" readonly="1" />
+                        <field name="url" widget="url"/>
+                	</group>
+                    <footer>
+                        <button type="object" name="send" class="btn btn-primary" string="Comenzar envío"/>
+                        <button string="Cerrar" special="cancel"/>
+                    </footer>
+               </form>
+        	</field>
+    	</record>
+
+        <record id="invoice_bundle_wizard_view_form" model="ir.ui.view">
+        	<field name="name">invoice_bundle.wizard.form</field>
+        	<field name="model">zacaedi.invoice_bundle</field>
+        	<field name="arch" type="xml">
+            	<form string="Bundle Wizard">
+                	<group class="oe_title">
+                        <field name="error_msgs" readonly="1" widget="text" />
+                        
+                        <field name="invoice_ids" widget="many2many" readonly="1" />
+                	</group>
+                    <footer>
+                        <button type="object" name="send" class="btn btn-primary" string="Comenzar envío"/>
+                        <button string="Cerrar" special="cancel"/>
+                    </footer>
+               </form>
+        	</field>
+    	</record>
+
+
+        <record id="edi_bundle_wizard" model="ir.actions.act_window">
+            <field name="name">Cerrar albaranes EDI y generar CSV</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">zacaedi.bundle</field>
+            <field name="res_id">1</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bundle_wizard_view_form"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="edi_invoice_bundle_wizard" model="ir.actions.act_window">
+            <field name="name">Facturas EDI</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">zacaedi.invoice_bundle</field>
+            <field name="res_id">1</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="invoice_bundle_wizard_view_form"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="edi_bundle_wizard_item"
+            sequence="100"
+            parent="sale.sale_order_menu"
+            name="EDI Bundle" action="id_act_server"/>
+
+
+
+    </data>
+</odoo>
