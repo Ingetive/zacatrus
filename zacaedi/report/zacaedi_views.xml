@@ -90,7 +90,7 @@
         <menuitem id="edi_bundle_wizard_item"
             sequence="100"
             parent="sale.sale_order_menu"
-            name="EDI Bundle" action="id_act_server"/>
+            name="Enviar albaranes EDI" action="id_act_server"/>
 
 
 
