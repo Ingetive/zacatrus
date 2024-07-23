@@ -11,7 +11,7 @@ class SaleOrder(models.Model):
     
     @api.model
     def create_invoices(self):
-        daysAgo = datetime.datetime.now() - datetime.timedelta(days=2)
+        daysAgo = datetime.datetime.now() - datetime.timedelta(days=15)
 
         orders = self.env['sale.order'].search([
             ('date_order', '>', daysAgo),
@@ -20,7 +20,8 @@ class SaleOrder(models.Model):
 
         for order in orders:
             pickings = self.env['stock.picking'].sudo().search_read([
-                ('sale_id', '=', order.id)
+                ('sale_id', '=', order.id),
+                ('state', '!=', 'cancel'),
             ], ['state'])
 
             sent = False
@@ -41,4 +42,7 @@ class SaleOrder(models.Model):
                 # Confirm invoice. From draft to posted (publicado)
                 iorder = self.env['sale.order'].sudo().browse(order.id)
                 for invoiceId in iorder["invoice_ids"]:
-                    invoiceId.action_post()
+                    try:
+                        invoiceId.action_post()
+                    except:
+                        pass
