@@ -15,6 +15,7 @@ class ResConfigSettings(models.TransientModel):
     outputpath = fields.Char(readonly=False)
     invoicesoutputpath = fields.Char(readonly=False)
     block_partner_ids = fields.Char(readonly=False)
+    notify_user_ids = fields.Char(readonly=False)
 
     @api.model
     def get_values(self):
@@ -28,6 +29,7 @@ class ResConfigSettings(models.TransientModel):
             outputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath'),
             invoicesoutputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath'),
             block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.block_partner_ids'),
+            notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids'),
         )
         return res
 
@@ -39,5 +41,6 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.inputpath', self.inputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.outputpath', self.outputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.block_partner_ids', self.block_partner_ids)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.notify_user_ids', self.notify_user_ids)
 
         super(ResConfigSettings, self).set_values()
