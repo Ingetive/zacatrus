@@ -14,6 +14,7 @@ class ResConfigSettings(models.TransientModel):
     inputpath = fields.Char(readonly=False)
     outputpath = fields.Char(readonly=False)
     invoicesoutputpath = fields.Char(readonly=False)
+    block_partner_ids = fields.Char(readonly=False)
 
     @api.model
     def get_values(self):
@@ -26,6 +27,7 @@ class ResConfigSettings(models.TransientModel):
             inputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath'),
             outputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath'),
             invoicesoutputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath'),
+            block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.block_partner_ids'),
         )
         return res
 
@@ -36,6 +38,6 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftppassword', self.ftppassword)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.inputpath', self.inputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.outputpath', self.outputpath)
-        self.env['ir.config_parameter'].sudo().set_param('zacaedi.invoicesoutputpath', self.invoicesoutputpath)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.block_partner_ids', self.block_partner_ids)
 
         super(ResConfigSettings, self).set_values()
