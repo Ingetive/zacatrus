@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
+import pytz
 
 _logger = logging.getLogger(__name__)
 
@@ -229,3 +230,131 @@ class BundleWizard(models.Model):
             order.write({'x_edi_status': EdiTalker.EDI_STATUS_READY, 'x_edi_status_updated': datetime.now()})
         self.write({'status': EDI_BUNDLE_STATUS_READY})
         
+
+    @api.model
+    def sendMsg(self, model, resId, msg, userIds = False):
+        args = [
+            ('model', '=', model),
+            ('res_id', '=', resId),
+            ('body', '=', msg),
+        ]
+        count =  self.env['mail.message'].search_count(args)
+        if count == 0:
+            #49 -> Sergio; 2 -> Mitchell Admin (local)
+            if not userIds:
+                userIds = [2]
+
+            args = [('id', 'in', userIds)]
+            users = self.env['res.users'].search( args )
+            partner_ids =  [(4, user.partner_id.id) for user in users]
+
+            message = self.env['mail.message'].create({
+                'subject': 'Problema EDI',
+                'model': model,               # Modelo relacionado
+                'res_id': resId,                  # ID del registro relacionado
+                'body': msg,                    # Cuerpo del mensaje
+                'message_type': 'notification',     # Tipo de mensaje (comment, notification, etc.)
+                #'subtype_id': self.env.ref('mail.mt_automation').id,  # Subtipo del mensaje
+                'partner_ids':  partner_ids,
+            })
+
+            for user in users:
+                self.env['mail.notification'].create({
+                    'mail_message_id': message.id,
+                    'res_partner_id': user.partner_id.id,
+                    'notification_type': 'inbox',  # Tipo de notificación (inbox, email, etc.)
+                    'notification_status': 'ready',  # Estado de la notificación (ready, sent, etc.)
+                })
+            
+    @api.model
+    def check(self):
+        args = [('status', 'in', [EDI_BUNDLE_STATUS_READY])]
+        bundles = self.env['zacaedi.invoice_bundle'].search_read( args )
+        for bundle in bundles:
+            for invoice in bundle.invoice_ids:
+                args = [('name', '=', invoice['invoice_origin'])]
+                orders =  self.env['sale.order'].search(args, order="id desc")
+                hasErrors = False
+                for order in orders:
+                    msg = None
+                    now = datetime.now(pytz.UTC)
+                    orderDate = pytz.UTC.localize(datetime.strptime(order['x_edi_status_updated'], "%Y-%m-%d %H:%M:%S"))
+
+                    if order['x_edi_status'] in [EDI_BUNDLE_STATUS_READY]:
+                        sinceHours = 1
+                        past = now - timedelta(sinceHours=sinceHours)
+                        if orderDate < past:
+                            msg = f"Error EDI: La factura {invoice['name']} no se ha enviado y se solicitó hace más de {sinceHours} hora(s)."
+                            self.sendMsg("account.move", invoice['id'], msg)
+                            hasErrors = True
+
+                    if msg:
+                        if self.verbose:
+                            _logger.warning("Zacalog: EDI: {msg}")
+                        #self.sendMsg("zacaedi.bundle", bundle['id'], msg)
+                        # self._getSlack().sendWarnLimited(msg, "#test2" if self.test else "#alert", "edi_check")
+
+            sinceDays = 15
+            past = now - datetime.timedelta(days=sinceDays)
+            if orderDate < past and not hasErrors:
+                if self.verbose:
+                    msg = f"El paquete {bundle['id']} tiene más de {sinceDays} días. Lo damos por cerrado."
+                    self.sendMsg("zacaedi.bundle", bundle['id'], msg)
+                    _logger.warning(f"Zacalog: EDI: {msg}")                    
+                self.env['zacaedi.invoice_bundle'].write (bundle['id'], {'status': EDI_BUNDLE_STATUS_INVOICED})
+
+
+        args = [('status', 'in', [EDI_BUNDLE_STATUS_READY, EDI_BUNDLE_STATUS_SENT])]
+        bundles = self.env['zacaedi.bundle'].search_read( args )
+        for bundle in bundles:
+            now = datetime.now(pytz.UTC)
+            oargs = [('id','in',bundle['order_ids'])]
+            orders = self.env['sale.order'].search_read( oargs )
+            hasErrors = False
+            orderDate = False
+            for order in orders:
+                if order['x_edi_status_updated']:
+                    orderDate = pytz.UTC.localize(datetime.strptime(order['x_edi_status_updated'], "%Y-%m-%d %H:%M:%S"))
+                else:
+                    orderDate = pytz.UTC.localize(datetime.strptime(order['create_date'], "%Y-%m-%d %H:%M:%S"))
+                    
+                if order['client_order_ref']:
+                    msg = None   
+                    if order['x_edi_status'] in [EdiTalker.EDI_STATUS_INIT]:
+                        sinceDays = 2
+                        past = now - timedelta(days=sinceDays)
+                        if orderDate < past:
+                            msg = f"Error EDI: El pedido {order['name']} no se ha procesado y se creó hace más de {sinceDays} días."
+                            self.sendMsg("sale.order", order['id'], msg)
+                            hasErrors = True
+                    elif order['x_edi_status'] in [EDI_BUNDLE_STATUS_READY]:
+                        sinceHours = 1
+                        past = now - timedelta(hours=sinceHours)
+                        if orderDate < past:
+                            msg = f"Error EDI: El pedido {order['name']} no se ha enviado y está listo desde hace más de {sinceHours} hora(s)."
+                            self.sendMsg("sale.order", order['id'], msg)
+                            hasErrors = True
+                    elif order['x_edi_status'] in [EdiTalker.EDI_STATUS_SENT]:
+                        sinceHours = 1
+                        past = now - timedelta(hours=sinceHours)
+                        if orderDate < past:
+                            hasErrors = True
+                            if order['invoice_status'] != 'invoiced':
+                                msg = f"Error EDI: El pedido {order['name']} no tiene factura y está enviado desde hace más de {sinceHours} hora(s)."
+                            else:
+                                msg = f"Error EDI: La factura del pedido {order['name']} no se ha enviado y el pedido se envió hace más de {sinceHours} hora(s)."
+                            self.sendMsg("sale.order", order['id'], msg)
+                    if msg:
+                        if self.verbose:
+                            _logger.warning(f"Zacalog: EDI: {msg}") 
+                        #self._getSlack().sendWarnLimited(msg, "#test2" if self.test else "#alert", "edi_check")
+                
+            sinceDays = 15
+            past = now - timedelta(days=sinceDays)
+            if orderDate and orderDate < past and not hasErrors:
+                if self.verbose:
+                    msg = f"El paquete {bundle['id']} tiene más de {sinceDays} días. Lo damos por cerrado."
+                    self.sendMsg("zacaedi.bundle", bundle['id'], msg)
+                    _logger.warning(f"Zacalog: EDI: {msg}")  
+                self.env['zacaedi.bundle'].write (bundle['id'], {'status': EDI_BUNDLE_STATUS_INVOICED})
+                
