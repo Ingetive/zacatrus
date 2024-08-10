@@ -60,11 +60,14 @@ class InvoiceBundleWizard(models.Model):
                                 file.write(buffer)
                             order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED, 'x_edi_status_updated': datetime.now()})
                         except Exception as e:
-                            _logger.error(f"Zacalog: EDI: Could not send invoice for order {order['name']}: "+str(e))
+                            msg = f"Could not send invoice for order {order['name']}: "+str(e)
+                            _logger.error(f"Zacalog: EDI: {msg}")
+                            self.notify("sale.order", order['id'], msg)
                             isError = True
 
             if not isError:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
+                self.notify("zacaedi.invoice_bundle", bundle.id, "Todas las facturas enviadas.")
 
     def loadWizard(self):
         ids = self.env.context.get('active_ids')
@@ -112,5 +115,37 @@ class InvoiceBundleWizard(models.Model):
 
         self.write({'status': EDI_BUNDLE_STATUS_READY})
         
+    @api.model
+    def notify(self, model, resId, msg):
+        usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
+        if usersConfig:
+            userIds = [int(i) for i in usersConfig.split(",")]
+            args = [
+                ('model', '=', model),
+                ('res_id', '=', resId),
+                ('body', '=', msg),
+            ]
+            count =  self.env['mail.message'].search_count(args)
+            if count == 0:
+                #49 -> Sergio; 2 -> Mitchell Admin (local)
+                args = [('id', 'in', userIds)]
+                users = self.env['res.users'].search( args )
+                partner_ids =  [(4, user.partner_id.id) for user in users]
 
-        
+                message = self.env['mail.message'].create({
+                    'subject': 'Problema Facturas EDI',
+                    'model': model,               # Modelo relacionado
+                    'res_id': resId,                  # ID del registro relacionado
+                    'body': msg,                    # Cuerpo del mensaje
+                    'message_type': 'notification',     # Tipo de mensaje (comment, notification, etc.)
+                    #'subtype_id': self.env.ref('mail.mt_automation').id,  # Subtipo del mensaje
+                    'partner_ids':  partner_ids,
+                })
+
+                for user in users:
+                    self.env['mail.notification'].create({
+                        'mail_message_id': message.id,
+                        'res_partner_id': user.partner_id.id,
+                        'notification_type': 'inbox',  # Tipo de notificación (inbox, email, etc.)
+                        'notification_status': 'ready',  # Estado de la notificación (ready, sent, etc.)
+                    })
