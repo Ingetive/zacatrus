@@ -133,7 +133,7 @@ class InvoiceBundleWizard(models.Model):
                 partner_ids =  [(4, user.partner_id.id) for user in users]
 
                 message = self.env['mail.message'].create({
-                    'subject': 'Problema Facturas EDI',
+                    'subject': 'Facturas EDI',
                     'model': model,               # Modelo relacionado
                     'res_id': resId,                  # ID del registro relacionado
                     'body': msg,                    # Cuerpo del mensaje
