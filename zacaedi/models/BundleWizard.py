@@ -131,7 +131,7 @@ class BundleWizard(models.Model):
 
             if not isError and bundle.status == EDI_BUNDLE_STATUS_SENT:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
-                self.notify("zacaedi.bundle", bundle.id, "Todas las facturas enviadas.")
+                self.notify("zacaedi.bundle", bundle.id, "Todas las facturas enviadas.", "EDI ok")
 
     @api.model
     def createSeresPickings(self):
@@ -164,7 +164,7 @@ class BundleWizard(models.Model):
 
             if not isError:
                 bundle.write({'status': EDI_BUNDLE_STATUS_SENT})
-                self.notify("zacaedi.bundle", bundle.id, "Todos los albaranes enviados.")
+                self.notify("zacaedi.bundle", bundle.id, "Todos los albaranes enviados.", "EDI ok")
 
     @api.model
     def getAllPendingOrders(self):
@@ -201,7 +201,7 @@ class BundleWizard(models.Model):
                         createdOrder = EdiTalker.createSaleOrderFromEdi( self.env, order )
                         EdiTalker.deleteError(self.env, order)
                         msg = f"Se ha creado el pedido {createdOrder.name}."
-                        self.notify(False, False, msg)
+                        self.notify("sale.order", createdOrder.id, msg, "EDI ok")
                     except Exception as e: 
                         msg = f"Error al leer el pedido {order['data']['orderNumber']}. Exception: " +str(e)
                         _logger.error (f"Zacalog: EDI: {msg}")
@@ -244,7 +244,7 @@ class BundleWizard(models.Model):
         
 
     @api.model
-    def notify(self, model, resId, msg):
+    def notify(self, model, resId, msg, subject = "Error EDI"):
         usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
         if usersConfig:
             userIds = [int(i) for i in usersConfig.split(",")]
@@ -261,7 +261,7 @@ class BundleWizard(models.Model):
                 partner_ids =  [(4, user.partner_id.id) for user in users]
 
                 message = self.env['mail.message'].create({
-                    'subject': 'EDI',
+                    'subject': subject,
                     'model': model,               # Modelo relacionado
                     'res_id': resId,                  # ID del registro relacionado
                     'body': msg,                    # Cuerpo del mensaje
