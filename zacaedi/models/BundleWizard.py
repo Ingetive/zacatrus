@@ -189,26 +189,32 @@ class BundleWizard(models.Model):
                     orderDate = datetime.strptime(order['data']['time'], "%Y%m%d")
                     past = datetime.now() - timedelta(days=6)
                     if orderDate < past:
-                        msg = "El pedido es demasiado antiguo (>6 días) "
+                        msg = f"El pedido {order['data']['orderNumber']} es demasiado antiguo (>6 días) "
                         _logger.error (f"Zacalog: EDI: {msg}")
+                        self.notify(False, False, msg)
                         EdiTalker.saveError(self.env, 201, order, msg)
                         #TODO: Delete from ftp
                         #ftp.remove(os.path.join(path, fileName))
                         raise Exception (msg)
                         
                     try:
-                        EdiTalker.createSaleOrderFromEdi( self.env, order )
+                        createdOrder = EdiTalker.createSaleOrderFromEdi( self.env, order )
                         EdiTalker.deleteError(self.env, order)
+                        msg = f"Se ha creado el pedido {createdOrder.name}."
+                        self.notify(False, False, msg)
                     except Exception as e: 
-                        msg = "Zacalog: EDI: getOrdersFromSeres. Exception: " +str(e)
-                        _logger.error (msg)
+                        msg = f"Error al leer el pedido {order['data']['orderNumber']}. Exception: " +str(e)
+                        _logger.error (f"Zacalog: EDI: {msg}")
+                        self.notify(False, False, msg)
                         raise(e)
                         #self._getSlack().sendWarn( msg, "test2") #TODO:
 
                 ftp.remove(os.path.join(path, fileName))
 
             except Exception as e:
-                _logger.error (f"Zacalog: EDI: ftp: file {fileName} could not be retrieved: " + str(e))
+                msg = f"ftp: file {fileName} could not be retrieved: " + str(e)
+                _logger.error (f"Zacalog: EDI: {msg}")
+                self.notify(False, False, msg)
 
     def sendInvoice(self):
         ids = self.env.context.get('active_ids')
