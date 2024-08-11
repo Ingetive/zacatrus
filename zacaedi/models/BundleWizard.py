@@ -70,7 +70,7 @@ class BundleWizard(models.Model):
                 pass
 
         #Errors to show
-        errors =  self.env['zacaedi.error'].search_read([('bundle_id', '=', currentBundle['id'])])
+        errors =  self.env['zacaedi.error'].search_read([('bundle_id', '=', currentBundle.id)])
         error_msgs = ""
         for error in errors:
             error_msgs += f"{error['message']}\n"
@@ -80,7 +80,7 @@ class BundleWizard(models.Model):
 
         data = {'order_ids': orderList, 'error_msgs':error_msgs}
         try:
-            file = EdiTalker._generateCSVs(self.env, orders, currentBundle['id'])
+            file = EdiTalker._generateCSVs(self.env, orders, currentBundle.id)
             data['file'] = file
         except Exception as e:
             _logger.error(f"Zacalog: EDI: Cannot generate zip file: "+str(e))
@@ -92,7 +92,7 @@ class BundleWizard(models.Model):
             "type" : "ir.actions.act_window",
             "res_model" : self._name,
             "view_mode": "form", 
-            "res_id": currentBundle['id'],
+            "res_id": currentBundle.id,
             "action": "edi_bundle_wizard",
             "view_mode": "form",
             "target": "new"
@@ -191,7 +191,6 @@ class BundleWizard(models.Model):
                     if orderDate < past:
                         msg = f"El pedido {order['data']['orderNumber']} es demasiado antiguo (>6 días) "
                         _logger.error (f"Zacalog: EDI: {msg}")
-                        self.notify(False, False, msg)
                         EdiTalker.saveError(self.env, 201, order, msg)
                         #TODO: Delete from ftp
                         #ftp.remove(os.path.join(path, fileName))
@@ -205,7 +204,6 @@ class BundleWizard(models.Model):
                     except Exception as e: 
                         msg = f"Error al leer el pedido {order['data']['orderNumber']}. Exception: " +str(e)
                         _logger.error (f"Zacalog: EDI: {msg}")
-                        self.notify(False, False, msg)
                         raise(e)
                         #self._getSlack().sendWarn( msg, "test2") #TODO:
 
@@ -213,12 +211,12 @@ class BundleWizard(models.Model):
 
             except Exception as e:
                 msg = f"ftp: file {fileName} could not be retrieved: " + str(e)
-                _logger.error (f"Zacalog: EDI: {msg}")
                 self.notify(False, False, msg)
+                _logger.error (f"Zacalog: EDI: {msg}")
 
     def sendInvoice(self):
         ids = self.env.context.get('active_ids')
-        _logger.info (f"Zacalog: EDI: Send Invoice {self._name} "+ str(BundleWizard.getCurrentBundle(self.env)['id']))
+        _logger.info (f"Zacalog: EDI: Send Invoice {self._name} "+ str(BundleWizard.getCurrentBundle(self.env).id))
 
         args = [('id', 'in', ids)]
         invoices =  self.env['sale.order'].search_read(args, order="id desc")
@@ -231,7 +229,7 @@ class BundleWizard(models.Model):
             "type" : "ir.actions.act_window",
             "res_model" : self._name,
             "view_mode": "form",
-            "res_id": BundleWizard.getCurrentBundle(self.env)['id'],
+            "res_id": BundleWizard.getCurrentBundle(self.env).id,
             "action": "edi_bundle_wizard",
             "view_mode": "form",
             "target": "new"
@@ -245,6 +243,10 @@ class BundleWizard(models.Model):
 
     @api.model
     def notify(self, model, resId, msg, subject = "Error EDI"):
+        if not model:
+            model = "zacaedi.bundle"
+            resId = BundleWizard.getCurrentBundle(self.env).id
+            
         usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
         if usersConfig:
             userIds = [int(i) for i in usersConfig.split(",")]
