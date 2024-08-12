@@ -101,8 +101,6 @@ class BundleWizard(EdiWizard):
 
     @api.model
     def sync(self):
-        self.info("zacaedi.bundle", 1, "prueba 5.")
-        
         self.createSeresPickings()
         self.createSeresInvoices()
         self.getAllPendingOrders()
