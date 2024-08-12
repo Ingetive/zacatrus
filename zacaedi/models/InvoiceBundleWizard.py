@@ -63,12 +63,12 @@ class InvoiceBundleWizard(EdiWizard):
                         except Exception as e:
                             msg = f"Could not send invoice for order {order['name']}: "+str(e)
                             _logger.error(f"Zacalog: EDI: {msg}")
-                            self.notify("sale.order", order['id'], msg)
+                            self.error("sale.order", order['id'], msg)
                             isError = True
 
             if not isError:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
-                self.notify("zacaedi.invoice_bundle", bundle.id, "Todas las facturas enviadas.", "EDI ok")
+                self.info("zacaedi.invoice_bundle", bundle.id, "Todas las facturas enviadas.")
 
     def loadWizard(self):
         ids = self.env.context.get('active_ids')

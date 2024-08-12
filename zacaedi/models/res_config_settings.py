@@ -16,6 +16,11 @@ class ResConfigSettings(models.TransientModel):
     invoicesoutputpath = fields.Char(readonly=False)
     block_partner_ids = fields.Char(readonly=False)
     notify_user_ids = fields.Char(readonly=False)
+    error_level = fields.Selection([
+        ('30', 'Info'),
+        ('20', 'Warning'),
+        ('10', 'Error'),
+    ], string="Nivel de error para notificaciones", default='30')
 
     @api.model
     def get_values(self):
@@ -30,6 +35,7 @@ class ResConfigSettings(models.TransientModel):
             invoicesoutputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath'),
             block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.block_partner_ids'),
             notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids'),
+            error_level=self.env['ir.config_parameter'].sudo().get_param('zacaedi.error_level', default='30')
         )
         return res
 
@@ -42,5 +48,6 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.outputpath', self.outputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.block_partner_ids', self.block_partner_ids)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.notify_user_ids', self.notify_user_ids)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.error_level', self.error_level)
 
         super(ResConfigSettings, self).set_values()

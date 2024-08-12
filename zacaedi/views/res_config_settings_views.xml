@@ -131,6 +131,23 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt16 o_settings_container" name="seres_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="error_level"
+                            title="Error level">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Error level" for="error_level"/>
+                                    <div class="text-muted">
+                                        Nivel de error para notificaciones.
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="error_level" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <h2>Notification blocker</h2>
                     <div class="row mt16 o_settings_container" name="seres_setting_container">

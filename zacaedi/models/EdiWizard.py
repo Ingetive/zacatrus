@@ -4,43 +4,69 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class EdiWizard(models.Model):
+    _name = 'zacaedi.abstract_bundle'
+
+    LEVEL_ERROR = 10
+    LEVEL_WARNING = 20
+    LEVEL_INFO = 30
+
     def _getDefaultModelAndId(self):
         return ("", 0)
 
     @api.model
-    def notify(self, model, resId, msg, subject = "Error EDI"):
+    def error(self, model, resId, msg, subject = "Error EDI"):
+        self.notify(model, resId, msg, subject, self.LEVEL_ERROR)
+
+    @api.model
+    def warning(self, model, resId, msg, subject = "EDI warning"):
+        self.notify(model, resId, msg, subject, self.LEVEL_WARNING)
+
+    @api.model
+    def warn(self, model, resId, msg, subject = "EDI warning"):
+        self.warning(model, resId, msg, subject)
+
+    @api.model
+    def info(self, model, resId, msg, subject = "EDI"):
+        self.notify(model, resId, msg, subject, self.LEVEL_INFO)
+
+    def notify(self, model, resId, msg, subject, level):
         #_logger.warning("Zacalog: EDI: Sending notification.")
         (model, resId) = self._getDefaultModelAndId()
-            
-        usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
-        if usersConfig:
-            userIds = [int(i) for i in usersConfig.split(",")]
-            args = [
-                ('model', '=', model),
-                ('res_id', '=', resId),
-                ('body', '=', msg),
-            ]
-            count =  self.env['mail.message'].search_count(args)
-            if count == 0:
-                #49 -> Sergio; 2 -> Mitchell Admin (local)
-                args = [('id', 'in', userIds)]
-                users = self.env['res.users'].search( args )
-                partner_ids =  [(4, user.partner_id.id) for user in users]
+        if not level:
+            level = EdiWizard.LEVEL_ERROR
+        errorLevel = int(self.env['ir.config_parameter'].sudo().get_param('zacaedi.error_level'))
+        _logger.warning(f"Zacalog: EDI: curlevel {level} config level {errorLevel}.")
+        
+        if level <= errorLevel:                    
+            usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
+            if usersConfig:
+                userIds = [int(i) for i in usersConfig.split(",")]
+                args = [
+                    ('model', '=', model),
+                    ('res_id', '=', resId),
+                    ('body', '=', msg),
+                ]
+                count =  self.env['mail.message'].search_count(args)
+                if count == 0:
+                    #49 -> Sergio; 2 -> Mitchell Admin (local)
+                    args = [('id', 'in', userIds)]
+                    users = self.env['res.users'].search( args )
+                    partner_ids =  [(4, user.partner_id.id) for user in users]
 
-                message = self.env['mail.message'].create({
-                    'subject': subject,
-                    'model': model,               # Modelo relacionado
-                    'res_id': resId,                  # ID del registro relacionado
-                    'body': msg,                    # Cuerpo del mensaje
-                    'message_type': 'notification',     # Tipo de mensaje (comment, notification, etc.)
-                    #'subtype_id': self.env.ref('mail.mt_automation').id,  # Subtipo del mensaje
-                    'partner_ids':  partner_ids,
-                })
-
-                for user in users:
-                    self.env['mail.notification'].create({
-                        'mail_message_id': message.id,
-                        'res_partner_id': user.partner_id.id,
-                        'notification_type': 'inbox',  # Tipo de notificación (inbox, email, etc.)
-                        'notification_status': 'ready',  # Estado de la notificación (ready, sent, etc.)
+                    message = self.env['mail.message'].create({
+                        'subject': subject,
+                        'model': model,               # Modelo relacionado
+                        'res_id': resId,                  # ID del registro relacionado
+                        'body': msg,                    # Cuerpo del mensaje
+                        'message_type': 'notification',     # Tipo de mensaje (comment, notification, etc.)
+                        #'subtype_id': self.env.ref('mail.mt_automation').id,  # Subtipo del mensaje
+                        'partner_ids':  partner_ids,
                     })
+
+                    for user in users:
+                        self.env['mail.notification'].create({
+                            'mail_message_id': message.id,
+                            'res_partner_id': user.partner_id.id,
+                            'notification_type': 'inbox',  # Tipo de notificación (inbox, email, etc.)
+                            'notification_status': 'ready',  # Estado de la notificación (ready, sent, etc.)
+                        })
