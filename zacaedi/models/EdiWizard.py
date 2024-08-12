@@ -5,6 +5,7 @@ _logger = logging.getLogger(__name__)
 
 class EdiWizard(models.Model):
     _name = 'zacaedi.abstract_bundle'
+    _description = 'Métodos generales para bundles.'
 
     LEVEL_ERROR = 10
     LEVEL_WARNING = 20
@@ -35,9 +36,8 @@ class EdiWizard(models.Model):
         if not level:
             level = EdiWizard.LEVEL_ERROR
         errorLevel = int(self.env['ir.config_parameter'].sudo().get_param('zacaedi.error_level'))
-        _logger.warning(f"Zacalog: EDI: curlevel {level} config level {errorLevel}.")
         
-        if level <= errorLevel:                    
+        if errorLevel and level <= errorLevel:                    
             usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
             if usersConfig:
                 userIds = [int(i) for i in usersConfig.split(",")]
