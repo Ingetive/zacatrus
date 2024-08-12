@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
+from .EdiWizard import EdiWizard
 import pytz
 
 _logger = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ EDI_BUNDLE_STATUS_READY = 10
 EDI_BUNDLE_STATUS_SENT = 20
 EDI_BUNDLE_STATUS_INVOICED = 30
 
-class BundleWizard(models.Model):
+class BundleWizard(EdiWizard):
     _name = 'zacaedi.bundle'
     _description = 'Paquete de pedidos EDI a procesar completamente'
     #_inherit = 'zacaedi.bundle'
@@ -239,46 +240,6 @@ class BundleWizard(models.Model):
         for order in self.order_ids:
             order.write({'x_edi_status': EdiTalker.EDI_STATUS_READY, 'x_edi_status_updated': datetime.now()})
         self.write({'status': EDI_BUNDLE_STATUS_READY})
-        
-
-    @api.model
-    def notify(self, model, resId, msg, subject = "Error EDI"):
-        if not model:
-            model = "zacaedi.bundle"
-            resId = BundleWizard.getCurrentBundle(self.env).id
-            
-        usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
-        if usersConfig:
-            userIds = [int(i) for i in usersConfig.split(",")]
-            args = [
-                ('model', '=', model),
-                ('res_id', '=', resId),
-                ('body', '=', msg),
-            ]
-            count =  self.env['mail.message'].search_count(args)
-            if count == 0:
-                #49 -> Sergio; 2 -> Mitchell Admin (local)
-                args = [('id', 'in', userIds)]
-                users = self.env['res.users'].search( args )
-                partner_ids =  [(4, user.partner_id.id) for user in users]
-
-                message = self.env['mail.message'].create({
-                    'subject': subject,
-                    'model': model,               # Modelo relacionado
-                    'res_id': resId,                  # ID del registro relacionado
-                    'body': msg,                    # Cuerpo del mensaje
-                    'message_type': 'notification',     # Tipo de mensaje (comment, notification, etc.)
-                    #'subtype_id': self.env.ref('mail.mt_automation').id,  # Subtipo del mensaje
-                    'partner_ids':  partner_ids,
-                })
-
-                for user in users:
-                    self.env['mail.notification'].create({
-                        'mail_message_id': message.id,
-                        'res_partner_id': user.partner_id.id,
-                        'notification_type': 'inbox',  # Tipo de notificación (inbox, email, etc.)
-                        'notification_status': 'ready',  # Estado de la notificación (ready, sent, etc.)
-                    })
             
     @api.model
     def check(self):
@@ -371,5 +332,7 @@ class BundleWizard(models.Model):
                     msg = f"El paquete {bundle['id']} tiene más de {sinceDays} días. Lo damos por cerrado."
                     self.notify("zacaedi.bundle", bundle['id'], msg)
                     _logger.warning(f"Zacalog: EDI: {msg}")  
-                self.env['zacaedi.bundle'].write (bundle['id'], {'status': EDI_BUNDLE_STATUS_INVOICED})
-                
+                self.env['zacaedi.bundle'].write (bundle['id'], {'status': EDI_BUNDLE_STATUS_INVOICED})                
+
+    def _getDefaultModelAndId(self):
+        return (self._name, BundleWizard.getCurrentBundle(self.env).id)
