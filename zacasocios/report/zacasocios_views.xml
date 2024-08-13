@@ -12,7 +12,7 @@
         <menuitem id="menu_zacaedi_bundle" name="Cola de actualización de Fichas"
             sequence="200"
             action="action_zacasocios_queue"
-            parent="sale.sale_order_menu" />
+            parent="base.next_id_9" />
 
 
     </data>
