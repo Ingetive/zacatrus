@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <record id="zacaedi_invoice_sync" model="ir.cron">
+        <field name="name">Zacasocios: Sincronizar Fichas</field>
+        <field name="model_id" ref="model_zacasocios_zacasocios"/>
+        <field name="state">code</field>
+        <field name="code">model.sync()</field>
+        <field name='interval_number'>5</field>
+        <field name='interval_type'>minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+</odoo>

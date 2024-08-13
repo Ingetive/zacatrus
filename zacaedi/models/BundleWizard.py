@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
-from .EdiWizard import EdiWizard
 import pytz
 
 _logger = logging.getLogger(__name__)
@@ -13,7 +12,7 @@ EDI_BUNDLE_STATUS_READY = 10
 EDI_BUNDLE_STATUS_SENT = 20
 EDI_BUNDLE_STATUS_INVOICED = 30
 
-class BundleWizard(EdiWizard):
+class BundleWizard(models.Model):
     _name = 'zacaedi.bundle'
     _description = 'Paquete de pedidos EDI a procesar completamente'
     #_inherit = 'zacaedi.bundle'
@@ -101,6 +100,7 @@ class BundleWizard(EdiWizard):
 
     @api.model
     def sync(self):
+        self.env['zacatrus_base.notifier'].error("sale.order", 7, "prueba ___")
         self.createSeresPickings()
         self.createSeresInvoices()
         self.getAllPendingOrders()
@@ -127,12 +127,12 @@ class BundleWizard(EdiWizard):
                     except Exception as e:
                         msg = f"No se ha podido enviar la factura del pedido {order['name']}: "+str(e)
                         _logger.error(f"Zacalog: EDI: {msg}")
-                        self.error("sale.order", order['id'], msg)
+                        self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                         isError = True
 
             if not isError and bundle.status == EDI_BUNDLE_STATUS_SENT:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
-                self.info("zacaedi.bundle", bundle.id, "Todas las facturas enviadas.")
+                self.env['zacatrus_base.notifier'].info("zacaedi.bundle", bundle.id, "Todas las facturas enviadas.")
 
     @api.model
     def createSeresPickings(self):
@@ -160,12 +160,12 @@ class BundleWizard(EdiWizard):
                     except Exception as e:
                         msg = f"No se ha podido enviar el albarán del pedido {order['name']}" + str(e)
                         _logger.error(f"Zacalog: EDI: {msg}")
-                        self.error("sale.order", order['id'], msg)
+                        self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                         isError = True
 
             if not isError:
                 bundle.write({'status': EDI_BUNDLE_STATUS_SENT})
-                self.info("zacaedi.bundle", bundle.id, "Todos los albaranes enviados.")
+                self.env['zacatrus_base.notifier'].info("zacaedi.bundle", bundle.id, "Todos los albaranes enviados.")
 
     @api.model
     def getAllPendingOrders(self):
@@ -201,7 +201,7 @@ class BundleWizard(EdiWizard):
                         createdOrder = EdiTalker.createSaleOrderFromEdi( self.env, order )
                         EdiTalker.deleteError(self.env, order)
                         msg = f"Se ha creado el pedido {createdOrder.name}."
-                        self.info("sale.order", createdOrder.id, msg)
+                        self.env['zacatrus_base.notifier'].info("sale.order", createdOrder.id, msg)
                     except Exception as e: 
                         msg = f"Error al leer el pedido {order['data']['orderNumber']}. Exception: " +str(e)
                         _logger.error (f"Zacalog: EDI: {msg}")
@@ -212,7 +212,7 @@ class BundleWizard(EdiWizard):
 
             except Exception as e:
                 msg = f"ftp: file {fileName} could not be retrieved: " + str(e)
-                self.error(False, False, msg)
+                self.env['zacatrus_base.notifier'].error(self._name, BundleWizard.getCurrentBundle(self.env).id, msg)
                 _logger.error (f"Zacalog: EDI: {msg}")
 
     def sendInvoice(self):
@@ -243,7 +243,7 @@ class BundleWizard(EdiWizard):
             
     @api.model
     def check(self):
-        #self.error("zacaedi.bundle", 1, "Prueba de mensajes.")
+        #self.env['zacatrus_base.notifier'].error("zacaedi.bundle", 1, "Prueba de mensajes.")
         args = [('status', 'in', [EDI_BUNDLE_STATUS_READY])]
         bundles = self.env['zacaedi.invoice_bundle'].search_read( args )
         for bundle in bundles:
@@ -261,13 +261,13 @@ class BundleWizard(EdiWizard):
                         past = now - timedelta(sinceHours=sinceHours)
                         if orderDate < past:
                             msg = f"Error EDI: La factura {invoice['name']} no se ha enviado y se solicitó hace más de {sinceHours} hora(s)."
-                            self.error("account.move", invoice['id'], msg)
+                            self.env['zacatrus_base.notifier'].error("account.move", invoice['id'], msg)
                             hasErrors = True
 
                     if msg:
                         if self.verbose:
                             _logger.warning("Zacalog: EDI: {msg}")
-                        #self.error("zacaedi.bundle", bundle['id'], msg)
+                        #self.env['zacatrus_base.notifier'].error("zacaedi.bundle", bundle['id'], msg)
                         # self._getSlack().sendWarnLimited(msg, "#test2" if self.test else "#alert", "edi_check")
 
             sinceDays = 15
@@ -275,7 +275,7 @@ class BundleWizard(EdiWizard):
             if orderDate < past and not hasErrors:
                 if self.verbose:
                     msg = f"El paquete {bundle['id']} tiene más de {sinceDays} días. Lo damos por cerrado."
-                    self.warn("zacaedi.bundle", bundle['id'], msg)
+                    self.env['zacatrus_base.notifier'].warn("zacaedi.bundle", bundle['id'], msg)
                     _logger.warning(f"Zacalog: EDI: {msg}")                    
                 self.env['zacaedi.invoice_bundle'].write (bundle['id'], {'status': EDI_BUNDLE_STATUS_INVOICED})
 
@@ -301,14 +301,14 @@ class BundleWizard(EdiWizard):
                         past = now - timedelta(days=sinceDays)
                         if orderDate < past:
                             msg = f"Error EDI: El pedido {order['name']} no se ha procesado y se creó hace más de {sinceDays} días."
-                            self.error("sale.order", order['id'], msg)
+                            self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                             hasErrors = True
                     elif order['x_edi_status'] in [EDI_BUNDLE_STATUS_READY]:
                         sinceHours = 1
                         past = now - timedelta(hours=sinceHours)
                         if orderDate < past:
                             msg = f"Error EDI: El pedido {order['name']} no se ha enviado y está listo desde hace más de {sinceHours} hora(s)."
-                            self.error("sale.order", order['id'], msg)
+                            self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                             hasErrors = True
                     elif order['x_edi_status'] in [EdiTalker.EDI_STATUS_SENT]:
                         sinceHours = 1
@@ -319,7 +319,7 @@ class BundleWizard(EdiWizard):
                                 msg = f"Error EDI: El pedido {order['name']} no tiene factura y está enviado desde hace más de {sinceHours} hora(s)."
                             else:
                                 msg = f"Error EDI: La factura del pedido {order['name']} no se ha enviado y el pedido se envió hace más de {sinceHours} hora(s)."
-                            self.error("sale.order", order['id'], msg)
+                            self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                     if msg:
                         if self.verbose:
                             _logger.warning(f"Zacalog: EDI: {msg}") 
@@ -330,9 +330,6 @@ class BundleWizard(EdiWizard):
             if orderDate and orderDate < past and not hasErrors:
                 if self.verbose:
                     msg = f"El paquete {bundle['id']} tiene más de {sinceDays} días. Lo damos por cerrado."
-                    self.warn("zacaedi.bundle", bundle['id'], msg)
+                    self.env['zacatrus_base.notifier'].warn("zacaedi.bundle", bundle['id'], msg)
                     _logger.warning(f"Zacalog: EDI: {msg}")  
                 self.env['zacaedi.bundle'].write (bundle['id'], {'status': EDI_BUNDLE_STATUS_INVOICED})                
-
-    def _getDefaultModelAndId(self):
-        return (self._name, BundleWizard.getCurrentBundle(self.env).id)

@@ -3,42 +3,39 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class EdiWizard(models.Model):
-    _name = 'zacaedi.abstract_bundle'
-    _description = 'Métodos generales para bundles.'
+class Notifier(models.Model):
+    _name = 'zacatrus_base.notifier'
+    _description = 'Genera mensajes de error o info.'
 
     LEVEL_ERROR = 10
     LEVEL_WARNING = 20
     LEVEL_INFO = 30
 
-    def _getDefaultModelAndId(self):
-        return ("", 0)
-
     @api.model
-    def error(self, model, resId, msg, subject = "Error EDI"):
+    def error(self, model, resId, msg, subject = "Error"):
         self.notify(model, resId, msg, subject, self.LEVEL_ERROR)
 
     @api.model
-    def warning(self, model, resId, msg, subject = "EDI warning"):
+    def warning(self, model, resId, msg, subject = "Warning"):
         self.notify(model, resId, msg, subject, self.LEVEL_WARNING)
 
     @api.model
-    def warn(self, model, resId, msg, subject = "EDI warning"):
+    def warn(self, model, resId, msg, subject = "Warning"):
         self.warning(model, resId, msg, subject)
 
     @api.model
-    def info(self, model, resId, msg, subject = "EDI"):
+    def info(self, model, resId, msg, subject = "INFO"):
         self.notify(model, resId, msg, subject, self.LEVEL_INFO)
 
     def notify(self, model, resId, msg, subject, level):
-        #_logger.warning("Zacalog: EDI: Sending notification.")
-        (model, resId) = self._getDefaultModelAndId()
+        _logger.warning(f"Zacalog: EDI: Sending notification. {model} {resId} {msg} {subject}")
+
         if not level:
-            level = EdiWizard.LEVEL_ERROR
-        errorLevel = int(self.env['ir.config_parameter'].sudo().get_param('zacaedi.error_level'))
+            level = self.LEVEL_ERROR
+        errorLevel = int(self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.error_level'))
         
         if errorLevel and level <= errorLevel:                    
-            usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids')
+            usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.notify_user_ids')
             if usersConfig:
                 userIds = [int(i) for i in usersConfig.split(",")]
                 args = [

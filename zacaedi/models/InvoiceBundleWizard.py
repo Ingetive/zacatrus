@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from odoo import models, fields, api
 import paramiko
 from .EdiTalker import EdiTalker
-from .EdiWizard import EdiWizard
 
 _logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ EDI_BUNDLE_STATUS_READY = 10
 EDI_BUNDLE_STATUS_SENT = 20
 EDI_BUNDLE_STATUS_INVOICED = 30
 
-class InvoiceBundleWizard(EdiWizard):
+class InvoiceBundleWizard(models.Model):
     _name = 'zacaedi.invoice_bundle'
     _description = 'Paquete de facturas a enviar a EDI'
 
@@ -63,12 +62,12 @@ class InvoiceBundleWizard(EdiWizard):
                         except Exception as e:
                             msg = f"Could not send invoice for order {order['name']}: "+str(e)
                             _logger.error(f"Zacalog: EDI: {msg}")
-                            self.error("sale.order", order['id'], msg)
+                            self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                             isError = True
 
             if not isError:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
-                self.info("zacaedi.invoice_bundle", bundle.id, "Todas las facturas enviadas.")
+                self.env['zacatrus_base.notifier'].info("zacaedi.invoice_bundle", bundle.id, "Todas las facturas enviadas.")
 
     def loadWizard(self):
         ids = self.env.context.get('active_ids')
@@ -116,5 +115,3 @@ class InvoiceBundleWizard(EdiWizard):
 
         self.write({'status': EDI_BUNDLE_STATUS_READY})
         
-    def _getDefaultModelAndId(self):
-        return (self._name, InvoiceBundleWizard.getCurrentBundle(self.env).id)

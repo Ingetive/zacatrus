@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Acción para abrir las vistas -->
+        <record id="action_zacasocios_queue" model="ir.actions.act_window">
+            <field name="name">Cola de actualización de Fichas</field>
+            <field name="res_model">zacasocios.queue</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+        <!-- Menú para acceder a la vista -->
+        <menuitem id="menu_zacaedi_bundle" name="Cola de actualización de Fichas"
+            sequence="200"
+            action="action_zacasocios_queue"
+            parent="sale.sale_order_menu" />
+
+
+    </data>
+</odoo>

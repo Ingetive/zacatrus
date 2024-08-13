@@ -20,6 +20,14 @@ class ResConfigSettings(models.TransientModel):
 
     reconcile_one_month_only = fields.Boolean(readonly=False, string="Solo concilia un mes", help="Para evitar sobre cargas, solo reconcilia lo del primer mes a partir de la fecha indicada en el modelo.")
 
+    block_partner_ids = fields.Char(readonly=False)
+    notify_user_ids = fields.Char(readonly=False)
+    error_level = fields.Selection([
+        ('30', 'Info'),
+        ('20', 'Warning'),
+        ('10', 'Error'),
+    ], string="Nivel de error para notificaciones", default='30')
+
 
     @api.model
     def get_values(self):
@@ -42,6 +50,10 @@ class ResConfigSettings(models.TransientModel):
             fichas_product_id = fichasProductId,
             reconcile_one_month_only = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.reconcile_one_month_only'),
             #magento_password = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_password'),
+            block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.block_partner_ids'),
+            notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.notify_user_ids'),
+            error_level=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.error_level', default='30')
+
         )
         return res
 
@@ -63,5 +75,8 @@ class ResConfigSettings(models.TransientModel):
             self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_password', self.magento_password)
         if self.magento_secret and self.magento_secret != "":
             self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_secret', self.magento_secret)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.block_partner_ids', self.block_partner_ids)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.notify_user_ids', self.notify_user_ids)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.error_level', self.error_level)
 
         super(ResConfigSettings, self).set_values()

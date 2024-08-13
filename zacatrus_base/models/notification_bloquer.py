@@ -9,7 +9,7 @@ class MailNotification(models.Model):
     @api.model
     def create(self, vals):
         notification = super(MailNotification, self).create(vals)
-        partnersConfig = self.env['ir.config_parameter'].sudo().get_param('zacaedi.block_partner_ids')
+        partnersConfig = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.block_partner_ids')
         if partnersConfig:
             partners = [int(i) for i in partnersConfig.split(",")]
             #partners = [3, 50]

@@ -113,60 +113,6 @@
                         </div>
                     </div>
 
-                    <h2>Notificaciones</h2>
-                    <div class="row mt16 o_settings_container" name="seres_setting_container">
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="notify_user_ids"
-                            title="Partners a avisar">
-                            <div class="o_setting_right_pane">
-                                <div>
-                                    <label string="Partners a avisar" for="notify_user_ids"/>
-                                    <div class="text-muted">
-                                        Lista de ids separada por comas de los usuarios a los que se avisa en caso de error.
-                                    </div>
-                                    <div class="content-group mt16">
-                                        <field name="notify_user_ids" colspan="4" nolabel="1" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt16 o_settings_container" name="seres_setting_container">
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="error_level"
-                            title="Error level">
-                            <div class="o_setting_right_pane">
-                                <div>
-                                    <label string="Error level" for="error_level"/>
-                                    <div class="text-muted">
-                                        Nivel de error para notificaciones.
-                                    </div>
-                                    <div class="content-group mt16">
-                                        <field name="error_level" colspan="4" nolabel="1" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2>Notification blocker</h2>
-                    <div class="row mt16 o_settings_container" name="seres_setting_container">
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="block_partner_ids"
-                            title="Partners a bloquear">
-                            <div class="o_setting_right_pane">
-                                <div>
-                                    <label string="Partners a bloquear" for="block_partner_ids"/>
-                                    <div class="text-muted">
-                                        Lista de ids separada por comas de los partners que no quieren recibir las notificaciones de 'has sido asignado...'
-                                    </div>
-                                    <div class="content-group mt16">
-                                        <field name="block_partner_ids" colspan="4" nolabel="1" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                 </div>
             </xpath>
