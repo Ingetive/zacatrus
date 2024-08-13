@@ -88,10 +88,55 @@
         </record>
 
         <menuitem id="edi_bundle_wizard_item"
-            sequence="100"
+            sequence="110"
             parent="sale.sale_order_menu"
             name="Enviar albaranes EDI" action="id_act_server"/>
 
+
+
+        <!-- Vista tipo lista -->
+        <record id="view_bundle_wizardo_tree" model="ir.ui.view">
+            <field name="name">zacaedi.bundle.tree</field>
+            <field name="model">zacaedi.bundle</field>
+            <field name="arch" type="xml">
+                <tree string="Histórico de paquetes EDI" create="0" delete="0">
+                    <field name="name"/>
+                    <field name="create_date"/>                    
+                    <field name="status"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista tipo formulario -->
+        <record id="view_bundle_wizard_form" model="ir.ui.view">
+            <field name="name">zacaedi.bundle.form</field>
+            <field name="model">zacaedi.bundle</field>
+            <field name="arch" type="xml">
+                <form string="Paquete de pedidos EDI">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="order_ids"/>
+                            <field name="file"/>
+                            <field name="status"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Acción para abrir las vistas -->
+        <record id="action_zacaedi_bundle" model="ir.actions.act_window">
+            <field name="name">Histórico de paquetes EDI</field>
+            <field name="res_model">zacaedi.bundle</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menú para acceder a la vista -->
+        <menuitem id="menu_zacaedi_bundle" name="Histórico de paquetes EDI"
+            sequence="100"
+            action="action_zacaedi_bundle"
+            parent="sale.sale_order_menu" />
 
 
     </data>
