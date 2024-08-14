@@ -36,6 +36,9 @@ def prefix0(h):
         h = '0'*(6-len(h)) + h
     return h
 
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+  return ''.join(random.choice(chars) for _ in range(size))
+
 from odoo import models, fields, api
 class Zconnector(models.Model):
     _name = 'zacatrus.connector'
@@ -63,8 +66,11 @@ class Zconnector(models.Model):
           return self.CONFIG_DATA['apiUrl'] + "/rest/all/V1/"
 
     def _getToken(self, user = None, password = None):
-        if not 'apiUrl' in self.CONFIG_DATA:
-            self._getConfigData()
+        self._getConfigData()
+
+        token = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token')
+        if token:
+            return token
 
         data = {
             "username": self.CONFIG_DATA['apiuser'] if not user else user, 
@@ -77,9 +83,9 @@ class Zconnector(models.Model):
           url = self._getUrl(True) + "integration/customer/token"
         else:
             if "dummy" in self._getUrl():
-              url = self._getUrl() + "integration/admin/token"
+                url = self._getUrl() + "integration/admin/token"
             else:
-              url = self._getUrl() + "tfa/provider/google/authenticate"
+                url = self._getUrl() + "tfa/provider/google/authenticate"
 
         try:
             response = requests.post(url, json=data)
@@ -108,11 +114,15 @@ class Zconnector(models.Model):
                 response = requests.post(self._getUrl(isCustomer) + purl, headers=hed, json=postParams)
             else:
                 response = requests.get(self._getUrl(isCustomer) + purl, headers=hed)
+
             return response.json()
         else:
             _logger.error("P_ZB: _getData failed for purl: " + purl)
             return False
 
+    def getCustomerByEmail(self, email):
+        return self._getCustomerByEmail(email)
+    
     def _getCustomerByEmail(self, email):
         sCriteria = "searchCriteria[filterGroups][0][filters][0][field]=email"
         sCriteria += "&" + "searchCriteria[filterGroups][0][filters][0][value]="+email
@@ -123,6 +133,67 @@ class Zconnector(models.Model):
                 return customer
 
         return None
+    
+    def getRule(self, ruleId = 8):
+        return self._getData('rewards/management/rule?rule_id=' + str(ruleId))
+
+    def doAdd(self, customerId, qty, comment="Añadidos por el administrador", expire=365, action="admin"):
+        #https://amasty.com/knowledge-base/what-amasty-magento-2-plugins-support-api.html#reward
+        data = {
+            "customer_id": customerId, 
+            "amount": qty,
+            "comment": comment,
+            "action": action,
+            "expire": {"expire": True, "days": expire}
+        }
+        res = self._getData('rewards/management/points/add', data)
+        
+        return not res
+
+    def doDeduct(self, customerId, qty, comment="Eliminados por el administrador", action="admin"):
+        data = {
+            "customer_id": customerId, 
+            "amount": qty,
+            "comment": comment,
+            "action": action
+        }
+        res = self._getData('rewards/management/points/deduct', data)
+
+        return not res
+
+    def doDeductBlocks(self, customerId, qty, comment="Eliminados por el administrador", action="admin"):
+        done = False
+        #print(order['discount_description'])
+        left = fichasSpent = qty    
+        expirations = self.getFichasExpiration( customerId )
+        for expiration in expirations:
+            #print(expiration['amount'])
+            if expiration['amount'] < left:
+                deductAmount = expiration['amount']
+            else:
+                deductAmount = left
+
+            left -= deductAmount
+            self.doDeduct(customerId, deductAmount) 
+            if left <= 0:
+                break
+        if left > 0:
+            deductAmount = left
+            left -= deductAmount
+            self.doDeduct(customerId, deductAmount)
+        done = True
+        
+        return done
+
+    def getFichasExpiration(self, customerId):
+        res = self._getData('rewards/mine/expiration?customer_id=' + str(customerId))
+        
+        return res
+
+    def getFichasHistory(self, customerId):
+        res = self._getData('rewards/mine/history?customer_id=' + str(customerId))
+        
+        return res
 
     def _getPoints(self, customerId):
         res = self._getData('rewards/mine/balance?customer_id='+ str(customerId))
@@ -160,3 +231,46 @@ class Zconnector(models.Model):
     def updateGiftCard(self, data):
         _data = {"entity": data}
         return self._getData("mpgiftcard/code/", _data, "put")
+
+    def createCustomer(self, email, name, posName = False):
+        groupId = 1
+
+        if posName:
+            _m = re.search('adrid', posName)
+        if _m:
+            groupId = 18
+        _m = re.search('evilla', posName)
+        if _m:
+            groupId = 19
+        _m = re.search('alencia', posName)
+        if _m:
+            groupId = 20
+        _m = re.search('arcelona', posName)
+        if _m:
+            groupId = 21
+        _m = re.search('itoria', posName)
+        if _m:
+            groupId = 22
+        _m = re.search('mides', posName)
+        if _m:
+            groupId = 23
+        _m = re.search('aragoza', posName)
+        if _m:
+            groupId = 24
+        _m = re.search('alladolid', posName)
+        if _m:
+            groupId = 25
+
+        customer = {
+            'customer': {
+                'email': email,
+                'firstname': name,
+                'lastname': '.',
+                #'password': id_generator(),
+                'website_id': '1',
+                'group_id': groupId
+            }
+            , 'password': 'Aa1'+id_generator(8)
+        }
+        res = self._getData('customers', customer)
+        return res

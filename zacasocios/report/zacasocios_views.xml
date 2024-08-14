@@ -1,11 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <record id="view_queue_tree" model="ir.ui.view">
+            <field name="name">zacasocios.queue.tree</field>
+            <field name="model">zacasocios.queue</field>
+            <field name="arch" type="xml">
+                <tree string="Cola de actualización de Fichas" create="0" delete="1" edit="1" >
+                    <field name="email"/>
+                    <field name="name"/>
+                    <field name="qty"/>
+                    <field name="spent"/>
+                    <field name="spent"/>
+                    <field name="pos"/>
+                </tree>
+            </field>
+        </record>
+        <!-- Vista tipo formulario -->
+        <record id="view_bundle_wizard_form" model="ir.ui.view">
+            <field name="name">zacasocios.queue.form</field>
+            <field name="model">zacasocios.queue</field>
+            <field name="arch" type="xml">
+                <form string="Cola de actualización de Fichas" create="0" delete="1" edit="1">
+                    <sheet>
+                        <group>
+                            <field name="email"/>
+                            <field name="name"/>
+                            <field name="create_date"/>
+                            <field name="qty"/>
+                            <field name="spent"/>
+                            <field name="spent"/>
+                            <field name="pos"/>
+                            <field name="msg"/>
+                            <field name="attempts"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
         <!-- Acción para abrir las vistas -->
         <record id="action_zacasocios_queue" model="ir.actions.act_window">
             <field name="name">Cola de actualización de Fichas</field>
             <field name="res_model">zacasocios.queue</field>
-            <field name="view_mode">tree</field>
+            <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menú para acceder a la vista -->

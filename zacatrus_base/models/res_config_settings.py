@@ -12,6 +12,9 @@ class ResConfigSettings(models.TransientModel):
     magento_user = fields.Char(readonly=False)
     magento_password = fields.Char(readonly=False)
     magento_secret = fields.Char(readonly=False)
+
+    magento_token = fields.Char(readonly=False)
+
     printnode_key = fields.Char(readonly=False)
     dhl_segovia_printer_id = fields.Char(readonly=False)
     dhl_distri_printer_id = fields.Char(readonly=False)
@@ -52,7 +55,9 @@ class ResConfigSettings(models.TransientModel):
             #magento_password = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_password'),
             block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.block_partner_ids'),
             notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.notify_user_ids'),
-            error_level=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.error_level', default='30')
+            error_level=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.error_level', default='30'),
+            magento_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token')
+            
 
         )
         return res
@@ -78,5 +83,6 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.block_partner_ids', self.block_partner_ids)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.notify_user_ids', self.notify_user_ids)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.error_level', self.error_level)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_token', self.magento_token)
 
         super(ResConfigSettings, self).set_values()

@@ -80,6 +80,8 @@ class Zacasocios(models.Model):
 			return False
 		
 	def sync(self):
+		#self.queueFichasUpdate('sergio@infovit.net', False, "Prueba de fichas", 29.35, "Sergio Viteri", "Chamberi")
+		#self.queueFichasUpdate('sergio@infovit.net', -52, "Prueba de fichas gastadas")
 		lastOrder = self.env['ir.config_parameter'].sudo().get_param('zacasocios.last_order')
 		fichasProduct = self.env['ir.config_parameter'].sudo().get_param('zacasocios.fichas_product_id')
 
@@ -127,7 +129,11 @@ class Zacasocios(models.Model):
 				if prevLastOrder < posOrder["id"]:
 					prevLastOrder = posOrder["id"]
 					self.env['ir.config_parameter'].sudo().set_param('zacasocios.fichas_product_id', posOrder["id"])
-					
+
+		blockQueue = self.env['ir.config_parameter'].sudo().get_param('zacasocios.block_magento_sync')	
+		if not blockQueue:
+			self.procFichasUpdateQueue(True)
+	
 	def _sustractFichas(self, email, qty):
 		if qty < 0:
 			msg = "Canjeados en tienda"
@@ -196,12 +202,13 @@ class Zacasocios(models.Model):
     
 	def _getCustomer(self, item):
 		customer = None
+		magento = self.env['zacatrus.connector']
 
 		try:
-			customer = self.magento.getCustomerByEmail(item['email'].strip())
+			customer = magento.getCustomerByEmail(item.email.strip())
 			if not customer:
-				if 'name' in item and item['name'] and item['pos']:
-					customer = self.magento.createCustomer(item['email'].strip(), item['name'], item['pos'])
+				if item.name and item.email and item.pos:
+					customer = magento.createCustomer(item.email.strip(), item.name, item.pos)
 
 		except Exception as e:
 			customer = None
@@ -209,18 +216,20 @@ class Zacasocios(models.Model):
 		return customer
 
 	def _getPoints(self, item):
-		if not item['qty'] and item['spent']:
-			rule = self.magento.getRule()
+		magento = self.env['zacatrus.connector']
+
+		if not item.qty and item.spent:
+			rule = magento.getRule()
 			if not rule:
 				return False
-			points = int(item['spent'] * rule["amount"]/rule["spent_amount"])
+			points = int(item.spent * rule["amount"]/rule["spent_amount"])
 		else:
-			points = item["qty"]
+			points = item.qty
 
 		return points
 
 	def _procFichasItem(self, item, increase):
-		db =  self._getMongoDb()
+		magento = self.env['zacatrus.connector']
 		ok = False
 
 		if self._isAnIncrease(item):
@@ -228,19 +237,16 @@ class Zacasocios(models.Model):
 				customer = self._getCustomer(item)
 				if customer:
 					points = self._getPoints(item)
-					if self.verbose:
-						print (f"Adding {points} points to {item['email']}")
-					ok = self.magento.doAdd(customer["id"], points, item["msg"])
+					ok = magento.doAdd(customer['id'], points, item.msg)
 			else:
 				return True
 		else:
 			customer = self._getCustomer(item)
 			if customer:
 				points = self._getPoints(item)
-				ok = self.magento.doDeduct(customer["id"], (-1)*points, item["msg"])
+				ok = magento.doDeduct(customer['id'], (-1)*points, item.msg)
 				if not ok and points < 0:
-				#self._getSlack().sendWarn( f"Failed deducting {points} points to {item['email']}. Trying blocks...", "C02211VKDKM" ) #TODO: remove when stable
-					ok = self.magento.doDeductBlocks(customer["id"], (-1)*points, item["msg"])
+					ok = magento.doDeductBlocks(customer['id'], (-1)*points, item.msg)
 
 		if ok:
 			item.unlink()

@@ -77,6 +77,23 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="magento_token"
+                            title="Si tiene esto puesto, ignora el usuario/pass y otp.">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Token" for="magento_token"/>
+                                    <div class="text-muted">
+                                        Campo Access Token de la integración de Magento
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="magento_token" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <h2>Products</h2>
                     <div class="row mt16 o_settings_container" name="taxes_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
