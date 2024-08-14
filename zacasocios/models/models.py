@@ -84,38 +84,43 @@ class Zacasocios(models.Model):
 	def sync(self):
 		#self.queueFichasUpdate('sergio@infovit.net', False, "Prueba de fichas", 29.35, "Sergio Viteri", "Chamberi")
 		#self.queueFichasUpdate('sergio@infovit.net', -52, "Prueba de fichas gastadas")
-		lastOrder = self.env['ir.config_parameter'].sudo().get_param('zacasocios.last_order')
+		lastOrder = int(self.env['ir.config_parameter'].sudo().get_param('zacasocios.last_order'))
 		fichasProduct = self.env['ir.config_parameter'].sudo().get_param('zacasocios.fichas_product_id')
 
 		if not lastOrder or not fichasProduct:
 			_logger.warning("Zacasocios: Please, configure Zacasocios module.")
 		else:
-			args = [('id', '>', lastOrder)]
-			posOrders = self.env['pos.order'].search_read (args)
+			prevLastOrder = lastOrder
+			args = [('id', '>', prevLastOrder)]
+			posOrders = self.env['pos.order'].search_read (args, limit=20, order='create_date asc')
 			for posOrder in posOrders:
+				sessions = self.env['pos.session'].search_read([('id', '=', posOrder['session_id'][0])])
+				posName = ""
+				for session in sessions:
+					posName = session["config_id"][1]
+					
 				partnerEmail = None
 				if posOrder['partner_id']:
-					partners = self.env['res.partner'].read(posOrder['partner_id'][0])
+					#_logger.warning(f"Zacalog: zacasocios: {posOrder['partner_id']}")
+					partners = self.env['res.partner'].search_read([('id', '=', posOrder['partner_id'][0])])
 					for partner in partners:
 						partnerEmail = partner['email']
 				if partnerEmail:
 					iargs = [("order_id", "=", posOrder['id'])]
 					posOrdersItems = self.env['pos.order.line'].search_read(iargs)
 					for posOrdersItem in posOrdersItems:
+						#_logger.warning(f"Zacalog: zacasocios: args")
 						args = [('id', '=', posOrdersItem['product_id'][0] )]
 						products = self.env['product.product'].search_read(args)
-						if(products[0]['id'] == fichasProduct.id): #OJO: revisar
+						#_logger.warning(f"Zacalog: zacasocios: sustract {products[0]['id']} == {fichasProduct}")
+						if products[0]['id'] == int(fichasProduct):
 							if (posOrdersItem['qty']):
-								self._sustractFichas(partnerEmail, posOrdersItem['qty'])
-
-					sessions = self.env['pos.session'].read(posOrder['session_id'][0])
-					posName = ""
-					for session in sessions:
-						posName = session["config_id"][1]
+								#_logger.warning(f"Zacalog: zacasocios: sustract {posOrdersItem['qty']}")
+								self._sustractFichas(partnerEmail, posOrdersItem['qty'], posName)
 
 					#Gift cards don't give points
 					fichasToAdd = posOrder['amount_total']
-					tarjezacaProductId = self.getGiftCardProductId()
+					tarjezacaProductId = int(self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.card_product_id'))
 					if tarjezacaProductId:
 						giftCardAmount = 0
 						for posOrdersItem in posOrdersItems:
@@ -123,26 +128,26 @@ class Zacasocios(models.Model):
 								giftCardAmount += posOrdersItem["price_subtotal_incl"]
 						fichasToAdd -= giftCardAmount
 
-					if self.verbose:
-						print("Adding Fichas... "+ str(fichasToAdd))
 					if fichasToAdd > 0:
 						self._addFichas(partner, fichasToAdd, posName)
 						
 				if prevLastOrder < posOrder["id"]:
 					prevLastOrder = posOrder["id"]
-					self.env['ir.config_parameter'].sudo().set_param('zacasocios.fichas_product_id', posOrder["id"])
+					#_logger.warning(f"Zacalog: zacasocios: setting prevLastOrder {prevLastOrder}")
+					self.env['ir.config_parameter'].sudo().set_param('zacasocios.last_order', posOrder["id"])
+                    #self.env['ir.config_parameter'].sudo().set_values()
 
 		blockQueue = self.env['ir.config_parameter'].sudo().get_param('zacasocios.block_magento_sync')	
 		if not blockQueue:
-			self.procFichasUpdateQueue()
+			self.procFichasUpdateQueue()            
 	
-	def _sustractFichas(self, email, qty):
+	def _sustractFichas(self, email, qty, posName = False):
 		if qty < 0:
 			msg = "Canjeados en tienda"
 		else:
 			msg = "Devolución en tienda"
 
-		self.queueFichasUpdate(email, qty, msg)
+		self.queueFichasUpdate(email, qty, msg, False, False, posName)
 
 	def _addFichas(self, partner, spent, posName = False):
 		if spent > 0:
@@ -262,4 +267,3 @@ class Zacasocios(models.Model):
 			item.unlink()
 
 		return ok
-

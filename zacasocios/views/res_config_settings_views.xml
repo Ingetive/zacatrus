@@ -27,23 +27,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mt16 o_settings_container" name="seres_setting_container">
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="fichas_product_id"
-                            title="Producto 'Fichas'">
-                            <div class="o_setting_right_pane">
-                                <div>
-                                    <label string="Producto Fichas" for="fichas_product_id"/>
-                                    <div class="text-muted">
-                                        Producto Fichas
-                                    </div>
-                                    <div class="content-group mt16">
-                                        <field name="fichas_product_id" colspan="4" nolabel="1" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="row mt16 o_settings_container" name="taxes_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="block_magento_sync"
