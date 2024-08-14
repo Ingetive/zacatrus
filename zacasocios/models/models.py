@@ -5,6 +5,8 @@ import string
 import random
 import sys
 import logging
+from datetime import datetime
+import pytz
 import hmac, base64, struct, hashlib, time, os
 
 _logger = logging.getLogger(__name__)
@@ -132,7 +134,7 @@ class Zacasocios(models.Model):
 
 		blockQueue = self.env['ir.config_parameter'].sudo().get_param('zacasocios.block_magento_sync')	
 		if not blockQueue:
-			self.procFichasUpdateQueue(True)
+			self.procFichasUpdateQueue()
 	
 	def _sustractFichas(self, email, qty):
 		if qty < 0:
@@ -161,7 +163,15 @@ class Zacasocios(models.Model):
 
 		return item
 
-	def procFichasUpdateQueue(self, increase):
+	def procFichasUpdateQueue(self):
+		increase = False
+
+		now = datetime.now(pytz.timezone('Europe/Madrid')).time()
+		if now.hour < 6:
+			increase = True
+		#_logger.warning(f"Zacalog: hour is {now.hour}")
+
+
 		args = []
 		queue = self.env['zacasocios.queue'].search( args, limit=100, order='create_date asc' )
 
