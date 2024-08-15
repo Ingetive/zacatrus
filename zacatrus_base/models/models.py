@@ -165,7 +165,7 @@ class Zconnector(models.Model):
     def doDeductBlocks(self, customerId, qty, comment="Eliminados por el administrador", action="admin"):
         done = False
         #print(order['discount_description'])
-        left = fichasSpent = qty    
+        left = qty    
         expirations = self.getFichasExpiration( customerId )
         for expiration in expirations:
             #print(expiration['amount'])
@@ -189,7 +189,7 @@ class Zconnector(models.Model):
         if left <= 0:
             done = True
         
-        return done
+        return left
 
     def getFichasExpiration(self, customerId):
         res = self._getData('rewards/mine/expiration?customer_id=' + str(customerId))

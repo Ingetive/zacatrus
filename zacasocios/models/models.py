@@ -82,6 +82,8 @@ class Zacasocios(models.Model):
 			return False
 		
 	def sync(self):
+		self.cleanMessages()
+		
 		#self.queueFichasUpdate('sergio@infovit.net', False, "Prueba de fichas", 29.35, "Sergio Viteri", "Chamberi")
 		#self.queueFichasUpdate('sergio@infovit.net', -52, "Prueba de fichas gastadas")
 		lastOrder = int(self.env['ir.config_parameter'].sudo().get_param('zacasocios.last_order'))
@@ -261,9 +263,23 @@ class Zacasocios(models.Model):
 				points = self._getPoints(item)
 				ok = magento.doDeduct(customer['id'], (-1)*points, item.msg)
 				if not ok and points < 0:
-					ok = magento.doDeductBlocks(customer['id'], (-1)*points, item.msg)
+					left = magento.doDeductBlocks(customer['id'], (-1)*points, item.msg)
+					if left <= 0:
+						ok = True
+					else:
+						msg = f"Fichas parcialmente descontadas. Solicitado: {points}; Sin hacer: {left}"
+						_logger.error("Zacalog: {msg}")
+						self.env['zacatrus_base.notifier'].error("zacasocios.queue", item.id, msg)
+						item.write({"qty": (-1)*left})
 
 		if ok:
 			item.unlink()
 
 		return ok
+
+	def cleanMessages(self):
+		messages = self.env['mail.message'].search([('model', '=', 'zacasocios.queue')])
+		for msg in messages:
+			count = self.env['zacasocios.queue'].search_count([('id', '=', msg.res_id)])
+			if count == 0:
+				msg.unlink()
