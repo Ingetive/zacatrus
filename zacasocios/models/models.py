@@ -183,25 +183,21 @@ class Zacasocios(models.Model):
 		queue = self.env['zacasocios.queue'].search( args, limit=20, order='create_date asc' )
 
 		for item in queue:
-			ok = False
-			try:
-				ok = self._procFichasItem(item, increase)
-			except Exception as e:
+			if item.attempts < MAX_ATTEMPTS:
 				ok = False
+				try:
+					ok = self._procFichasItem(item, increase)
+				except Exception as e:
+					ok = False
 
-			if not ok:
-				attempts = MAX_ATTEMPTS
-				if 'attempts' in item:
-					attempts = item.attempts +1
-
-				if attempts >= MAX_ATTEMPTS:
+				if not ok:
 					msg = f"Failed updating points: {item['email']} {item['qty']} {item['spent']}"
 
 					#db.fichas_queue.bulk_write([ DeleteOne({"_id": item["_id"]}) ])
 					self.env['zacatrus_base.notifier'].error("zacasocios.queue", item.id, msg)
-					item.unlink()
-				else:
-					item.write({"attempts": attempts})
+					#item.unlink()
+					
+					item.write({"attempts": item.attempts + 1})
 
 		return True
 
