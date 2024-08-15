@@ -182,6 +182,8 @@ class Zacasocios(models.Model):
 
 
 		args = []
+		if not increase:
+			args.append( ('qty', '<', 0) )
 		queue = self.env['zacasocios.queue'].search( args, limit=20, order='create_date asc' )
 
 		for item in queue:
