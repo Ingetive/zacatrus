@@ -267,10 +267,11 @@ class Zacasocios(models.Model):
 					if left <= 0:
 						ok = True
 					else:
-						msg = f"Fichas parcialmente descontadas. Solicitado: {points}; Sin hacer: {left}"
-						_logger.error("Zacalog: {msg}")
-						self.env['zacatrus_base.notifier'].error("zacasocios.queue", item.id, msg)
-						item.write({"qty": (-1)*left})
+						if ((-1)*left) != points:
+							msg = f"Fichas parcialmente descontadas. Solicitado: {points}; Sin hacer: {left}"
+							_logger.error("Zacalog: {msg}")
+							self.env['zacatrus_base.notifier'].error("zacasocios.queue", item.id, msg)
+							item.write({"qty": (-1)*left})
 
 		if ok:
 			item.unlink()
