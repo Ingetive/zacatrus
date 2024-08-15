@@ -158,6 +158,7 @@ class Zconnector(models.Model):
             "action": action
         }
         res = self._getData('rewards/management/points/deduct', data)
+        #_logger.error(f"Zacalog: doDeduct {res}")
 
         return not res
 
@@ -173,15 +174,20 @@ class Zconnector(models.Model):
             else:
                 deductAmount = left
 
-            left -= deductAmount
-            self.doDeduct(customerId, deductAmount) 
+            ok = self.doDeduct(customerId, deductAmount, comment) 
+            if ok:
+                left -= deductAmount
+            else:
+                break
             if left <= 0:
                 break
         if left > 0:
             deductAmount = left
-            left -= deductAmount
-            self.doDeduct(customerId, deductAmount)
-        done = True
+            ok = self.doDeduct(customerId, deductAmount, comment)
+            if ok:
+                left -= deductAmount
+        if left <= 0:
+            done = True
         
         return done
 

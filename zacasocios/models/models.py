@@ -178,7 +178,7 @@ class Zacasocios(models.Model):
 
 
 		args = []
-		queue = self.env['zacasocios.queue'].search( args, limit=100, order='create_date asc' )
+		queue = self.env['zacasocios.queue'].search( args, limit=20, order='create_date asc' )
 
 		for item in queue:
 			ok = False
