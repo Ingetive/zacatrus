@@ -85,7 +85,7 @@ class Zacasocios(models.Model):
 		self.cleanMessages()
 		
 		#self.queueFichasUpdate('sergio@infovit.net', False, "Prueba de fichas", 29.35, "Sergio Viteri", "Chamberi")
-		#self.queueFichasUpdate('sergio@infovit.net', -52, "Prueba de fichas gastadas")
+		#self.queueFichasUpdate('sergio@infovit.net', -52, "Prueba de fichas gastadas", False, "Tal")
 		lastOrder = int(self.env['ir.config_parameter'].sudo().get_param('zacasocios.last_order'))
 		fichasProduct = self.env['ir.config_parameter'].sudo().get_param('zacasocios.fichas_product_id')
 
@@ -102,11 +102,13 @@ class Zacasocios(models.Model):
 					posName = session["config_id"][1]
 					
 				partnerEmail = None
+				partnerName = None
 				if posOrder['partner_id']:
 					#_logger.warning(f"Zacalog: zacasocios: {posOrder['partner_id']}")
 					partners = self.env['res.partner'].search_read([('id', '=', posOrder['partner_id'][0])])
 					for partner in partners:
 						partnerEmail = partner['email']
+						partnerName = partner['name']
 				if partnerEmail:
 					iargs = [("order_id", "=", posOrder['id'])]
 					posOrdersItems = self.env['pos.order.line'].search_read(iargs)
@@ -118,7 +120,7 @@ class Zacasocios(models.Model):
 						if products[0]['id'] == int(fichasProduct):
 							if (posOrdersItem['qty']):
 								#_logger.warning(f"Zacalog: zacasocios: sustract {posOrdersItem['qty']}")
-								self._sustractFichas(partnerEmail, posOrdersItem['qty'], posName)
+								self._sustractFichas(partnerEmail, posOrdersItem['qty'], partnerName, posName)
 
 					#Gift cards don't give points
 					fichasToAdd = posOrder['amount_total']
@@ -143,13 +145,13 @@ class Zacasocios(models.Model):
 		if not blockQueue:
 			self.procFichasUpdateQueue()            
 	
-	def _sustractFichas(self, email, qty, posName = False):
+	def _sustractFichas(self, email, qty, name, posName = False):
 		if qty < 0:
 			msg = "Canjeados en tienda"
 		else:
 			msg = "Devolución en tienda"
 
-		self.queueFichasUpdate(email, qty, msg, False, False, posName)
+		self.queueFichasUpdate(email, qty, msg, False, name, posName)
 
 	def _addFichas(self, partner, spent, posName = False):
 		if spent > 0:

@@ -10,7 +10,7 @@
                     <field name="name"/>
                     <field name="qty"/>
                     <field name="spent"/>
-                    <field name="spent"/>
+                    <field name="attempts"/>
                     <field name="pos"/>
                 </tree>
             </field>
