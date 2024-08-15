@@ -8,6 +8,7 @@
     """,
     'author': "Zacatrus",
     'website': "https://zacatrus.es",
+    "license": "AGPL-3",
     'category': 'Uncategorized',
     'version': '16.0',
     'depends': [
