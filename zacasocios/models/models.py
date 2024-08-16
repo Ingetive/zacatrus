@@ -181,27 +181,26 @@ class Zacasocios(models.Model):
 		#_logger.warning(f"Zacalog: hour is {now.hour}")
 
 
-		args = []
+		args = [('attempts', '<', MAX_ATTEMPTS)]
 		if not increase:
 			args.append( ('qty', '<', 0) )
 		queue = self.env['zacasocios.queue'].search( args, limit=20, order='create_date asc' )
 
 		for item in queue:
-			if item.attempts < MAX_ATTEMPTS:
+			ok = False
+			try:
+				ok = self._procFichasItem(item, increase)
+			except Exception as e:
 				ok = False
-				try:
-					ok = self._procFichasItem(item, increase)
-				except Exception as e:
-					ok = False
 
-				if not ok:
-					msg = f"Failed updating points: {item['email']} {item['qty']} {item['spent']}"
+			if not ok:
+				msg = f"Failed updating points: {item['email']} {item['qty']} {item['spent']}"
 
-					#db.fichas_queue.bulk_write([ DeleteOne({"_id": item["_id"]}) ])
-					self.env['zacatrus_base.notifier'].error("zacasocios.queue", item.id, msg)
-					#item.unlink()
-					
-					item.write({"attempts": item.attempts + 1})
+				#db.fichas_queue.bulk_write([ DeleteOne({"_id": item["_id"]}) ])
+				self.env['zacatrus_base.notifier'].error("zacasocios.queue", item.id, msg)
+				#item.unlink()
+				
+				item.write({"attempts": item.attempts + 1})
 
 		return True
 
