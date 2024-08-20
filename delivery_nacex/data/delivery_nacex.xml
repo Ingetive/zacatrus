@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
+<odoo noupdate="1">
     <record id="nacex_packaging_NACEX_BOX" model="stock.package.type">
         <field name="name">NACEX_BOX</field>
         <field name="shipper_package_code">NACEX_BOX</field>
