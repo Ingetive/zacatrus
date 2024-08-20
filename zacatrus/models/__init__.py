@@ -18,3 +18,4 @@ from . import pos_session
 from . import pos_payment
 from . import ir_property
 from . import bank_rec_widget_line
+from . import bank_rec_widget
