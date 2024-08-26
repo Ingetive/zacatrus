@@ -100,7 +100,7 @@
             <field name="model">zacaedi.bundle</field>
             <field name="arch" type="xml">
                 <tree string="Histórico de paquetes EDI" create="0" delete="0">
-                    <field name="ate"/>                    
+                    <field name="create_date"/>                    
                     <field name="status"/>
                 </tree>
             </field>
