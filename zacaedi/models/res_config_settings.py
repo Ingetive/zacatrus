@@ -14,6 +14,13 @@ class ResConfigSettings(models.TransientModel):
     inputpath = fields.Char(readonly=False)
     outputpath = fields.Char(readonly=False)
     invoicesoutputpath = fields.Char(readonly=False)
+    block_partner_ids = fields.Char(readonly=False)
+    notify_user_ids = fields.Char(readonly=False)
+    error_level = fields.Selection([
+        ('30', 'Info'),
+        ('20', 'Warning'),
+        ('10', 'Error'),
+    ], string="Nivel de error para notificaciones", default='30')
 
     @api.model
     def get_values(self):
@@ -26,6 +33,9 @@ class ResConfigSettings(models.TransientModel):
             inputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.inputpath'),
             outputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath'),
             invoicesoutputpath = self.env['ir.config_parameter'].sudo().get_param('zacaedi.invoicesoutputpath'),
+            block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.block_partner_ids'),
+            notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacaedi.notify_user_ids'),
+            error_level=self.env['ir.config_parameter'].sudo().get_param('zacaedi.error_level', default='30')
         )
         return res
 
@@ -36,6 +46,8 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftppassword', self.ftppassword)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.inputpath', self.inputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.outputpath', self.outputpath)
-        self.env['ir.config_parameter'].sudo().set_param('zacaedi.invoicesoutputpath', self.invoicesoutputpath)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.block_partner_ids', self.block_partner_ids)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.notify_user_ids', self.notify_user_ids)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.error_level', self.error_level)
 
         super(ResConfigSettings, self).set_values()

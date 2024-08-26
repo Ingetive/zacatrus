@@ -60,11 +60,14 @@ class InvoiceBundleWizard(models.Model):
                                 file.write(buffer)
                             order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED, 'x_edi_status_updated': datetime.now()})
                         except Exception as e:
-                            _logger.error(f"Zacalog: EDI: Could not send invoice for order {order['name']}: "+str(e))
+                            msg = f"Could not send invoice for order {order['name']}: "+str(e)
+                            _logger.error(f"Zacalog: EDI: {msg}")
+                            self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                             isError = True
 
             if not isError:
                 bundle.write({'status': EDI_BUNDLE_STATUS_INVOICED})
+                self.env['zacatrus_base.notifier'].info("zacaedi.invoice_bundle", bundle.id, "Todas las facturas enviadas.")
 
     def loadWizard(self):
         ids = self.env.context.get('active_ids')
@@ -111,6 +114,4 @@ class InvoiceBundleWizard(models.Model):
                     _logger.error(f"Zacalog: EDI: El pedido {order['name']} ya se estaba procesando.")
 
         self.write({'status': EDI_BUNDLE_STATUS_READY})
-        
-
         

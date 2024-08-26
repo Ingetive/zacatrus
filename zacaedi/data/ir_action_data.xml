@@ -12,7 +12,7 @@
     </record>
 
     <record id="zacaedi_invoice_sync" model="ir.cron">
-        <field name="name">Zacatrus EDI: Send direct invoices</field>
+        <field name="name">Zacatrus EDI: Enviar facturas directas</field>
         <field name="model_id" ref="model_zacaedi_invoice_bundle"/>
         <field name="state">code</field>
         <field name="code">model.sync()</field>
@@ -22,7 +22,7 @@
     </record>
 
     <record id="zacaedi_sync" model="ir.cron">
-        <field name="name">Zacatrus EDI: Syncronize orders</field>
+        <field name="name">Zacatrus EDI: Sincronizar pedidos</field>
         <field name="model_id" ref="model_zacaedi_bundle"/>
         <field name="state">code</field>
         <field name="code">model.sync()</field>
@@ -32,13 +32,23 @@
     </record>
 
     <record model="ir.actions.server" id="zacaedi_send_invoice_action">
-        <field name="name">Zacatrus EDI: Send direct invoices</field> 
+        <field name="name">Zacatrus EDI: Enviar facturas directas</field> 
         <field name="model_id" ref="model_zacaedi_invoice_bundle"/>
         <field name="binding_model_id" ref="account.model_account_move"></field>
         <field name="state">code</field> 
         <field name="code">
             action = model.sudo().loadWizard()
         </field> 
+    </record>
+
+    <record id="zacaedi_check_problems" model="ir.cron">
+        <field name="name">Zacatrus EDI: Comprobar que todo se envía correctamente</field>
+        <field name="model_id" ref="model_zacaedi_bundle"/>
+        <field name="state">code</field>
+        <field name="code">model.check()</field>
+        <field name='interval_number'>5</field>
+        <field name='interval_type'>minutes</field>
+        <field name="numbercall">-1</field>
     </record>
 
 </odoo>

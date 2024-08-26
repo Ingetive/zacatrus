@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 class EdiError(models.Model):
     _name = 'zacaedi.error'
+    _description = 'Guarda los posibles errores que se producen al importar pedidos EDI'
     
     code = fields.Integer(readonly=False)
     origin = fields.Char(readonly=False)

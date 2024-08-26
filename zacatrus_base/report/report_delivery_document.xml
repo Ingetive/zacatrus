@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_picking" inherit_id="stock.report_picking">
+        <xpath expr="//div[@class='row mt48 mb32']" position="replace">
+            <div t-if="o.sale_id.client_order_ref" class="col-auto" name="div_origin">
+                <strong>Web / ref:</strong>
+                <p t-field="o.sale_id.client_order_ref"/>
+            </div>
+            <div t-if="o.origin" class="col-auto" name="div_origin">
+                <strong>Order:</strong>
+                <p t-field="o.origin"/>
+            </div>
+            <div class="col-auto" name="div_state">
+                <strong>Status:</strong>
+                <p t-field="o.state"/>
+            </div>
+            <div class="col-auto" name="div_sched_date">
+                <strong>Scheduled Date:</strong>
+                <p t-field="o.scheduled_date"/>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

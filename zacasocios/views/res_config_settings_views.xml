@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.zacaedi</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="110"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Zacasocios" string="Zacasocios" data-key="zacasocios">
+                    
+                    <h2>Zacasocios</h2>
+                    <div class="row mt16 o_settings_container" name="seres_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="last_order"
+                            title="Último pedido procesado">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Último pedido procesado" for="last_order"/>
+                                    <div class="text-muted">
+                                        Último pedido procesado
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="last_order" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" name="taxes_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="block_magento_sync"
+                            title="Bloquear procesamiento">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Bloquear procesamiento" for="block_magento_sync"/>
+                                    <div class="text-muted">
+                                        Evita que se procese la cola para que no sincronice con Magento.
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="block_magento_sync" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_pos_configuration" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'zacaedi', 'bin_size': False}</field>
+    </record>
+
+</odoo>
