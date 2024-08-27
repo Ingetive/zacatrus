@@ -87,7 +87,7 @@ class Zacasocios(models.Model):
 		#self.queueFichasUpdate('sergio@infovit.net', False, "Prueba de fichas", 29.35, "Sergio Viteri", "Chamberi")
 		#self.queueFichasUpdate('sergio@infovit.net', -52, "Prueba de fichas gastadas", False, "Tal")
 		lastOrder = int(self.env['ir.config_parameter'].sudo().get_param('zacasocios.last_order'))
-		fichasProduct = self.env['ir.config_parameter'].sudo().get_param('zacasocios.fichas_product_id')
+		fichasProduct = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id')
 
 		if not lastOrder or not fichasProduct:
 			_logger.warning("Zacasocios: Please, configure Zacasocios module.")
