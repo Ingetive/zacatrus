@@ -51,37 +51,38 @@ class Connector(models.Model):
         posOrdersItems = self.env['pos.order.line'].search_read(iargs, limit=12)
 
         for posOrdersItem in posOrdersItems:
-            lots = self.env['pos.pack.operation.lot'].search_read(('id', '=', posOrdersItem['pack_lot_ids']))
+            lots = self.env['pos.pack.operation.lot'].search_read([('id', 'in', posOrdersItem['pack_lot_ids'])])
             for lot in lots:
-                ops = self.env['pos.order.line'].search_count(("serial", '=', lot["lot_name"]))
+                ops = self.env['pos_tarjezaca.operation'].search_count([("serial", '=', lot["lot_name"])])
                 if ops > 0:
                     self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
-                    self.env['zacatrus_base.notifier'].warning("Card "+lot["lot_name"]+" already processed")
+                    _logger.warning("Card "+lot["lot_name"]+" already processed")
                 else:
-                    posOrders = self.env['pos.order'].search_read(('id', '=', posOrdersItem["order_id"][0]))
+                    posOrders = self.env['pos.order'].search_read([('id', '=', posOrdersItem["order_id"][0])])
                     valid = False
                     for posOrder in posOrders:
                         if posOrder["state"] in ["done", "paid", "invoiced"]:
                             valid = True
 
                     if valid:
-                        cards = self.env['pos_tarjezaca.card'].search_count(("serial", '=', lot["lot_name"]))
+                        cards = self.env['pos_tarjezaca.card'].search_count([("serial", '=', lot["lot_name"])])
                         if cards != 1:
-                            self.env['zacatrus_base.notifier'].warning("Zacalog: Invalid serial "+lot["lot_name"])
+                            cause = "Unknown."
                             if cards == 0:
                                 cause = "Invalid serial."
                             if cards > 1:
                                 cause = "Duplicated serial."
+                            _logger.warning(f"Zacalog: Invalid serial for {lot['lot_name']}: {cause}")
                                 
                             self.env['pos_tarjezaca.operation'].create({
                                 'serial': lot["lot_name"], 'valid': False, 'cause': cause
                             })
                             self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
                         else:
-                            cards = self.env['pos_tarjezaca.card'].search_read(("serial", '=', lot["lot_name"]))
+                            cards = self.env['pos_tarjezaca.card'].search_read([("serial", '=', lot["lot_name"])])
                             for card in cards:
-                                _logger.info("Zacalog: Activating card "+lot["lot_name"]+", code "+card["code"]+" with "+ str(posOrdersItem["price_unit"]) +" € (order "+ str(posOrdersItem["order_id"])+")")
-                                mCard = self.magento.getGiftCardByCode(card["code"])
+                                _logger.info(f"Zacalog: Activating card {lot['lot_name']} with {str(posOrdersItem["price_unit"])} € (order {str(posOrdersItem['order_id'])})")
+                                mCard = self.env['zacatrus.connector'].getGiftCardByCode(card["code"])
                                 if mCard['total_count'] == 0:
                                     data = {
                                         "pattern": card["code"],
@@ -93,16 +94,15 @@ class Connector(models.Model):
                                     }
                                     ret = self.env['zacatrus.connector'].createGiftCard(data)
                                     if 'giftcard_id' in ret:
-                                        pass
                                         self.env['pos_tarjezaca.operation'].create({
-                                            'serial': lot["lot_name"], 'valid': True, 'cause': cause, 'giftcard_id': ret["giftcard_id"]
+                                            'serial': lot["lot_name"], 'valid': True, 'giftcard_id': ret["giftcard_id"]
                                         })
                                         self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
                                     else:
-                                        self.env['zacatrus_base.notifier'].warning("Zacalog: Unable to generate code.")
+                                        _logger.warning("Zacalog: Unable to generate code.")
                                 else:
                                     self.env['pos_tarjezaca.operation'].create({
                                         'serial': lot["lot_name"], 'valid': False, 'cause': "Duplicated code."
                                     })
                                     self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
-                                    self.env['zacatrus_base.notifier'].warning("Zacalog: Code already exists.")
+                                    _logger.warning("Zacalog: Code already exists.")
