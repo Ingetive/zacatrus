@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_card_tree" model="ir.ui.view">
+            <field name="name">pos_tarjezaca.card.tree</field>
+            <field name="model">pos_tarjezaca.card</field>
+            <field name="arch" type="xml">
+                <tree string="Tarjezacas" create="1" delete="1" edit="1" >
+                    <field name="serial"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+        <!-- Vista tipo formulario -->
+        <record id="view_card_form" model="ir.ui.view">
+            <field name="name">pos_tarjezaca.card.form</field>
+            <field name="model">pos_tarjezaca.card</field>
+            <field name="arch" type="xml">
+                <form string="Tarjezaca" create="1" delete="1" edit="1">
+                    <sheet>
+                        <group>
+                    <field name="serial"/>
+                    <field name="code"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Acción para abrir las vistas -->
+        <record id="action_pos_tarjezaca_card" model="ir.actions.act_window">
+            <field name="name">Tarjezacas</field>
+            <field name="res_model">pos_tarjezaca.card</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menú para acceder a la vista -->
+        <menuitem id="menu_pos_tarjezaca_card" name="Tarjezacas"
+            sequence="300"
+            action="action_pos_tarjezaca_card"
+            parent="base.next_id_9" />
+
+
+
+
+        <record id="view_operation_tree" model="ir.ui.view">
+            <field name="name">pos_tarjezaca.operation.tree</field>
+            <field name="model">pos_tarjezaca.operation</field>
+            <field name="arch" type="xml">
+                <tree string="Operaciones tarjezaca" create="0" delete="1" edit="1" >
+                    <field name="serial"/>
+                    <field name="valid"/>
+                    <field name="cause"/>
+                    <field name="giftcard_id"/>
+                </tree>
+            </field>
+        </record>
+        <!-- Vista tipo formulario -->
+        <record id="view_operation_form" model="ir.ui.view">
+            <field name="name">pos_tarjezaca.operation.form</field>
+            <field name="model">pos_tarjezaca.operation</field>
+            <field name="arch" type="xml">
+                <form string="Operaciones tarjezaca" create="0" delete="1" edit="1">
+                    <sheet>
+                        <group>
+                            <field name="serial"/>
+                            <field name="valid"/>
+                            <field name="cause"/>
+                            <field name="giftcard_id"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Acción para abrir las vistas -->
+        <record id="action_pos_tarjezaca_operation" model="ir.actions.act_window">
+            <field name="name">Operaciones</field>
+            <field name="res_model">pos_tarjezaca.operation</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menú para acceder a la vista -->
+        <menuitem id="menu_pos_tarjezaca_operation" name="Operaciones de creación de Tarjezacas"
+            sequence="310"
+            action="action_pos_tarjezaca_operation"
+            parent="base.next_id_9" />
+
+
+    </data>
+</odoo>

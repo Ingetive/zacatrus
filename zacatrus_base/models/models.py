@@ -238,6 +238,10 @@ class Zconnector(models.Model):
         _data = {"entity": data}
         return self._getData("mpgiftcard/code/", _data, "put")
 
+    def createGiftCard(self, data):
+        _data = {"entity": data}
+        return self._getData("mpgiftcard/code/", _data, "put")
+
     def createCustomer(self, email, name, posName = False):
         groupId = 1
 

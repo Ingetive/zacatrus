@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pos_tarjezaca_sync" model="ir.cron">
+        <field name="name">Tarjezaca: Crear tarjetas vendidas en el POS</field>
+        <field name="model_id" ref="model_pos_tarjezaca_connector"/>
+        <field name="state">code</field>
+        <field name="code">model.activateSoldCards()</field>
+        <field name='interval_number'>5</field>
+        <field name='interval_type'>minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+</odoo>
