@@ -100,7 +100,6 @@ class BundleWizard(models.Model):
 
     @api.model
     def sync(self):
-        self.env['zacatrus_base.notifier'].error("sale.order", 7, "prueba ___")
         self.createSeresPickings()
         self.createSeresInvoices()
         self.getAllPendingOrders()
