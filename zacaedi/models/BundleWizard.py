@@ -100,7 +100,6 @@ class BundleWizard(models.Model):
 
     @api.model
     def sync(self):
-        self.env['zacatrus_base.notifier'].error("sale.order", 7, "prueba ___")
         self.createSeresPickings()
         self.createSeresInvoices()
         self.getAllPendingOrders()
@@ -158,7 +157,7 @@ class BundleWizard(models.Model):
                             file.write(buffer)
                         order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT, 'x_edi_status_updated': datetime.now()})
                     except Exception as e:
-                        msg = f"No se ha podido enviar el albarán del pedido {order['name']}" + str(e)
+                        msg = f"No se ha podido enviar el albarán del pedido {order['name']}: " + str(e)
                         _logger.error(f"Zacalog: EDI: {msg}")
                         self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
                         isError = True
