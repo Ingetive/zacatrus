@@ -81,7 +81,7 @@ class Connector(models.Model):
                         else:
                             cards = self.env['pos_tarjezaca.card'].search_read([("serial", '=', lot["lot_name"])])
                             for card in cards:
-                                _logger.info(f"Zacalog: Activating card {lot['lot_name']} with {str(posOrdersItem["price_unit"])} € (order {str(posOrdersItem['order_id'])})")
+                                _logger.info(f"Zacalog: Activating card {lot['lot_name']} with {str(posOrdersItem['price_unit'])} € (order {str(posOrdersItem['order_id'])})")
                                 mCard = self.env['zacatrus.connector'].getGiftCardByCode(card["code"])
                                 if mCard['total_count'] == 0:
                                     data = {
