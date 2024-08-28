@@ -28,7 +28,6 @@
                             <field name="create_date"/>
                             <field name="qty"/>
                             <field name="spent"/>
-                            <field name="spent"/>
                             <field name="pos"/>
                             <field name="msg"/>
                             <field name="attempts"/>
