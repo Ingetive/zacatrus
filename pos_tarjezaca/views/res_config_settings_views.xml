@@ -12,16 +12,16 @@
                     <h2>Tarjezaca</h2>
                     <div class="row mt16 o_settings_container" name="seres_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
-                            id="last_order"
+                            id="pt_last_order"
                             title="Último pedido procesado">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Último pedido procesado" for="last_order"/>
+                                    <label string="Último pedido procesado" for="pt_last_order"/>
                                     <div class="text-muted">
                                         Último pedido procesado
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="last_order" colspan="4" nolabel="1" />
+                                        <field name="pt_last_order" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>

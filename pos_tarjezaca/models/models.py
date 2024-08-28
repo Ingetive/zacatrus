@@ -39,9 +39,9 @@ class Connector(models.Model):
             return False
 
 
-        prevLastOrder = int(self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.last_order'))
+        prevLastOrder = int(self.env['ir.config_parameter'].sudo().get_param('pos_tarjezaca.pt_last_order'))
         if not prevLastOrder:
-            _logger.warning("Zacalog: TarjezacaConnector not configured. Please, create TarjezacaConnector.last_order")
+            _logger.warning("Zacalog: TarjezacaConnector not configured. Please, create TarjezacaConnector.pt_last_order")
             return False
 
         iargs = [
@@ -55,7 +55,7 @@ class Connector(models.Model):
             for lot in lots:
                 ops = self.env['pos_tarjezaca.operation'].search_count([("serial", '=', lot["lot_name"])])
                 if ops > 0:
-                    self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
+                    self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.pt_last_order', posOrdersItem["id"])
                     _logger.warning("Card "+lot["lot_name"]+" already processed")
                 else:
                     posOrders = self.env['pos.order'].search_read([('id', '=', posOrdersItem["order_id"][0])])
@@ -77,7 +77,7 @@ class Connector(models.Model):
                             self.env['pos_tarjezaca.operation'].create({
                                 'serial': lot["lot_name"], 'valid': False, 'cause': cause
                             })
-                            self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
+                            self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.pt_last_order', posOrdersItem["id"])
                         else:
                             cards = self.env['pos_tarjezaca.card'].search_read([("serial", '=', lot["lot_name"])])
                             for card in cards:
@@ -97,12 +97,12 @@ class Connector(models.Model):
                                         self.env['pos_tarjezaca.operation'].create({
                                             'serial': lot["lot_name"], 'valid': True, 'giftcard_id': ret["giftcard_id"]
                                         })
-                                        self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
+                                        self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.pt_last_order', posOrdersItem["id"])
                                     else:
                                         _logger.warning("Zacalog: Unable to generate code.")
                                 else:
                                     self.env['pos_tarjezaca.operation'].create({
                                         'serial': lot["lot_name"], 'valid': False, 'cause': "Duplicated code."
                                     })
-                                    self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.last_order', posOrdersItem["id"])
+                                    self.env['ir.config_parameter'].sudo().set_param('pos_tarjezaca.pt_last_order', posOrdersItem["id"])
                                     _logger.warning("Zacalog: Code already exists.")
