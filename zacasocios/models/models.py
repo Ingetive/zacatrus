@@ -159,7 +159,8 @@ class Zacasocios(models.Model):
 		else:
 			msg = "Devolución en tienda"
 
-		self.queueFichasUpdate(partner['email'], False, msg, spent, partner['name'], posName)
+		if not self._isEmployee( partner['email'] ):
+			self.queueFichasUpdate(partner['email'], False, msg, spent, partner['name'], posName)
 
 	def queueFichasUpdate(self, email, qty, msg = "Modificado por el administrador", spent = False, name = False, pos = False):
 		if not spent and qty == 0:

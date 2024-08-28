@@ -563,14 +563,17 @@ class EdiTalker ():
                 if aline['product_id'][0] == 186797:
                     done = True
                 else:
-                    product = EdiTalker.loadProduct(env, aline['product_id'][0])
-                    done = False
+                    #product = EdiTalker.loadProduct(env, aline['product_id'][0])
+                    #done = False
                     #for ori_line in original_order['line']:
                         #if (int(ori_line["barcode"]) == int(product["barcode"])):
                     lineNumber = aline['x_edi_line'] #ori_line['lineNumber']
                     buyerProductNumber = aline['x_edi_product']
                     l = EdiTalker._getLines(env, aline, order["x_edi_shipment"], lineNumber, buyerProductNumber)
                     line += EdiTalker.writeEncoded( l  )
+            else:
+                if not aline['product_type'] == 'service': #Delivery fees
+                    raise Exception(f"Zacalog: EDI: El pedido {order['name']} tiene líneas que no se pidieron: {aline['product_id'][1]}")
                 
         return line
 

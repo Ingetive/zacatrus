@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pos_tarjezaca_card,pos_tarjezaca.card,model_pos_tarjezaca_card,base.group_erp_manager,1,1,1,1
+access_pos_tarjezaca_operation,pos_tarjezaca.operation,model_pos_tarjezaca_operation,base.group_erp_manager,1,1,1,1
+access_pos_tarjezaca_connector,pos_tarjezaca.connector,model_pos_tarjezaca_connector,base.group_user,1,0,0,0

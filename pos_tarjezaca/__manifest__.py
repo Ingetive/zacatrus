@@ -11,7 +11,10 @@
         "zacatrus_base"
     ],
     "data": [
-        # "views/assets.xml", # TODO: Migración => Evaluar en OWL esta personalización
+        'views/res_config_settings_views.xml',
+        'report/pos_tarjezaca_views.xml',
+        'security/ir.model.access.csv',
+        'data/ir_action_data.xml',
     ],
     "installable": True,
     'assets': {
@@ -19,5 +22,5 @@
            'pos_tarjezaca/static/src/js/payment_terminal.js',
            'pos_tarjezaca/static/src/js/models.js',
        ],
-    },
+    }
 }
