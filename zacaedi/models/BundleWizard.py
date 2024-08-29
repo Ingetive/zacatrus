@@ -31,7 +31,11 @@ class BundleWizard(models.Model):
     
     def _getFtp(env):
         try:
-            server = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpserver')
+            #server = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpserver')
+            server = env['res.config.settings'].getSeresFtpServer()
+            if not server:
+                return False
+            _logger.error(f"Zacalog: serses ftp server is {server}")
             user = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpuser')
             password = env['ir.config_parameter'].sudo().get_param('zacaedi.ftppassword')
             
@@ -120,6 +124,8 @@ class BundleWizard(models.Model):
                         idx += 1
                         if idx == 1:
                             ftp = BundleWizard._getFtp(self.env)
+                            if not ftp:
+                                return
                         with ftp.file(os.path.join(path, "F"+str(order['id'])+'.txt'), "wb") as file:
                             file.write(buffer)
                         order.write({'x_edi_status': EdiTalker.EDI_STATUS_INVOICED, 'x_edi_status_updated': datetime.now()})
@@ -173,6 +179,8 @@ class BundleWizard(models.Model):
             return
 
         ftp = BundleWizard._getFtp(self.env)
+        if not ftp:
+            return
 
         fileList = ftp.listdir( path )
         ret = []

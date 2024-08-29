@@ -47,7 +47,8 @@ class Zconnector(models.Model):
     CONFIG_DATA = {}
 
     def _getConfigData(self):
-        self.CONFIG_DATA['apiUrl'] = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url')
+        #self.CONFIG_DATA['apiUrl'] = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url')
+        self.CONFIG_DATA['apiUrl'] = self.env['res.config.settings'].getMagentoUrl()
         if not self.CONFIG_DATA['apiUrl']:
             raise Exception("Connection not configured.")
         self.CONFIG_DATA['apiUrl'] = self.CONFIG_DATA['apiUrl'].replace("/rest/all/V1/", "")

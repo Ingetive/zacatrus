@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import logging
+import logging, os
 from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)   
@@ -86,3 +86,14 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_token', self.magento_token)
 
         super(ResConfigSettings, self).set_values()
+
+    def getMagentoUrl(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; getMagentoUrl: {value}; [test] string not found in MagentoUrl.")
+            else:
+                return value.replace("[test]", "")
+            
+        return False

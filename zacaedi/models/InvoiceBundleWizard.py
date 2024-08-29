@@ -22,7 +22,10 @@ class InvoiceBundleWizard(models.Model):
     
     def _getFtp(env):
         try:
-            server = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpserver')
+            #server = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpserver')
+            server = env['res.config.settings'].getSeresFtpServer()
+            if not server:
+                return False
             user = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpuser')
             password = env['ir.config_parameter'].sudo().get_param('zacaedi.ftppassword')
             
