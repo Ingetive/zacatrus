@@ -7,7 +7,9 @@ def post_rebuild(cr, registry):
     current_env = os.getenv('OE_ENV')
 
     # Modificar un parámetro de configuración
-    env['ir.config_parameter'].set_param('zacatrus_base.magento_url', current_env+' https://dummy.zacatrus.es')
+    env['ir.config_parameter'].set_param('zacatrus_base.magento_url', current_env+' https://dummy.zacatrus.es/rest/all/V1/')
+    env['ir.config_parameter'].set_param('zacaedi.ftpserver', False)
+    #TODO: Dirección de seres
 
     # Puedes agregar más configuraciones según sea necesario
     # Guardar cambios
