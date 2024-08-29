@@ -60,5 +60,7 @@ class ResConfigSettings(models.TransientModel):
                 _logger.error(f"Zacalog: odooEnv: {odooEnv}; ftpServer: {ftpServer}; [test] string not found in ftp server.")
             else:
                 return ftpServer.replace("[test]", "")
+        else:
+            return ftpServer
             
         return False

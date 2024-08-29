@@ -95,5 +95,7 @@ class ResConfigSettings(models.TransientModel):
                 _logger.error(f"Zacalog: odooEnv: {odooEnv}; getMagentoUrl: {value}; [test] string not found in MagentoUrl.")
             else:
                 return value.replace("[test]", "")
+        else:
+            return value
             
         return False
