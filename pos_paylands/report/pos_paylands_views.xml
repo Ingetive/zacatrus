@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Acción para abrir las vistas -->
+        <record id="action_pos_paylands_service" model="ir.actions.act_window">
+            <field name="name">Servicios proporcionados por Paylands</field>
+            <field name="res_model">pos_paylands.service</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menú para acceder a la vista -->
+        <menuitem id="menu_pos_paylands_service" name="Servicios proporcionados por Paylands"
+            sequence="100"
+            action="action_pos_paylands_service"
+            parent="account.menu_finance_configuration" />
+
+
+    </data>
+</odoo>

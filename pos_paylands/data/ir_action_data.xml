@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pos_paylands_get_transactions" model="ir.cron">
+        <field name="name">Paylands: Sincronizar recibos</field>
+        <field name="model_id" ref="model_pos_paylands_paylands"/>
+        <field name="state">code</field>
+        <field name="code">model.getTransactions()</field>
+        <field name='interval_number'>24</field>
+        <field name='interval_type'>hours</field>
+        <field name="numbercall">-1</field>
+    </record>
+
+</odoo>

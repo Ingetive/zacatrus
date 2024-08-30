@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 todos,todos,pos_paylands.model_pos_paylands_payment,,1,1,1,1
+paylands_service,paylands_service,pos_paylands.model_pos_paylands_service,base.group_erp_manager,1,1,1,1
