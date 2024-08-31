@@ -4,5 +4,6 @@ from . import stock_picking
 from . import sale_order
 from . import notification_bloquer
 from . import notifier
+from . import zconta
 # from . import product_template
 # from . import account_reconcile_model TODO: Migración => Para versión 16 la estructura de conciliacion es distinta

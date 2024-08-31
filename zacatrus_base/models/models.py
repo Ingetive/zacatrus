@@ -1,11 +1,10 @@
 import re
-import json
 import requests
 import string
 import random
-import sys
 import logging
-import hmac, base64, struct, hashlib, time, os
+import hmac, base64, struct, hashlib, time
+from odoo import models, api
 
 _logger = logging.getLogger(__name__)
 
@@ -39,7 +38,6 @@ def prefix0(h):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
   return ''.join(random.choice(chars) for _ in range(size))
 
-from odoo import models, fields, api
 class Zconnector(models.Model):
     _name = 'zacatrus.connector'
     _description = 'Zacatrus Connector'
