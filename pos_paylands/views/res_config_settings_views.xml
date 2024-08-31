@@ -57,7 +57,7 @@
                             title="Last Paylands date">
                             <div class="">
                                 <div>
-                                    <label string="Api key" for="last_paylands_date"/>
+                                    <label string="Last Paylands date" for="last_paylands_date"/>
                                     <div class="content-group mt16">
                                         <field name="last_paylands_date" colspan="4" nolabel="1" />
                                     </div>

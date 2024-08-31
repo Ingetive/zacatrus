@@ -86,11 +86,11 @@ class Paylands(models.Model):
                                         ]
                                         oorders = self.env['pos.order'].search_read(args)
                                         for oorder in oorders:
-                                            if not oorder['session_move_id']:
-                                                msg = f"Paylands: Pos order {oorder['name']} has not session_move_id."
+                                            if not oorder['session_id']:
+                                                msg = f"Paylands: Pos order {oorder['name']} has not session_id."
                                                 raise Exception( msg )
                                             else:
-                                                sessionId = oorder['session_move_id'][1]
+                                                sessionId = oorder['session_id'][1]
                                                 sessionIndexes[sessionIndex] = sessionId
 
                                 if sessionId:

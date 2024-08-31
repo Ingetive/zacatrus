@@ -30,7 +30,7 @@ class Zconta(models.Model):
                 'journal_id': webBankJournal,
                 'name': name
             }
-            statementId = self.env['account.bank.statement'].create(data)
+            statementId = self.env['account.bank.statement'].create(data).id
         
         args = [
             ("id", "=", statementId)
@@ -58,16 +58,15 @@ class Zconta(models.Model):
             for statement in statements:
                 balanceStart = statement.balance_start
                 if balanceStart == 0:
-                    pargs = [('journal_id', '=', statement.journal_id[0])]
+                    pargs = [('journal_id', '=', statement.journal_id.id)]
                     pfields = ['name', 'balance_start', 'balance_end_real']
                     prevs = self.env['account.bank.statement'].search_read(pargs, pfields, 1, 1, 'id DESC')
                     for prev in prevs:
-                        if fix:
-                            data = {
-                                'balance_start': prev['balance_end_real']
-                            }
-                            statement.write(data)
-                            balanceStart = prev['balance_end_real']
+                        data = {
+                            'balance_start': prev['balance_end_real']
+                        }
+                        statement.write(data)
+                        balanceStart = prev['balance_end_real']
                 largs = [('statement_id', '=', statementId)]
                 lines = self.env['account.bank.statement.line'].search_read(largs)
                 total = 0 
