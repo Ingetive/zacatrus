@@ -21,9 +21,6 @@ class StockMove(models.Model):
                 if sale_line:
                     vals.update({"rule_id": 102, "route_ids": [(4, 58)]})
         
-        _logger.warning("create")
-        _logger.warning(vals_list)
-        
         res = super().create(vals_list)
 
         return res

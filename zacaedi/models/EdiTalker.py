@@ -680,8 +680,8 @@ class EdiTalker ():
             fields = ['name', 'categ_id', 'default_code']
             products =  env['product.product'].search_read(args, fields)
             if len(products) == 0:
-                EdiTalker.saveError(env, 105, ediOrder, "El producto con código de barras {item['barcode']} no existe.")
-                raise Exception(f"Product not found with barcode {item['barcode']}.")
+                EdiTalker.saveError(env, 105, ediOrder, f"El producto con código de barras {item['barcode']} no existe.")
+                #raise Exception(f"Product not found with barcode {item['barcode']}.")
 
             onlyVirus = True
             for product in products:
