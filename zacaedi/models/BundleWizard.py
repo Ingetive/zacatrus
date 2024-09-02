@@ -35,7 +35,7 @@ class BundleWizard(models.Model):
             server = env['res.config.settings'].getSeresFtpServer()
             if not server:
                 return False
-            _logger.error(f"Zacalog: serses ftp server is {server}")
+            #_logger.error(f"Zacalog: Seres ftp server is {server}")
             user = env['ir.config_parameter'].sudo().get_param('zacaedi.ftpuser')
             password = env['ir.config_parameter'].sudo().get_param('zacaedi.ftppassword')
             

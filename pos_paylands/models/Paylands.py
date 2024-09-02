@@ -19,8 +19,8 @@ class Paylands(models.Model):
         now = datetime.now()
         maxDate = datetime.combine(now.date(), time.min) - timedelta(days=1)
         if lastPaylandsDate and lastPaylandsDate < maxDate:
-            _logger.info(f"Zacalog: Paylands getting transactions from {lastPaylandsDate}")
             aDay = lastPaylandsDate + timedelta(days=1)
+            _logger.info(f"Zacalog: Paylands getting transactions for {aDay}")
             
             self._getOneDay(aDay)
             self.env['res.config.settings'].setLastPaylandsDate(aDay)

@@ -680,8 +680,12 @@ class EdiTalker ():
             fields = ['name', 'categ_id', 'default_code']
             products =  env['product.product'].search_read(args, fields)
             if len(products) == 0:
+                saleOrder = env['sale.order'].browse(createdOrder['id'])
+                if saleOrder.exists():
+                    saleOrder.unlink()
+
                 EdiTalker.saveError(env, 105, ediOrder, f"El producto con código de barras {item['barcode']} no existe.")
-                #raise Exception(f"Product not found with barcode {item['barcode']}.")
+                raise Exception(f"Product not found with barcode {item['barcode']}.")
 
             onlyVirus = True
             for product in products:
@@ -715,6 +719,10 @@ class EdiTalker ():
                     "x_edi_product": item['buyerProductNumber']
                 }
                 if not discount: #float(item['unitGrossPrice']) != 0:
+                    saleOrder = env['sale.order'].browse(createdOrder['id'])
+                    if saleOrder.exists():
+                        saleOrder.unlink()
+                        
                     raise Exception(f"Edi error: Producto sin tarifa asignada {product['name']} ({product['default_code']})")
                     order_line['price_unit'] = item['unitGrossPrice']
                     # TODO: Fnac pone el GrossPrice sin descuento (a diferencia de ECI que lo pone con descuento);

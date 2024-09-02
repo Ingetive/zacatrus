@@ -163,7 +163,7 @@ class Zacasocios(models.Model):
 			self.queueFichasUpdate(partner['email'], False, msg, spent, partner['name'], posName)
 
 	def queueFichasUpdate(self, email, qty, msg = "Modificado por el administrador", spent = False, name = False, pos = False):
-		if not spent and qty == 0:
+		if qty == 0 and (not spent or spent < 1): #Fixes https://www.notion.so/Fichas-spent-0-6eea6c7ef694438289d593093eabb566
 			return
 		
 		item = self.env['zacasocios.queue'].create({
