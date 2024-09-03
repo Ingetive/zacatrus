@@ -734,14 +734,14 @@ class EdiTalker ():
 
                 lineId =  env['sale.order.line'].create(order_line)
 
-            carrierId = False
-            if shippingPartner['property_delivery_carrier_id']:
-                carrierId = shippingPartner['property_delivery_carrier_id'][0]
-            elif invoicingPartner['property_delivery_carrier_id']:
-                carrierId = invoicingPartner['property_delivery_carrier_id'][0]
-            if carrierId:
-                delivery_method = env["delivery.carrier"].search( [("id", "=", carrierId)] )
-                createdOrder.set_delivery_line(delivery_method, 0) #, delivery_method.fixed_price)
+        carrierId = False
+        if shippingPartner['property_delivery_carrier_id']:
+            carrierId = shippingPartner['property_delivery_carrier_id'][0]
+        elif invoicingPartner['property_delivery_carrier_id']:
+            carrierId = invoicingPartner['property_delivery_carrier_id'][0]
+        if carrierId:
+            delivery_method = env["delivery.carrier"].browse( carrierId )
+            createdOrder.set_delivery_line(delivery_method, 0) #, delivery_method.fixed_price)
 
         return createdOrder
     
