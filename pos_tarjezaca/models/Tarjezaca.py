@@ -15,6 +15,7 @@ class Tarjezaca(models.Model):
         maxDate = datetime.combine(now.date(), time.min) - timedelta(days=1)
         if lastPaylandsDate and lastPaylandsDate < maxDate:
             aDay = lastPaylandsDate + timedelta(days=1)
+            _logger.info(f"Zacalog: Tarjezaca getTransactions: proccessing {str(aDay)}.")
             
             # Tomamos un par de horas antes y después por si acaso.		
             lastDay = aDay + timedelta(days=1)
@@ -35,7 +36,7 @@ class Tarjezaca(models.Model):
 
             webStatementId = None
             for order in orders:
-                orderDate = datetime.datetime.strptime(order['date_order'].split(" ")[0], '%Y-%m-%d')
+                orderDate = datetime.strptime(order['date_order'].split(" ")[0], '%Y-%m-%d')
                 
                 if orderDate == aDay:
                     sign = 1

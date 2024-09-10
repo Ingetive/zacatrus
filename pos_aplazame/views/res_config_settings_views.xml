@@ -37,6 +37,32 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt16 o_settings_container" name="aplazame_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="aplazame_api_key"
+                            title="Web API key">
+                            <div class="">
+                                <div>
+                                    <label string="Web API key" for="aplazame_api_key"/>
+                                    <div class="content-group mt16">
+                                        <field name="aplazame_api_key" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="last_aplazame_date"
+                            title="Last Aplazame date">
+                            <div class="">
+                                <div>
+                                    <label string="Last Aplazame date" for="last_aplazame_date"/>
+                                    <div class="content-group mt16">
+                                        <field name="last_aplazame_date" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </xpath>
         </field>
