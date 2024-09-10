@@ -13,6 +13,10 @@ class ResConfigSettings(models.TransientModel):
     paylands_signature = fields.Char("Firma digital")
     paylands_apikey = fields.Char("Api key")
     last_paylands_date = fields.Date(string="Last proccessed date")
+    last_adyen_index = fields.Char()
+    last_adyen_pos_index = fields.Char()
+    adyen_report_user = fields.Char()
+    adyen_report_password = fields.Char()
 
     @api.model
     def get_values(self):
@@ -22,11 +26,19 @@ class ResConfigSettings(models.TransientModel):
         paylandsSignature = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_signature')
         paylandsApikey = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_apikey')
         last_paylands_date = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.last_paylands_date')
+        last_adyen_index = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.last_adyen_index')
+        last_adyen_pos_index = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.last_adyen_pos_index')
+        adyen_report_user = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.adyen_report_user')
+        adyen_report_password = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.adyen_report_password')
         res.update(
             paylands_sandbox_mode = paylandsSandboxMode,
             paylands_signature = paylandsSignature,
             paylands_apikey = paylandsApikey,
-            last_paylands_date = last_paylands_date
+            last_paylands_date = last_paylands_date,
+            last_adyen_index = last_adyen_index,
+            last_adyen_pos_index = last_adyen_pos_index,
+            adyen_report_user = adyen_report_user,
+            adyen_report_password = adyen_report_password
         )
         return res
 
@@ -36,6 +48,10 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.paylands_signature', self.paylands_signature)
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.paylands_apikey', self.paylands_apikey)
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.last_paylands_date', self.last_paylands_date)
+        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.last_adyen_index', self.last_adyen_index)
+        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.last_adyen_pos_index', self.last_adyen_pos_index)
+        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.adyen_report_user', self.adyen_report_user)
+        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.adyen_report_password', self.adyen_report_password)
 
         super(ResConfigSettings, self).set_values()
 
@@ -45,6 +61,31 @@ class ResConfigSettings(models.TransientModel):
         if date:
             return datetime.strptime(date, '%Y-%m-%d')
         
+        return False
+    
+    def getLastAdyenReportUser(self):
+        return self.env['ir.config_parameter'].sudo().get_param('pos_paylands.adyen_report_user')
+    
+    def getLastAdyenReportPassword(self):
+        return self.env['ir.config_parameter'].sudo().get_param('pos_paylands.adyen_report_password')
+    
+    def getLastAdyenIndex(self):
+        index = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.last_adyen_index')
+        if index:
+            return int(index)
+        return False
+    
+    def setLastAdyenIndex(self, index):
+        return self.env['ir.config_parameter'].sudo().set_param('pos_paylands.last_adyen_index', index)
+    
+    def setLastAdyenPosIndex(self, index):
+        return self.env['ir.config_parameter'].sudo().set_param('pos_paylands.last_adyen_pos_index', index)
+    
+    def getLastAdyenPosIndex(self):
+        index = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.last_adyen_pos_index')
+        if index:
+            return int(index)
+
         return False
     
     def setLastPaylandsDate(self, date):
