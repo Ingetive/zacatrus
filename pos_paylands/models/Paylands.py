@@ -5,11 +5,6 @@ import requests, re
 
 _logger = logging.getLogger(__name__)
 
-EDI_BUNDLE_STATUS_INIT = 1
-EDI_BUNDLE_STATUS_READY = 10
-EDI_BUNDLE_STATUS_SENT = 20
-EDI_BUNDLE_STATUS_INVOICED = 30
-
 class Paylands(models.Model):
     _name = 'pos_paylands.paylands'
     _description = 'Paylands connector'

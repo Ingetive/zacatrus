@@ -28,6 +28,21 @@
                         </div>
                     </div>
 
+                    <div class="row mt16 o_settings_container" name="tarjezaca_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="last_tarjezaca_date"
+                            title="Última fecha sincronizada para conciliación">
+                            <div class="">
+                                <div>
+                                    <label string="Última fecha sincronizada para conciliación" for="last_tarjezaca_date"/>
+                                    <div class="content-group mt16">
+                                        <field name="last_tarjezaca_date" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </xpath>
         </field>
