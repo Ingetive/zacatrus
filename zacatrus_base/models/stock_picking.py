@@ -12,8 +12,6 @@ _logger = logging.getLogger(__name__)
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
-    x_sync_status = fields.Integer()
-
     FROM_SHOP_DELIVERY_TYPE=[11,16,20,30,36,56,65,86]
     SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937,126]
     SHOP_LOCATIONS = [20, 26, 38, 45, 53, 103, 115, 148] #50: Ferias
@@ -84,19 +82,22 @@ class Picking(models.Model):
             _logger.warning("Zacalog: Syncer not active.")
             return
 
-        if not self.x_sync_status in [0, '0', False, 601, 602, 607]: #607: snooze
+        if not self.x_status in [0, '0', False, 601, 602, 607]: #607: snooze
             return
         
-        if self.location_id in [14]: # Segovia output #TODO:Comprobar que casos son estos
+        if self.location_id in [14, 1720]: # son los WH/OUT y los DT/OUT
             return
         
         if self.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
+            msg = f"{self.picking_type_id.name} ({self.picking_type_id.id}) es uno de los tipos NO permitidos"
+            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
             return
         
         #TODO: La balda de Amazon no debería contar para el stock. No es crítico porque son solo nuestros juegos.
         
-        if self.picking_type_id.id not in self.ALLOWED_OPERATION_TYPES:
-            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, '{self.picking_type_id.name} ({self.picking_type_id.id}) no es uno de los tipos permitidos', "syncer", Notifier.LEVEL_WARNING)
+        if not self.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
+            msg = f"{self.picking_type_id.name} ({self.picking_type_id.id}) no es uno de los tipos permitidos"
+            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
 
         ready = True
         if self.state == 'confirmed' and self.group_id:
@@ -131,12 +132,12 @@ class Picking(models.Model):
             if self.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                 self._syncMagento(True) # reverse = True (último parámetro)
             else:
-                self.write({"x_sync_status": 1})
+                self.write({"x_status": 1})
                 return
         elif team in [14]: #Amazon: Lo de Amazon no se procesa. Comprobar por qué.
-            self.write({"x_sync_status": 1})
+            self.write({"x_status": 1})
         elif self.state == 'cancel':
-            self.write({"x_sync_status": 1})
+            self.write({"x_status": 1})
         elif (self.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
             and self.location_dest_id.id != self.INTER_COMPANY_LOCATION_ID
             #and not interShopMove
@@ -150,7 +151,7 @@ class Picking(models.Model):
                         self._syncPickupatstore(self, True, sale)
         else:
             if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
-                self.write({"x_sync_status": 1})
+                self.write({"x_status": 1})
             else:
                 self._syncMagento()
 
@@ -204,25 +205,19 @@ class Picking(models.Model):
                 self._syncMoves(out, sourceCode)
         
     def _syncMoves(self, out, sourceCode):
-        if self.state == 'done':
-            qtyField = 'quantity_done'
-        else:
-            qtyField = 'product_uom_qty'
+        qtyField = 'quantity_done' if self.state == 'done' else 'product_uom_qty'
+        
         os = self.env['stock.move'].search_read([("picking_id", "=", self.id)])
         for o in os:
-            if not (self.picking_type_id.id == 2 and o['location_dest_id'][0] == 4):
-                products = self.env['product.product'].search([('id', '=', o["product_id"][0])])
-                for product in products:
-                    if o[qtyField]:
-                        if out:
-                            self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode)
-                        else:
-                            setLastRepo = False
-                            if self.picking_type_id.id == 2:
-                                setLastRepo = True
-                            self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], setLastRepo, sourceCode)
+            products = self.env['product.product'].search([('id', '=', o["product_id"][0])])
+            for product in products:
+                if o[qtyField]:
+                    if out:
+                        self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode)
+                    else:
+                        self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], self.picking_type_id.id == 2, sourceCode)
         
-        self.write({"x_sync_status": 1})
+        self.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
 
     #TODO: _syncGlobo
