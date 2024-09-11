@@ -40,6 +40,7 @@
                     <field name="sku"/>
                     <field name="qty"/>
                     <field name="source"/>
+                    <field name="done"/>
                 </tree>
             </field>
         </record>
@@ -58,6 +59,7 @@
                             <field name="relative"/>
                             <field name="last_repo"/>
                             <field name="source"/>
+                            <field name="done"/>
                         </group>
                     </sheet>
                 </form>

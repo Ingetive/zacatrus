@@ -31,6 +31,8 @@ class ResConfigSettings(models.TransientModel):
         ('10', 'Error'),
     ], string="Nivel de error para notificaciones", default='30')
 
+    syncer_active = fields.Boolean()
+    syncer_sync_active = fields.Boolean()
 
     @api.model
     def get_values(self):
@@ -56,8 +58,10 @@ class ResConfigSettings(models.TransientModel):
             block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.block_partner_ids'),
             notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.notify_user_ids'),
             error_level=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.error_level', default='30'),
-            magento_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token')
+            magento_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token'),
             
+            syncer_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_active'),
+            syncer_sync_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active')
 
         )
         return res
@@ -85,6 +89,9 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.error_level', self.error_level)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_token', self.magento_token)
 
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_active', self.syncer_active)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_sync_active', self.syncer_sync_active)
+
         super(ResConfigSettings, self).set_values()
 
     def getMagentoUrl(self):
@@ -99,3 +106,9 @@ class ResConfigSettings(models.TransientModel):
             return value
             
         return False
+    
+    def getSyncerActive(self):
+        return self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_active')
+
+    def getSyncerSyncActive(self):
+        return self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active')

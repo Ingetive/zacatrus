@@ -253,6 +253,40 @@
                         </div>
                     </div>
 
+                    <h2>syncer</h2>
+                    <div class="row mt16 o_settings_container" name="syncer_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="syncer_active"
+                            title="Módulo">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Activo" for="syncer_active"/>
+                                    <div class="text-muted">
+                                        Modulo activo
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="syncer_active" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="syncer_sync_active"
+                            title="Sincronización activa">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Sincronización" for="syncer_sync_active"/>
+                                    <div class="text-muted">
+                                        Sincronización activa
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="syncer_sync_active" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
 
                 </div>

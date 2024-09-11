@@ -15,3 +15,4 @@ class Queue(models.Model):
     relative = fields.Boolean()
     last_repo = fields.Date()
     source = fields.Char()
+    done = fields.Boolean()

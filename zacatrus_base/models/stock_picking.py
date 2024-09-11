@@ -12,12 +12,24 @@ _logger = logging.getLogger(__name__)
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
+    x_sync_status = fields.Integer()
+
     FROM_SHOP_DELIVERY_TYPE=[11,16,20,30,36,56,65,86]
     SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937,126]
     SHOP_LOCATIONS = [20, 26, 38, 45, 53, 103, 115, 148] #50: Ferias
 
-    POS_TYPES = [6, 24, 70, 40, 86, 98, 93, 61, 18, 73, 30, 78, 28] #Hay que revisar
+    POS_TYPES = [6, 24, 70, 40, 86, 61, 18, 30, 28] 
     SHOP_IN_TYPES = [29, 64, 85, 55, 35, 23, 13, 8]
+    FROM_SHOP_RETURN_TYPE = [48, 49, 50, 51, 52, 60, 72, 92]  
+    OTHER_TYPES = [62, 2, 53, 100, 3] #SCRAPPED_IN_TYPE_ID, PURCHASE_TRANSFER_TYPE, FROM_TRANSLOAN_TO_SEGOVIA, FROM_SHOPS_TO_SEGOVIA_TYPE, PICK_TYPE
+    # 3: Al cambiar el filtro se dejaron sin procesar las salidas de Segovia. Más abajo comprueba que no sean ventas web por el 'canal de ventas' (team_id).
+ 
+    # NO se tienen que hacer:
+    INTERNAL_TYPES = [4] # Por ejemplo para reponer la balda de Amazon
+    OTHER_NOT_TYPES = [73, 78, 74] # Kame
+
+    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES
+    NOT_ALLOWED_OPERATION_TYPES = INTERNAL_TYPES + OTHER_NOT_TYPES
 
     def setPartnerCarrier(self):
         # TODO: Migración => Revisar con datos como funcionaria la acción automatizada
@@ -68,15 +80,23 @@ class Picking(models.Model):
         return res
     
     def sync(self):
-        _logger.info(f"Zacalog: El picking {self.name} ({self.state}) ha sido modificado. Grupo: {self.group_id.id}")
+        if not self.env['res.config.settings'].getSyncerActive():
+            _logger.warning("Zacalog: Syncer not active.")
+            return
 
-        if not self.x_status in [0, '0', False, 601, 602, 607]: #607: snooze
+        if not self.x_sync_status in [0, '0', False, 601, 602, 607]: #607: snooze
             return
         
         if self.location_id in [14]: # Segovia output #TODO:Comprobar que casos son estos
             return
         
-        #TODO: FAlta filtrar por tipo de operación (no sé si es necesario)
+        if self.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
+            return
+        
+        #TODO: La balda de Amazon no debería contar para el stock. No es crítico porque son solo nuestros juegos.
+        
+        if self.picking_type_id.id not in self.ALLOWED_OPERATION_TYPES:
+            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, '{self.picking_type_id.name} ({self.picking_type_id.id}) no es uno de los tipos permitidos', "syncer", Notifier.LEVEL_WARNING)
 
         ready = True
         if self.state == 'confirmed' and self.group_id:
@@ -111,12 +131,12 @@ class Picking(models.Model):
             if self.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                 self._syncMagento(True) # reverse = True (último parámetro)
             else:
-                self.write({"x_status": 1})
+                self.write({"x_sync_status": 1})
                 return
         elif team in [14]: #Amazon: Lo de Amazon no se procesa. Comprobar por qué.
-            self.write({"x_status": 1})
+            self.write({"x_sync_status": 1})
         elif self.state == 'cancel':
-            self.write({"x_status": 1})
+            self.write({"x_sync_status": 1})
         elif (self.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
             and self.location_dest_id.id != self.INTER_COMPANY_LOCATION_ID
             #and not interShopMove
@@ -129,13 +149,10 @@ class Picking(models.Model):
                     if sale['x_shipping_method'] == 'stock_pickupatstore':
                         self._syncPickupatstore(self, True, sale)
         else:
-            if True: # In 'allowedOperationTypes'
-                if self.picking_type_id.id in [28]: #ferias
-                    self.write({"x_status": 1})
-                else:
-                    self._syncMagento()
+            if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
+                self.write({"x_sync_status": 1})
             else:
-                pass # send warning
+                self._syncMagento()
 
     sourceCodes = {
         13: "WH",
@@ -163,20 +180,21 @@ class Picking(models.Model):
             parentLocationId = _from.location_id.id
 
         # Warehouse moves
-        if self.location_dest_id.id in (self._getShopLocations(True) + [self.SEGOVIA_LOCATION_ID]) or parentLocationDestId == self.SEGOVIA_LOCATION_ID:
+        shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13]
+        if self.location_dest_id.id in shopLocations or parentLocationDestId == 13:
             out = False
             if not self['location_dest_id'][0] in self.sourceCodes:
                 sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[self.location_dest_id.id]
-        elif self.location_id.id in (Picking.SHOP_LOCATIONS + Picking.SHOP_RESERVE_LOCATIONS + [13]) or parentLocationId == 13:
+        elif self.location_id.id in shopLocations or parentLocationId == 13:
             out = True
             if not self.location_id.id in self.sourceCodes:
                 sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[self.location_id.id]
         else:
-            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, 'Not a warehouse move', "syncer", Notifier.LEVEL_WARNING)
+            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, f"{self.name} is not a warehouse move", "syncer", Notifier.LEVEL_WARNING)
             return
 
         if sourceCode:
@@ -192,7 +210,7 @@ class Picking(models.Model):
             qtyField = 'product_uom_qty'
         os = self.env['stock.move'].search_read([("picking_id", "=", self.id)])
         for o in os:
-            if not (self.picking_type_id.id == self.PURCHASE_TRANSFER_TYPE and o['location_dest_id'][0] == self.SCRAPPED_LOCATION_ID):
+            if not (self.picking_type_id.id == 2 and o['location_dest_id'][0] == 4):
                 products = self.env['product.product'].search([('id', '=', o["product_id"][0])])
                 for product in products:
                     if o[qtyField]:
@@ -200,11 +218,11 @@ class Picking(models.Model):
                             self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode)
                         else:
                             setLastRepo = False
-                            if self.picking_type_id.id == self.PURCHASE_TRANSFER_TYPE:
+                            if self.picking_type_id.id == 2:
                                 setLastRepo = True
                             self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], setLastRepo, sourceCode)
         
-        self.write({"x_status": 1})
+        self.write({"x_sync_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
 
     #TODO: _syncGlobo
