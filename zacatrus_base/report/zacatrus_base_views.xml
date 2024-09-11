@@ -28,5 +28,54 @@
             <field name="paperformat_id" ref="zacatrus_base.paperformat_zgticket"/>
         </record>
 
+
+
+       <!-- Vista tipo lista -->
+        <record id="view_zacatrus_queue_tree" model="ir.ui.view">
+            <field name="name">zacatrus_base.queue.tree</field>
+            <field name="model">zacatrus_base.queue</field>
+            <field name="arch" type="xml">
+                <tree string="Cola de stock a actualizar" create="0" delete="1">
+                    <field name="create_date"/>
+                    <field name="sku"/>
+                    <field name="qty"/>
+                    <field name="source"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista tipo formulario -->
+        <record id="view_bundle_wizard_form" model="ir.ui.view">
+            <field name="name">zacatrus_base.queue.form</field>
+            <field name="model">zacatrus_base.queue</field>
+            <field name="arch" type="xml">
+                <form string="Paquete de pedidos EDI">
+                    <sheet>
+                        <group>
+                            <field name="create_date"/>
+                            <field name="sku"/>
+                            <field name="qty"/>
+                            <field name="relative"/>
+                            <field name="last_repo"/>
+                            <field name="source"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Acción para abrir las vistas -->
+        <record id="action_zacatrus_base_queue" model="ir.actions.act_window">
+            <field name="name">Cola de stock de productos a actualizar</field>
+            <field name="res_model">zacatrus_base.queue</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menú para acceder a la vista -->
+        <menuitem id="menu_zacatrus_base_queue" name="Cola de stock de productos a actualizar"
+            sequence="320"
+            action="action_zacatrus_base_queue"
+            parent="base.next_id_9" />
+
     </data>
 </odoo>
