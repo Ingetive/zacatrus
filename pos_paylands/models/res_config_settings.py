@@ -17,6 +17,8 @@ class ResConfigSettings(models.TransientModel):
     last_adyen_pos_index = fields.Char()
     adyen_report_user = fields.Char()
     adyen_report_password = fields.Char()
+    global_paylands_signature = fields.Char("Firma digital global")
+    global_paylands_apikey = fields.Char("Api key global")
 
     @api.model
     def get_values(self):
@@ -30,6 +32,8 @@ class ResConfigSettings(models.TransientModel):
         last_adyen_pos_index = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.last_adyen_pos_index')
         adyen_report_user = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.adyen_report_user')
         adyen_report_password = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.adyen_report_password')
+        global_paylands_signature = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.global_paylands_signature')
+        global_paylands_apikey = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.global_paylands_apikey')
         res.update(
             paylands_sandbox_mode = paylandsSandboxMode,
             paylands_signature = paylandsSignature,
@@ -38,7 +42,9 @@ class ResConfigSettings(models.TransientModel):
             last_adyen_index = last_adyen_index,
             last_adyen_pos_index = last_adyen_pos_index,
             adyen_report_user = adyen_report_user,
-            adyen_report_password = adyen_report_password
+            adyen_report_password = adyen_report_password,
+            global_paylands_signature = global_paylands_signature,
+            global_paylands_apikey = global_paylands_apikey
         )
         return res
 
@@ -52,6 +58,8 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.last_adyen_pos_index', self.last_adyen_pos_index)
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.adyen_report_user', self.adyen_report_user)
         self.env['ir.config_parameter'].sudo().set_param('pos_paylands.adyen_report_password', self.adyen_report_password)
+        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.global_paylands_signature', self.global_paylands_signature)
+        self.env['ir.config_parameter'].sudo().set_param('pos_paylands.global_paylands_apikey', self.global_paylands_apikey)
 
         super(ResConfigSettings, self).set_values()
 
@@ -94,6 +102,20 @@ class ResConfigSettings(models.TransientModel):
     def getPaylandsApiKey(self):
         odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
         value = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_apikey')
+        if value:
+            if not odooEnv or odooEnv == 'staging':
+                if value.find('[test]') == -1:
+                    _logger.error(f"Zacalog: odooEnv: {odooEnv}; paylandsApikey: {value}; [test] string not found in paylandsApikey.")
+                else:
+                    return value.replace("[test]", "")
+            else:
+                return value
+            
+        return False
+
+    def getPaylandsGlobalApiKey(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.global_paylands_apikey')
         if value:
             if not odooEnv or odooEnv == 'staging':
                 if value.find('[test]') == -1:

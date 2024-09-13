@@ -23,27 +23,26 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="row mt16 o_settings_container" name="paylands_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="paylands_signature"
-                            title="Firma digital">
+                            title="Firma digital POS">
                             <div class="">
                                 <div>
-                                    <label string="Firma digital" for="paylands_signature"/>
+                                    <label string="Firma digital POS" for="paylands_signature"/>
                                     <div class="content-group mt16">
                                         <field name="paylands_signature" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row mt16 o_settings_container" name="paylands_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="paylands_apikey"
-                            title="Api key">
+                            title="Api key POS">
                             <div class="">
                                 <div>
-                                    <label string="Api key" for="paylands_apikey"/>
+                                    <label string="Api key POS" for="paylands_apikey"/>
                                     <div class="content-group mt16">
                                         <field name="paylands_apikey" colspan="4" nolabel="1" />
                                     </div>
@@ -51,6 +50,34 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="row mt16 o_settings_container" name="paylands_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="global_paylands_signature"
+                            title="Firma digital global">
+                            <div class="">
+                                <div>
+                                    <label string="Firma digital global" for="global_paylands_signature"/>
+                                    <div class="content-group mt16">
+                                        <field name="global_paylands_signature" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="global_paylands_apikey"
+                            title="API key global">
+                            <div class="">
+                                <div>
+                                    <label string="API key global" for="global_paylands_apikey"/>
+                                    <div class="content-group mt16">
+                                        <field name="global_paylands_apikey" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row mt16 o_settings_container" name="paylands_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="last_paylands_date"
@@ -97,7 +124,7 @@
                     <div class="row mt16 o_settings_container" name="adyen_report_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="adyen_report_user"
-                            title="Last Adyen report user">
+                            title="Adyen report user">
                             <div class="">
                                 <div>
                                     <label string="Last Adyen report user" for="adyen_report_user"/>
@@ -109,7 +136,7 @@
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="adyen_report_password"
-                            title="Last Adyen report password">
+                            title="Adyen report password">
                             <div class="">
                                 <div>
                                     <label string="Last Adyen report password" for="adyen_report_password"/>

@@ -126,7 +126,7 @@ class Paylands(models.Model):
     def _call(self, url, postParams = None):
         baseUrl = self._getUrl() + url
 
-        apiKey = self.env['res.config.settings'].getPaylandsApiKey()
+        apiKey = self.env['res.config.settings'].getPaylandsGlobalApiKey()
         #apiKey = self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_apikey')
 
         hed = {'Authorization': 'Bearer ' + apiKey}
