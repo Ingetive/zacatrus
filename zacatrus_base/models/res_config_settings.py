@@ -33,6 +33,7 @@ class ResConfigSettings(models.TransientModel):
 
     syncer_active = fields.Boolean()
     syncer_sync_active = fields.Boolean()
+    slack_token = fields.Char()
 
     @api.model
     def get_values(self):
@@ -61,8 +62,9 @@ class ResConfigSettings(models.TransientModel):
             magento_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token'),
             
             syncer_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_active'),
-            syncer_sync_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active')
+            syncer_sync_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active'),
 
+            slack_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token')
         )
         return res
 
@@ -92,8 +94,23 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_active', self.syncer_active)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_sync_active', self.syncer_sync_active)
 
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.slack_token', self.slack_token)
+
         super(ResConfigSettings, self).set_values()
 
+    def getSlackToken(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; slack_token: {value}; [test] string not found in slack_token.")
+            else:
+                return value.replace("[test]", "")
+        else:
+            return value
+            
+        return False
+    
     def getMagentoUrl(self):
         odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
         value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url')

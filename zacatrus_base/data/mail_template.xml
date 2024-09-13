@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="pickup_order_ready" model="mail.template">
+            <field name="name">Pickup ready mail</field>
+            <field name="model_id" ref="model_zacatrus_base_pickupmail"/>
+            <field name="email_from">{{(object.email or 'hola@zacatrus.es')}}</field>
+            <field name="subject">Ya tenemos tu pedido #{{object.order_id}} en la tienda</field>
+            <field name="email_to">{{object.email}}</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html"><![CDATA[
+<p>Hola, <t t-out="object.name" />:</p>
+<p>Hemos recibido tu pedido y puedes pasar a buscarlo cuando te venga bien.</p>
+<br/>
+<p>Puedes consultar la dirección y horario de apertura en <t t-out="object.url" /></p>
+<p>Te recordamos que estamos en <t t-out="object.address" /></p>
+<br/>
+<p>Un saludo,</p>
+<p>Equipo Zacatrus</p>
+]]>
+            </field>
+        </record>
+    </data>
+</odoo>

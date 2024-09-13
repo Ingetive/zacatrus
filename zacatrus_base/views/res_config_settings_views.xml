@@ -287,6 +287,25 @@
                         </div>
                     </div>
 
+                    <h2>Slack</h2>
+                    <div class="row mt16 o_settings_container" name="syncer_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="slack_token"
+                            title="Slack Token">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Token" for="slack_token"/>
+                                    <div class="text-muted">
+                                        Slack Token
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="slack_token" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
 
                 </div>

@@ -3,9 +3,19 @@ from odoo import models
 
 _logger = logging.getLogger(__name__)
 
-class Zconta(models.Model):
+class Zconta(models.TransientModel):
     _name = 'zacatrus.zconta'
     _description = 'Zacatrus helper conta methods'
+
+    MADRID_LOCATION_ID = 20
+    SEVILLA_LOCATION_ID = 26
+    VALENCIA_LOCATION_ID = 38
+    VITORIA_LOCATION_ID = 45 
+    BARCELONA_LOCATION_ID = 53
+    PIRAMIDES_LOCATION_ID = 103
+    FERIAS_LOCATION_ID = 50
+    ZARAGOZA_LOCATION_ID = 115
+    VALLADOLID_LOCATION_ID = 148
 
     def createStatementFromApi(self, statementData, statementId, name, webBankJournal = 59):
         args = [

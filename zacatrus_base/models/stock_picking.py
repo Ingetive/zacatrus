@@ -72,6 +72,9 @@ class Picking(models.Model):
         res = super(Picking, self).write(vals)
 
         for picking in self:
+            #TODO: remove
+            picking.testMail()
+
             picking.sync()
             
 
@@ -148,7 +151,7 @@ class Picking(models.Model):
                     if sale['x_shipping_method'] == 'zacaship':
                         self._syncGlobo(self, True, sale)                                
                     if sale['x_shipping_method'] == 'stock_pickupatstore':
-                        self._syncPickupatstore(self, True, sale)
+                        self._syncPickupatstore(self, sale)
         else:
             if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
                 self.write({"x_status": 1})
@@ -224,6 +227,65 @@ class Picking(models.Model):
     def _syncGlobo(self, picking, doUpdate, sale):
         pass
 
-    #TODO: _syncPickupatstore
-    def _syncPickupatstore(self, picking, doUpdate, sale):
-        pass
+    def _syncPickupatstore(self, sale):
+        if sale['team_id'][0] == 6:
+            sc = self.env['zacatrus_base.slack']
+            channel = sc.getSlackChannelByLocation(self.location_id.id)
+
+            if self.state in ['assigned', 'confirmed']: 
+                if self.x_status in [0, '0', False]:
+                    sc.sendWarn(f"Ha llegado un nuevo pedido para recogida en tienda: {self.name} (#{sale.client_order_ref}). Por favor, prepáralo (en Odoo) y guárdalo en una bolsa hasta que vengan a buscarlo. Cuando termines aviso al cliente.", channel)
+                    self.write({"x_status": 601})
+            elif self.state == 'done' and self.x_status in [601, 602, 607]:
+                self.write({"x_status": 603})
+                try:
+                    msg = f"No he conseguido avisar al cliente. Por favor, llama o manda un email para que pase a recoger su pedido ({sale.client_order_ref})."
+                    if self.notifyCustomer(self.sale_id):
+                        msg = f"Ok, cliente avisado  (pedido #{sale.client_order_ref})."
+                except Exception as e:
+                    msg = f"No he conseguido avisar al cliente. Por favor, llama o manda un email para que pase a recoger su pedido ({sale.client_order_ref}). ({e})"
+
+                sc.sendWarn(msg, channel)
+
+    def notifyCustomer(self, order):
+        if order.x_shipping_method.endswith('pickupatstore'):
+            args = [("id", "=", order["partner_shipping_id"][0])]
+            partners = self.env['res.partner'].search_read( args )
+            for partner in partners:
+                #TODO:
+                mailer = self._getMailer()
+                hosts = {
+                    "order_id": order["client_order_ref"],
+                    "name": partner["name"]
+                }
+                ret = mailer.send(partner["email_formatted"], partner["zip"], hosts)
+                if ret:
+                    order.write({"x_status": 12})
+                    #self._writeOrderNote(order.id, "[Tito] Cliente avisado para que pase a recoger.")
+                    msg = "[Tito] Cliente avisado para que pase a recoger."
+                    m = {
+                        'model': 'sale.order',
+                        'res_id': order.id,
+                        'body': f"<p>{msg}</p>",
+                        'description': f"{msg}",
+                        'message_type': 'comment',
+                        'subtype_id': 2,
+                        'mail_activity_type_id': False,
+                        'is_internal': True,             
+                    }
+                    self.env['mail.message'].create(m)
+
+                return ret
+                        
+        return False
+
+    def testMail(self):
+        data = {
+            'order_id': '10012234',
+            'name': "Sergio",
+            'email': "sergio@infovit.net",
+            "url": "http://zacatrus.es/madrid",
+            'address': "Fernández de los Ríos, 57, 28015 Madrid"
+        }
+        mail = self.env['zacatrus_base.pickupmail'].create(data)
+        mail.send()

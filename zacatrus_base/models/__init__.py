@@ -6,5 +6,7 @@ from . import notification_bloquer
 from . import notifier
 from . import zconta
 from . import queue
+from . import slack
+from . import pickupmail
 # from . import product_template
 # from . import account_reconcile_model TODO: Migración => Para versión 16 la estructura de conciliacion es distinta
