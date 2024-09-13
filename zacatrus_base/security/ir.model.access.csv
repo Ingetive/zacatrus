@@ -2,3 +2,4 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_zacatrus_connector,access_zacatrus_connector,model_zacatrus_connector,base.group_user,1,0,0,0
 access_zacatrus_base_queue,access_zacatrus_base_queue,model_zacatrus_base_queue,base.group_user,1,1,1,1
 access_zacatrus_base_pickupmail,access_zacatrus_base_pickupmail,model_zacatrus_base_pickupmail,base.group_user,1,1,1,1
+access_zacatrus_base_slackcounter,access_zacatrus_base_slackcounter,model_zacatrus_base_slackcounter,base.group_user,1,1,1,1

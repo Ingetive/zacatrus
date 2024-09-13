@@ -35,6 +35,9 @@ class ResConfigSettings(models.TransientModel):
     syncer_sync_active = fields.Boolean()
     slack_token = fields.Char()
 
+    globo_api_key = fields.Char()
+    globo_api_secret = fields.Char()
+
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
@@ -64,7 +67,10 @@ class ResConfigSettings(models.TransientModel):
             syncer_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_active'),
             syncer_sync_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active'),
 
-            slack_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token')
+            slack_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token'),
+
+            globo_api_key=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.globo_api_key'),
+            globo_api_secret=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.globo_api_secret')
         )
         return res
 
@@ -96,8 +102,38 @@ class ResConfigSettings(models.TransientModel):
 
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.slack_token', self.slack_token)
 
+
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.globo_api_key', self.globo_api_key)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.globo_api_secret', self.globo_api_secret)
+
         super(ResConfigSettings, self).set_values()
 
+    def getGlovoApiKey(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.globo_api_key')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; globo_api_key: {value}; [test] string not found in globo_api_key.")
+            else:
+                return value.replace("[test]", "")
+        else:
+            return value
+            
+        return False
+
+    def getGlovoApiSecret(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.globo_api_secret')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; globo_api_secret: {value}; [test] string not found in globo_api_secret.")
+            else:
+                return value.replace("[test]", "")
+        else:
+            return value
+            
+        return False
+    
     def getSlackToken(self):
         odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
         value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token')
