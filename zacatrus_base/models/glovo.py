@@ -8,8 +8,8 @@ import requests
 _logger = logging.getLogger(__name__)
 
 class Glovo(models.TransientModel):
-    _name = 'zacatrus_base.globo'
-    _description = 'Conncector de Globo.'
+    _name = 'zacatrus_base.glovo'
+    _description = 'Conncector de Glovo.'
 
     def _getBaseUrl(self):
         return f"https://api.glovoapp.com";
@@ -48,10 +48,10 @@ class Glovo(models.TransientModel):
                 if response.status_code >= 200 and response.status_code < 300:
                     return response.json()
                 else:
-                    _logger.error( f"Zacalog: Globo: _call error {response.status_code}: {info['error']['message']}")
+                    _logger.error( f"Zacalog: Glovo: _call error {response.status_code}: {info['error']['message']}")
                 return False
             except Exception as e:
-                _logger.error( f"Zacalog: Globo: " + str(e))
+                _logger.error( f"Zacalog: Glovo: " + str(e))
 
         return False
 

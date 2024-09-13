@@ -306,34 +306,34 @@
                         </div>
                     </div>
 
-                    <h2>Globo</h2>
-                    <div class="row mt16 o_settings_container" name="globo_setting_container">
+                    <h2>Glovo</h2>
+                    <div class="row mt16 o_settings_container" name="glovo_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
-                            id="globo_api_key"
+                            id="glovo_api_key"
                             title="API Key">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="API Key" for="globo_api_key"/>
+                                    <label string="API Key" for="glovo_api_key"/>
                                     <div class="text-muted">
                                         API Key
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="globo_api_key" colspan="4" nolabel="1" />
+                                        <field name="glovo_api_key" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box"
-                            id="globo_api_secret"
+                            id="glovo_api_secret"
                             title="API secret">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="API secret" for="globo_api_secret"/>
+                                    <label string="API secret" for="glovo_api_secret"/>
                                     <div class="text-muted">
                                         API secret
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="globo_api_secret" colspan="4" nolabel="1" />
+                                        <field name="glovo_api_secret" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>

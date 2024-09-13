@@ -154,7 +154,7 @@ class Picking(models.Model):
                 sales = self.env['sale.order'].search([('id', '=', self.sale_id.id)])
                 for sale in sales:
                     if sale['x_shipping_method'] == 'zacaship':
-                        self._syncGlobo(self, sale)                                
+                        self._syncGlovo(self, sale)                                
                     if sale['x_shipping_method'] == 'stock_pickupatstore':
                         self._syncPickupatstore(self, sale)
         else:
@@ -286,7 +286,7 @@ class Picking(models.Model):
         mail = self.env['zacatrus_base.pickupmail'].create(data)
         mail.send()
 
-    def _syncGlobo(self, picking, sale):
+    def _syncGlovo(self, picking, sale):
         if not sale.team_id.id == 6:
             return
         
