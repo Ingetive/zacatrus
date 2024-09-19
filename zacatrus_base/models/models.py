@@ -168,8 +168,8 @@ class Zconnector(models.Model):
         expirations = self.getFichasExpiration( customerId )
         for expiration in expirations:
             #print(expiration['amount'])
-            if expiration['amount'] < left:
-                deductAmount = expiration['amount']
+            if expiration['expiring_amount'] < left:
+                deductAmount = expiration['expiring_amount']
             else:
                 deductAmount = left
 
