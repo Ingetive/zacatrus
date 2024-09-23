@@ -38,7 +38,7 @@ class Tarjezaca(models.Model):
             for order in orders:
                 orderDate = order['date_order'].date() #datetime.strptime(order['date_order'].split(" ")[0], '%Y-%m-%d')
                 
-                if orderDate == aDay:
+                if orderDate == aDay.date():
                     sign = 1
                     data = {
                         'order_id': order['client_order_ref'],
