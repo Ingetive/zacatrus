@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class Picking(models.Model):
     _inherit = 'stock.picking'
-    x_sync_status = fields.Integer(default=0)
+    #x_sync_status = fields.Integer(default=0)
 
     FROM_SHOP_DELIVERY_TYPE=[11,16,20,30,36,56,65,86]
     SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937,126]
@@ -85,11 +85,8 @@ class Picking(models.Model):
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
             return
-        
-        if self.x_status not in [0, '0', False] and self.x_sync_status == 0:
-            self.x_sync_status = self.x_status
 
-        if not self.x_sync_status in [0, 601, 602, 607]: #607: snooze
+        if not self.x_status in [0, 601, 602, 607]: #607: snooze
             return
         
         if self.location_id in [14, 1720]: # son los WH/OUT y los DT/OUT
@@ -121,11 +118,7 @@ class Picking(models.Model):
         team = False
         if self.picking_type_id.id == 3: #self.SEGOVIA_PICK_TYPE_ID
             if self.sale_id:
-                sales = self.env['sale.order'].search([('id', '=', self.sale_id)])
-                for sale in sales:
-                    team = sale.team_id.id #6: web, 11: pickOp, 14: amazon
-                else:
-                    team = 11 #pickOp
+                team = self.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon
 
         #Esto ya no debería ocurrir TODO: Poner una alerta si pasa
         #if self.partner_id:
@@ -139,27 +132,29 @@ class Picking(models.Model):
             if self.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                 self._syncMagento(True) # reverse = True (último parámetro)
             else:
-                self.write({"x_sync_status": 1})
+                self.write({"x_status": 1})
                 return
         elif team in [14]: #Amazon: Lo de Amazon no se procesa. Comprobar por qué.
-            self.write({"x_sync_status": 1})
+            self.write({"x_status": 1})
         elif self.state == 'cancel':
-            self.write({"x_sync_status": 1}) #Todos los cancelados
+            self.write({"x_status": 1}) #Todos los cancelados
         elif (self.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
             and self.location_dest_id.id != self.INTER_COMPANY_LOCATION_ID
             #and not interShopMove
             ):
-            self._syncMagento() # OJO: Esto es nuevo. Antes no estaba y no entiendo por qué
+            #self._syncMagento() # OJO: Tengo dudas, Creo que no debe hacerse porque viene de magento y ya debería estar al día. Nunca ha estado.
             if self.sale_id:
-                sales = self.env['sale.order'].search([('id', '=', self.sale_id.id)])
-                for sale in sales:
-                    if sale['x_shipping_method'] == 'zacaship':
-                        self._syncGlovo(self, sale)                                
-                    if sale['x_shipping_method'] == 'stock_pickupatstore':
-                        self._syncPickupatstore(self, sale)
+                if self.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
+                    msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({self.sale_id['x_shipping_method']})"
+                    self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                                        
+                #if self.sale_id['x_shipping_method'] == 'zacaship':
+                #    self._syncGlovo(self, self.sale_id)                                
+                #if self.sale_id['x_shipping_method'] == 'stock_pickupatstore':
+                #    self._syncPickupatstore(self, self.sale_id)
         else:
             if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
-                self.write({"x_sync_status": 1})
+                self.write({"x_status": 1})
             else:
                 self._syncMagento() #sincroniza cualquier otra cosa
 
@@ -225,7 +220,7 @@ class Picking(models.Model):
                     else:
                         self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], self.picking_type_id.id == 2, sourceCode)
         
-        self.write({"x_sync_status": 1})
+        self.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
 
     def _syncPickupatstore(self, sale):
@@ -234,11 +229,11 @@ class Picking(models.Model):
             channel = sc.getSlackChannelByLocation(self.location_id.id)
 
             if self.state in ['assigned', 'confirmed']: 
-                if self.x_sync_status == 0:
+                if self.x_status == 0:
                     sc.sendWarn(f"Ha llegado un nuevo pedido para recogida en tienda: {self.name} (#{sale.client_order_ref}). Por favor, prepáralo (en Odoo) y guárdalo en una bolsa hasta que vengan a buscarlo. Cuando termines aviso al cliente.", channel)
-                    self.write({"x_sync_status": 601})
-            elif self.state == 'done' and self.x_sync_status in [601, 602, 607]:
-                self.write({"x_sync_status": 603})
+                    self.write({"x_status": 601})
+            elif self.state == 'done' and self.x_status in [601, 602, 607]:
+                self.write({"x_status": 603})
                 try:
                     msg = f"No he conseguido avisar al cliente. Por favor, llama o manda un email para que pase a recoger su pedido ({sale.client_order_ref})."
                     if self.notifyCustomer(self.sale_id):
@@ -256,7 +251,7 @@ class Picking(models.Model):
                 try:
                     self.sendMail(partner["email_formatted"], partner["zip"], order["client_order_ref"], partner["name"])
                     
-                    order.write({"x_sync_status": 12})
+                    order.write({"x_status": 12})
                     #self._writeOrderNote(order.id, "[Tito] Cliente avisado para que pase a recoger.")
                     msg = "[Tito] Cliente avisado para que pase a recoger."
                     m = {
@@ -293,7 +288,7 @@ class Picking(models.Model):
         sc = self.env['zacatrus_base.slack']
         channel = sc.getSlackChannelByLocation(picking.location_id.id)
 
-        if picking.state in ['assigned', 'confirmed', 'done'] and picking.x_sync_status == 0:
+        if picking.state in ['assigned', 'confirmed', 'done'] and picking.x_status == 0:
             if picking.state in ['assigned', 'confirmed']:
                 pdfName = f"report_{picking['name']}.pdf".replace("/", "_")
                 content = self.env['zacatrus.zconta'].getPickingSlip( picking.id, "zacatrus_base.report_deliveryslip_ticket" )
@@ -301,8 +296,8 @@ class Picking(models.Model):
                 sc.sendWarn(f"Ha llegado un nuevo pedido para Glovo: {pdfName}", channel)
 
                 sc.sendFile( content, channel, pdfName )
-            picking.write({"x_sync_status": 601})
-        elif picking.state == 'done' and picking.x_sync_status in [601, 602]:
+            picking.write({"x_status": 601})
+        elif picking.state == 'done' and picking.x_status in [601, 602]:
             partners = self.env['res.partner'].search([('id', '=', picking.partner_id.id)])
             for partner in partners:
                 address = f"{partner.street} {partner.street2 if partner.street2 else ''}, {partner.zip} {partner.city}"
@@ -314,7 +309,7 @@ class Picking(models.Model):
                 )
                 if carrierOrderId:
                     data = {
-                        "x_sync_status": 603, 
+                        "x_status": 603, 
                         "carrier_id": 11,
                         "carrier_tracking_ref": carrierOrderId
                     }
