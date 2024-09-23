@@ -36,7 +36,7 @@ class Tarjezaca(models.Model):
 
             webStatementId = None
             for order in orders:
-                orderDate = datetime.strptime(order['date_order'].split(" ")[0], '%Y-%m-%d')
+                orderDate = order['date_order'].date() #datetime.strptime(order['date_order'].split(" ")[0], '%Y-%m-%d')
                 
                 if orderDate == aDay:
                     sign = 1
