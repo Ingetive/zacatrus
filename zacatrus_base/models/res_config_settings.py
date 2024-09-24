@@ -138,7 +138,7 @@ class ResConfigSettings(models.TransientModel):
         odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
         value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token')
         if not odooEnv or odooEnv == 'staging':
-            if value.find('[test]') == -1:
+            if not value or value.find('[test]') == -1:
                 _logger.error(f"Zacalog: odooEnv: {odooEnv}; slack_token: {value}; [test] string not found in slack_token.")
             else:
                 return value.replace("[test]", "")

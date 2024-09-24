@@ -69,31 +69,50 @@ class Picking(models.Model):
                 return attach.index_content
         return None
 
+    def create(self, vals):
+        record = super(Picking, self).create(vals)
+
+        record.sync()
+
+        return record
+    
     def write(self, vals):
-        res = super(Picking, self).write(vals)
+        record = super(Picking, self).write(vals)
 
         for picking in self:
-            #TODO: remove
-            self.env['zacatrus_base.slack'].sendWarnLimited( "hola", "#test2", 'test')
-
             picking.sync()
-            
 
-        return res
+        return record
+        
+    def action_confirm(self):
+        for picking in self:
+            picking.sync()
+        
+    def action_assign(self):
+        for picking in self:
+            picking.sync()
+        
+    def action_cancel(self):
+        for picking in self:
+            picking.sync()  
     
     def sync(self):
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
             return
 
+        if not self.state in ['done', 'assigned', 'confirmed']:
+            return
+
         if not self.x_status in [0, 601, 602, 607]: #607: snooze
             return
         
-        if self.location_id in [14, 1720]: # son los WH/OUT y los DT/OUT
+        if self.location_id.id in [14, 1720]: # son los WH/OUT y los DT/OUT
             return
-        
+            
         if self.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
             msg = f"{self.picking_type_id.name} ({self.picking_type_id.id}) es uno de los tipos NO permitidos"
+            _logger.warning("Zacalog: Syncer {msg}")
             self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
             return
         
@@ -101,8 +120,9 @@ class Picking(models.Model):
         
         if not self.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
             msg = f"{self.picking_type_id.name} ({self.picking_type_id.id}) no es uno de los tipos permitidos"
+            _logger.warning("Zacalog: Syncer {msg}")
             self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
-
+        
         #ready = True
         if self.state == 'confirmed' and self.group_id:
             # En espera y con grupo de abastecimento
@@ -127,7 +147,7 @@ class Picking(models.Model):
         #        for parent in parents:
         #            if parent.parent_id and parent.parent_id.id == 1: # Is Zacatrus
         #                interShopMove = True
-
+        
         if team == 6: #Already decreased in Magento
             if self.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                 self._syncMagento(True) # reverse = True (último parámetro)
@@ -210,15 +230,14 @@ class Picking(models.Model):
     def _syncMoves(self, out, sourceCode):
         qtyField = 'quantity_done' if self.state == 'done' else 'product_uom_qty'
         
-        os = self.env['stock.move'].search_read([("picking_id", "=", self.id)])
+        os = self.env['stock.move'].search([("picking_id", "=", self.id)])
         for o in os:
-            products = self.env['product.product'].search([('id', '=', o["product_id"][0])])
-            for product in products:
-                if o[qtyField]:
-                    if out:
-                        self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode)
-                    else:
-                        self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], self.picking_type_id.id == 2, sourceCode)
+            product = o.product_id
+            if o[qtyField]:
+                if out:
+                    self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode)
+                else:
+                    self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], self.picking_type_id.id == 2, sourceCode)
         
         self.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
