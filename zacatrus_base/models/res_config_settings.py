@@ -31,6 +31,12 @@ class ResConfigSettings(models.TransientModel):
         ('10', 'Error'),
     ], string="Nivel de error para notificaciones", default='30')
 
+    syncer_active = fields.Boolean()
+    syncer_sync_active = fields.Boolean()
+    slack_token = fields.Char()
+
+    glovo_api_key = fields.Char()
+    glovo_api_secret = fields.Char()
 
     @api.model
     def get_values(self):
@@ -56,9 +62,15 @@ class ResConfigSettings(models.TransientModel):
             block_partner_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.block_partner_ids'),
             notify_user_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.notify_user_ids'),
             error_level=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.error_level', default='30'),
-            magento_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token')
+            magento_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_token'),
             
+            syncer_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_active'),
+            syncer_sync_active=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active'),
 
+            slack_token=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token'),
+
+            glovo_api_key=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.glovo_api_key'),
+            glovo_api_secret=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.glovo_api_secret')
         )
         return res
 
@@ -85,8 +97,56 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.error_level', self.error_level)
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.magento_token', self.magento_token)
 
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_active', self.syncer_active)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_sync_active', self.syncer_sync_active)
+
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.slack_token', self.slack_token)
+
+
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.glovo_api_key', self.glovo_api_key)
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.glovo_api_secret', self.glovo_api_secret)
+
         super(ResConfigSettings, self).set_values()
 
+    def getGlovoApiKey(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.glovo_api_key')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; glovo_api_key: {value}; [test] string not found in glovo_api_key.")
+            else:
+                return value.replace("[test]", "")
+        else:
+            return value
+            
+        return False
+
+    def getGlovoApiSecret(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.glovo_api_secret')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; glovo_api_secret: {value}; [test] string not found in glovo_api_secret.")
+            else:
+                return value.replace("[test]", "")
+        else:
+            return value
+            
+        return False
+    
+    def getSlackToken(self):
+        odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
+        value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.slack_token')
+        if not odooEnv or odooEnv == 'staging':
+            if value.find('[test]') == -1:
+                _logger.error(f"Zacalog: odooEnv: {odooEnv}; slack_token: {value}; [test] string not found in slack_token.")
+            else:
+                return value.replace("[test]", "")
+        else:
+            return value
+            
+        return False
+    
     def getMagentoUrl(self):
         odooEnv = os.environ.get('ODOO_STAGE') #dev, staging or production
         value = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.magento_url')
@@ -99,3 +159,9 @@ class ResConfigSettings(models.TransientModel):
             return value
             
         return False
+    
+    def getSyncerActive(self):
+        return self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_active')
+
+    def getSyncerSyncActive(self):
+        return self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active')

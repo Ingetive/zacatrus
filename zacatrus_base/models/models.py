@@ -1,4 +1,4 @@
-import re
+import datetime
 import requests
 import string
 import random
@@ -221,12 +221,9 @@ class Zconnector(models.Model):
 
     def getBalance( self, email ):
         fichas = 0
-        _logger.info("T_ZB: getBalance: email: "+ email)
         mCustomer = self._getCustomerByEmail(email)
         if mCustomer:
-            _logger.info("T_ZB: getBalance: mCustomer id: "+ str(mCustomer["id"]))
             fichas = self._getPoints( mCustomer["id"] )
-            _logger.info("T_ZB: getBalance: fichas: "+ str(fichas))
 
         return fichas
         
@@ -244,42 +241,29 @@ class Zconnector(models.Model):
     def createCustomer(self, email, name, posName = False):
         groupId = 1
 
-        if posName:
-            _m = re.search('adrid', posName)
-        if _m:
-            groupId = 18
-        _m = re.search('evilla', posName)
-        if _m:
-            groupId = 19
-        _m = re.search('alencia', posName)
-        if _m:
-            groupId = 20
-        _m = re.search('arcelona', posName)
-        if _m:
-            groupId = 21
-        _m = re.search('itoria', posName)
-        if _m:
-            groupId = 22
-        _m = re.search('mides', posName)
-        if _m:
-            groupId = 23
-        _m = re.search('aragoza', posName)
-        if _m:
-            groupId = 24
-        _m = re.search('alladolid', posName)
-        if _m:
-            groupId = 25
+    def increaseStock(self, sku, qty, setLastRepo = False, source = False):
+        self.decreaseStock(sku, qty*(-1), setLastRepo, source)
 
-        customer = {
-            'customer': {
-                'email': email,
-                'firstname': name,
-                'lastname': '.',
-                #'password': id_generator(),
-                'website_id': '1',
-                'group_id': groupId
-            }
-            , 'password': 'Aa1'+id_generator(8)
-        }
-        res = self._getData('customers', customer)
-        return res
+    def decreaseStock(self, sku, qty, setLastRepo = False, source = False):
+        self._queueStockUpdate(sku, qty, True, setLastRepo, source)
+        
+    def _queueStockUpdate(self, sku, qty, relative = True, setLastRepo = False, source = "WH"):
+        if relative and qty == 0:
+            return
+    
+        if isinstance(source, int):
+            sourceCode = self.sourceCodes[source]
+        else:
+            sourceCode = source
+
+        lastRepo = False
+        if setLastRepo:
+            lastRepo = str(datetime.datetime.now())
+
+        #db =  self._getMongoDb()
+        #db.queue.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
+        #db.stocklog.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
+
+        data = {'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False}
+
+        self.env['zacatrus_base.queue'].create( data )

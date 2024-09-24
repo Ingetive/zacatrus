@@ -28,7 +28,7 @@ class Notifier(models.Model):
         self.notify(model, resId, msg, subject, self.LEVEL_INFO)
 
     def notify(self, model, resId, msg, subject, level):
-        _logger.warning(f"Zacalog: EDI: Sending notification. {model} {resId} {msg} {subject}")
+        _logger.warning(f"Zacalog: Sending notification. {model} {resId} {subject}: {msg}")
 
         if not level:
             level = self.LEVEL_ERROR

@@ -93,6 +93,8 @@
                         </div>
                     </div>
 
+                    <h2>Adyen</h2>
+
                     <div class="row mt16 o_settings_container" name="adyen_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="last_adyen_index"
@@ -127,7 +129,7 @@
                             title="Adyen report user">
                             <div class="">
                                 <div>
-                                    <label string="Last Adyen report user" for="adyen_report_user"/>
+                                    <label string="Adyen report user" for="adyen_report_user"/>
                                     <div class="content-group mt16">
                                         <field name="adyen_report_user" colspan="4" nolabel="1" />
                                     </div>
@@ -139,7 +141,7 @@
                             title="Adyen report password">
                             <div class="">
                                 <div>
-                                    <label string="Last Adyen report password" for="adyen_report_password"/>
+                                    <label string="Adyen report password" for="adyen_report_password"/>
                                     <div class="content-group mt16">
                                         <field name="adyen_report_password" colspan="4" nolabel="1" />
                                     </div>
