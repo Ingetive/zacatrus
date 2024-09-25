@@ -327,13 +327,13 @@ class Zconnector(models.Model):
         try:
             self._getData(url, postParams, method)
         except Exception as e:
-            print (e)       
-
-        return ret
+            _logger.error(f"Zacalog: _doPutStock exception: "+ str(e))
+            return False
+            
+        return True
 
 
     def _procItem(self, item):
-        db =  self._getMongoDb()
         ok = False
 
         #source = False
@@ -367,7 +367,7 @@ class Zconnector(models.Model):
             #    self._procItem(item)
 
     def procStockUpdateQueue(self):
-        items = self.env['zacatrus_base.queue'].search([])
+        items = self.env['zacatrus_base.queue'].search([('done', '=', False)])
         for item in items:
             try:
                 self._procItem(item)
