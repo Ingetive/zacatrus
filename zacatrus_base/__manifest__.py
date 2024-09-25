@@ -23,7 +23,8 @@
         'report/zacatrus_base_views.xml',
         'report/stock_picking.xml',
         'report/report_delivery_document.xml',
-        'data/mail_template.xml'
+        'data/mail_template.xml',
+        'data/ir_action_data.xml'
     ],
     "installable": True,
 }

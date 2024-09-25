@@ -68,118 +68,97 @@ class Picking(models.Model):
             if attach:
                 return attach.index_content
         return None
-
-    def create(self, vals):
-        record = super(Picking, self).create(vals)
-
-        record.sync()
-
-        return record
-    
-    def write(self, vals):
-        record = super(Picking, self).write(vals)
-
-        for picking in self:
-            picking.sync()
-
-        return record
         
-    def action_confirm(self):
-        super(Picking, self).action_confirm()
-        for picking in self:
-            picking.sync()
-        
-    def action_assign(self):
-        super(Picking, self).action_assign()
-        for picking in self:
-            picking.sync()
-        
-    def action_cancel(self):
-        super(Picking, self).action_cancel()
-        for picking in self:
-            picking.sync()  
-    
-    def sync(self):
+    def sync(self):             
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
             return
+        someTimeAgo = datetime.datetime.now() - datetime.timedelta(days = 1)
+        args = [
+            ('state', 'in', ['done', 'assigned', 'waiting', 'cancel', 'confirmed']),
+            ('write_date', '>=', someTimeAgo), #.strftime('%Y-%m-%d %H:%M:%S')), #'2022-01-30 17:42:24
+            ('location_id', 'not in', [14]), # Segovia output
+            ('x_status', 'in', [0, '0', False]), #, 601, 602, 607]), #607: snooze
+            #('picking_type_id', 'in', allowedOperationTypes),
+        ]
+        for picking in self.search(args):
 
-        if not self.state in ['done', 'assigned', 'confirmed']:
-            return
-
-        if not self.x_status in [0, 601, 602, 607]: #607: snooze
-            return
-        
-        if self.location_id.id in [14, 1720]: # son los WH/OUT y los DT/OUT
-            return
-            
-        if self.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
-            msg = f"{self.picking_type_id.name} ({self.picking_type_id.id}) es uno de los tipos NO permitidos"
-            _logger.warning("Zacalog: Syncer {msg}")
-            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
-            return
-        
-        #TODO: La balda de Amazon no debería contar para el stock. No es crítico porque son solo nuestros juegos.
-        
-        if not self.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
-            msg = f"{self.picking_type_id.name} ({self.picking_type_id.id}) no es uno de los tipos permitidos"
-            _logger.warning("Zacalog: Syncer {msg}")
-            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
-        
-        #ready = True
-        if self.state == 'confirmed' and self.group_id:
-            # En espera y con grupo de abastecimento
-            groups = self.env['procurement.group'].search([('id', '=', self.group_id.id)])
-            for group in groups:
-                if not group.sale_id:
-                    return # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
-                #_logger.info(f"Zacalog: El picking {self.name} ({self.state}) ha sido modificado. Grupo: {self.group_id.id}; sale: {group.sale_id.id} ({ready})")
-
-        #if not ready:
-        #    return
-        
-        team = False
-        if self.picking_type_id.id == 3: #self.SEGOVIA_PICK_TYPE_ID
-            if self.sale_id:
-                team = self.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon
-
-        #Esto ya no debería ocurrir TODO: Poner una alerta si pasa
-        #if self.partner_id:
-        #    if "zacatrus" in self.partner_id.name.lower():
-        #        parents = self.env['res.partner'].search([('id', '=', self.partner_id.id)])
-        #        for parent in parents:
-        #            if parent.parent_id and parent.parent_id.id == 1: # Is Zacatrus
-        #                interShopMove = True
-        
-        if team == 6: #Already decreased in Magento
-            if self.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
-                self._syncMagento(True) # reverse = True (último parámetro)
-            else:
-                self.write({"x_status": 1})
+            if not picking.state in ['done', 'assigned', 'confirmed']:
                 return
-        elif team in [14]: #Amazon: Lo de Amazon no se procesa. Comprobar por qué.
-            self.write({"x_status": 1})
-        elif self.state == 'cancel':
-            self.write({"x_status": 1}) #Todos los cancelados
-        elif (self.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
-            and self.location_dest_id.id != self.INTER_COMPANY_LOCATION_ID
-            #and not interShopMove
-            ):
-            #self._syncMagento() # OJO: Tengo dudas, Creo que no debe hacerse porque viene de magento y ya debería estar al día. Nunca ha estado.
-            if self.sale_id:
-                if self.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
-                    msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({self.sale_id['x_shipping_method']})"
-                    self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, msg, "syncer", Notifier.LEVEL_WARNING)
-                                        
-                #if self.sale_id['x_shipping_method'] == 'zacaship':
-                #    self._syncGlovo(self, self.sale_id)                                
-                #if self.sale_id['x_shipping_method'] == 'stock_pickupatstore':
-                #    self._syncPickupatstore(self, self.sale_id)
-        else:
-            if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
-                self.write({"x_status": 1})
+
+            if not picking.x_status in [0, 601, 602, 607]: #607: snooze
+                return
+            
+            if picking.location_id.id in [14, 1720]: # son los WH/OUT y los DT/OUT
+                return
+                
+            if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
+                msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
+                _logger.warning("Zacalog: Syncer {msg}")
+                self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                return
+            
+            #TODO: La balda de Amazon no debería contar para el stock. No es crítico porque son solo nuestros juegos.
+            
+            if not picking.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
+                msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) no es uno de los tipos permitidos"
+                _logger.warning("Zacalog: Syncer {msg}")
+                self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+            
+            #ready = True
+            if picking.state == 'confirmed' and picking.group_id:
+                # En espera y con grupo de abastecimento
+                groups = self.env['procurement.group'].search([('id', '=', picking.group_id.id)])
+                for group in groups:
+                    if not group.sale_id:
+                        return # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
+                    #_logger.info(f"Zacalog: El picking {self.name} ({self.state}) ha sido modificado. Grupo: {self.group_id.id}; sale: {group.sale_id.id} ({ready})")
+
+            #if not ready:
+            #    return
+            
+            team = False
+            if picking.picking_type_id.id == 3: #self.SEGOVIA_PICK_TYPE_ID
+                if picking.sale_id:
+                    team = picking.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon
+
+            #Esto ya no debería ocurrir TODO: Poner una alerta si pasa
+            #if self.partner_id:
+            #    if "zacatrus" in self.partner_id.name.lower():
+            #        parents = self.env['res.partner'].search([('id', '=', self.partner_id.id)])
+            #        for parent in parents:
+            #            if parent.parent_id and parent.parent_id.id == 1: # Is Zacatrus
+            #                interShopMove = True
+            
+            if team == 6: #Already decreased in Magento
+                if picking.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
+                    self._syncMagento(picking, True) # reverse = True (último parámetro)
+                else:
+                    self.write({"x_status": 1})
+                    return
+            elif team in [14]: #Amazon: Lo de Amazon no se procesa. Comprobar por qué.
+                picking.write({"x_status": 1})
+            elif picking.state == 'cancel':
+                picking.write({"x_status": 1}) #Todos los cancelados
+            elif (picking.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
+                and picking.location_dest_id.id != picking.INTER_COMPANY_LOCATION_ID
+                #and not interShopMove
+                ):
+                #self._syncMagento() # OJO: Tengo dudas, Creo que no debe hacerse porque viene de magento y ya debería estar al día. Nunca ha estado.
+                if self.sale_id:
+                    if picking.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
+                        msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({picking.sale_id['x_shipping_method']})"
+                        self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                                            
+                    #if self.sale_id['x_shipping_method'] == 'zacaship':
+                    #    self._syncGlovo(self, self.sale_id)                                
+                    #if self.sale_id['x_shipping_method'] == 'stock_pickupatstore':
+                    #    self._syncPickupatstore(self, self.sale_id)
             else:
-                self._syncMagento() #sincroniza cualquier otra cosa
+                if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
+                    self.write({"x_status": 1})
+                else:
+                    self._syncMagento() #sincroniza cualquier otra cosa
 
     sourceCodes = {
         13: "WH",
@@ -195,54 +174,54 @@ class Picking(models.Model):
         1717: "FR_TL"
     }
 
-    def _syncMagento(self, reverse = False):
+    def _syncMagento(self, picking, reverse = False):
         sourceCode = None
 
         #self.env['zacatrus.connector']
-        dests = self.env['stock.location'].search([('id', '=', self.location_dest_id.id)])
+        dests = self.env['stock.location'].search([('id', '=', picking.location_dest_id.id)])
         for dest in dests:
             parentLocationDestId = dest.location_id.id
-        froms = self.env['stock.location'].search([('id', '=', self.location_id.id)])
+        froms = self.env['stock.location'].search([('id', '=', picking.location_id.id)])
         for _from in froms:
             parentLocationId = _from.location_id.id
 
         # Warehouse moves
         shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13]
-        if self.location_dest_id.id in shopLocations or parentLocationDestId == 13:
+        if picking.location_dest_id.id in shopLocations or parentLocationDestId == 13:
             out = False
-            if not self['location_dest_id'][0] in self.sourceCodes:
+            if not picking.location_dest_id.id in self.sourceCodes:
                 sourceCode = "WH"
             else:
-                sourceCode = self.sourceCodes[self.location_dest_id.id]
-        elif self.location_id.id in shopLocations or parentLocationId == 13:
+                sourceCode = self.sourceCodes[picking.location_dest_id.id]
+        elif picking.location_id.id in shopLocations or parentLocationId == 13:
             out = True
-            if not self.location_id.id in self.sourceCodes:
+            if not picking.location_id.id in self.sourceCodes:
                 sourceCode = "WH"
             else:
-                sourceCode = self.sourceCodes[self.location_id.id]
+                sourceCode = self.sourceCodes[picking.location_id.id]
         else:
-            self.env['zacatrus_base.notifier'].notify('stock.picking', self.id, f"{self.name} is not a warehouse move", "syncer", Notifier.LEVEL_WARNING)
+            self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, f"{picking.name} is not a warehouse move", "syncer", Notifier.LEVEL_WARNING)
             return
 
         if sourceCode:
             if reverse:
-                self._syncMoves(not out, sourceCode)
+                self._syncMoves(picking, not out, sourceCode)
             else:
-                self._syncMoves(out, sourceCode)
+                self._syncMoves(picking, out, sourceCode)
         
-    def _syncMoves(self, out, sourceCode):
-        qtyField = 'quantity_done' if self.state == 'done' else 'product_uom_qty'
+    def _syncMoves(self, picking, out, sourceCode):
+        qtyField = 'quantity_done' if picking.state == 'done' else 'product_uom_qty'
         
-        os = self.env['stock.move'].search([("picking_id", "=", self.id)])
+        os = self.env['stock.move'].search([("picking_id", "=", picking.id)])
         for o in os:
             product = o.product_id
             if o[qtyField]:
                 if out:
                     self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode)
                 else:
-                    self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], self.picking_type_id.id == 2, sourceCode)
+                    self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], picking.picking_type_id.id == 2, sourceCode)
         
-        self.write({"x_status": 1})
+        picking.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
 
     def _syncPickupatstore(self, sale):

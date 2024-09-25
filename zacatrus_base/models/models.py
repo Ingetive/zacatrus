@@ -370,6 +370,7 @@ class Zconnector(models.Model):
         items = self.env['zacatrus_base.queue'].search([('done', '=', False)])
         for item in items:
             try:
+                _logger.info(f"Zacalog: Syncer: Proccessing item {item['sku']}")
                 self._procItem(item)
             except Exception as e:
                 _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
