@@ -241,6 +241,33 @@ class Zconnector(models.Model):
     def createCustomer(self, email, name, posName = False):
         groupId = 1
 
+    def _getStock(self, sku, source = None, multi = False):
+        if not source:
+            source = "WH"
+
+        if not sku or sku == "":
+            return False
+        
+        url_ = "inventory/source-items"
+        query = "searchCriteria[filter_groups][0][filters][0][field]=sku&searchCriteria[filter_groups][0][filters][0][value]="+sku+"&searchCriteria[filter_groups][0][filters][0][condition_type]=eq"
+        url = url_+"?"+query
+
+        response = self._getData(url)
+
+        ret = False
+        if not response or "message" in response:
+            _logger.error(f"Zacalog: Error getting stock for {sku}: {response['message']}")
+        else:
+            for item in response["items"]:
+                if item["source_code"] == source:
+                    item["qty"] = item["quantity"]
+                    ret = item
+                if not ret:
+                    response["qty"] = 0
+                    ret = response
+
+        return ret
+        
     def increaseStock(self, sku, qty, setLastRepo = False, source = False):
         self.decreaseStock(sku, qty*(-1), setLastRepo, source)
 
@@ -267,3 +294,82 @@ class Zconnector(models.Model):
         data = {'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False}
 
         self.env['zacatrus_base.queue'].create( data )
+
+    def _doDecreaseStock(self, sku, qty, source = False):
+        try:
+            curStock = self._getStock( sku, source )
+            if not curStock:
+                return False
+
+            if 'qty' in curStock:
+                if curStock['qty'] == None:
+                    curStock['qty'] = 0
+                return self._doPutStock(sku, curStock['qty']-qty, source)
+        except Exception as e:
+            _logger.error(f"Zacalog: _doDecreaseStock exception: "+ str(e))            
+            return False
+
+        _logger.error(f"Zacalog: _doDecreaseStock: No quantities got from magento for {sku}")
+        return False
+
+
+    def _doPutStock(self, sku, qty, source = False, manageStock = True):
+        ret = False
+        method = False
+        if source:
+            postParams = {"sourceItems": [{"sku": sku,"source_code": source, "quantity": qty,"status": 1 if qty > 0 else 0,"extension_attributes": { } }]}
+            url = "inventory/source-items"
+        else:
+            postParams = {"stockItem":{"qty":qty, "is_in_stock": (qty > 0), "manage_stock": manageStock}}
+            url = "products/"+sku+"/stockItems/1"
+            method = "put"
+
+        try:
+            self._getData(url, postParams, method)
+        except Exception as e:
+            print (e)       
+
+        return ret
+
+
+    def _procItem(self, item):
+        db =  self._getMongoDb()
+        ok = False
+
+        #source = False
+        if 'source' in item:
+            source = item['source']
+        else:
+            source = self.defaultStockSource
+        if item['sku']:
+            if not item["relative"]:
+                #TODO: De momento son todos relativos
+                pass #ok = self._doPutStock(item["sku"], item["qty"], source)
+            else:
+                ok = self._doDecreaseStock(item["sku"], item["qty"], source)
+        else:
+            ok = True
+
+        if ok and item.sku and item.last_repo:
+            self.setProductAttribute(item.sku, "last_repo", item.last_repo)
+
+        if ok:
+            item.write({"done": True})
+        else:
+            _logger.error("Zacalog: Syncer: Error updating " + item["sku"])
+
+            #if (datetime.now() - item["created_at"]) > timedelta(minutes=60):
+            #    self._getSlack().sendRedAlertLimited(f"Error updating stock of product with sku {item['sku']} for more than 60 minutes.")
+            #
+            #m = re.search("(.*)-1$", item["sku"])
+            #if m:
+            #    item["sku"] = m.group(1)
+            #    self._procItem(item)
+
+    def procStockUpdateQueue(self):
+        items = self.env['zacatrus_base.queue'].search([])
+        for item in items:
+            try:
+                self._procItem(item)
+            except Exception as e:
+                _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
