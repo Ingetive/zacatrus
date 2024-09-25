@@ -68,36 +68,6 @@ class Picking(models.Model):
             if attach:
                 return attach.index_content
         return None
-
-    def create(self, vals):
-        record = super(Picking, self).create(vals)
-
-        record.sync()
-
-        return record
-    
-    def write(self, vals):
-        record = super(Picking, self).write(vals)
-
-        for picking in self:
-            picking.sync()
-
-        return record
-        
-    def action_confirm(self):
-        super(Picking, self).action_confirm()
-        for picking in self:
-            picking.sync()
-        
-    def action_assign(self):
-        super(Picking, self).action_assign()
-        for picking in self:
-            picking.sync()
-        
-    def action_cancel(self):
-        super(Picking, self).action_cancel()
-        for picking in self:
-            picking.sync()  
     
     def sync(self):
         if not self.env['res.config.settings'].getSyncerActive():
