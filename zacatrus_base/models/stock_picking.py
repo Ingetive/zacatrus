@@ -162,7 +162,7 @@ class Picking(models.Model):
         elif self.state == 'cancel':
             self.write({"x_status": 1}) #Todos los cancelados
         elif (self.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
-            and self.location_dest_id.id != self.INTER_COMPANY_LOCATION_ID
+            and self.location_dest_id.id != 10 #INTER_COMPANY_LOCATION_ID
             #and not interShopMove
             ):
             #self._syncMagento() # OJO: Tengo dudas, Creo que no debe hacerse porque viene de magento y ya debería estar al día. Nunca ha estado.
