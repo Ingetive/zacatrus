@@ -85,14 +85,17 @@ class Picking(models.Model):
         return record
         
     def action_confirm(self):
+        super(Picking, self).action_confirm()
         for picking in self:
             picking.sync()
         
     def action_assign(self):
+        super(Picking, self).action_assign()
         for picking in self:
             picking.sync()
         
     def action_cancel(self):
+        super(Picking, self).action_cancel()
         for picking in self:
             picking.sync()  
     
