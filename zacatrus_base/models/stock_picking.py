@@ -21,13 +21,14 @@ class Picking(models.Model):
     SHOP_IN_TYPES = [29, 64, 85, 55, 35, 23, 13, 8]
     FROM_SHOP_RETURN_TYPE = [48, 49, 50, 51, 52, 60, 72, 92]  
     OTHER_TYPES = [62, 2, 53, 100, 3] #SCRAPPED_IN_TYPE_ID, PURCHASE_TRANSFER_TYPE, FROM_TRANSLOAN_TO_SEGOVIA, FROM_SHOPS_TO_SEGOVIA_TYPE, PICK_TYPE
+    DISTRI_TYPES = [104, 102, 103] #Distri pick, distri recepciones, distri out
     # 3: Al cambiar el filtro se dejaron sin procesar las salidas de Segovia. Más abajo comprueba que no sean ventas web por el 'canal de ventas' (team_id).
  
     # NO se tienen que hacer:
     INTERNAL_TYPES = [4] # Por ejemplo para reponer la balda de Amazon
     OTHER_NOT_TYPES = [73, 78, 74] # Kame
 
-    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES
+    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES
     NOT_ALLOWED_OPERATION_TYPES = INTERNAL_TYPES + OTHER_NOT_TYPES
 
     def setPartnerCarrier(self):
@@ -77,32 +78,23 @@ class Picking(models.Model):
         args = [
             ('state', 'in', ['done', 'assigned', 'waiting', 'cancel', 'confirmed']),
             ('write_date', '>=', someTimeAgo), #.strftime('%Y-%m-%d %H:%M:%S')), #'2022-01-30 17:42:24
-            ('location_id', 'not in', [14]), # Segovia output
+            ('location_id', 'not in', [14, 1720]), # Segovia output
             ('x_status', 'in', [0, '0', False]), #, 601, 602, 607]), #607: snooze
             #('picking_type_id', 'in', allowedOperationTypes),
         ]
-        for picking in self.search(args):
-
-            if not picking.state in ['done', 'assigned', 'confirmed']:
-                return
-
-            if not picking.x_status in [0, 601, 602, 607]: #607: snooze
-                return
-            
-            if picking.location_id.id in [14, 1720]: # son los WH/OUT y los DT/OUT
-                return
-                
+        pickings = self.search(args)
+        for picking in pickings:                
             if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
-                _logger.warning("Zacalog: Syncer {msg}")
+                _logger.warning(f"Zacalog: Syncer {msg}")
                 self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
-                return
+                continue
             
             #TODO: La balda de Amazon no debería contar para el stock. No es crítico porque son solo nuestros juegos.
             
             if not picking.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
-                msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) no es uno de los tipos permitidos"
-                _logger.warning("Zacalog: Syncer {msg}")
+                msg = f"{picking.name} {picking.picking_type_id.name} ({picking.picking_type_id.id}) no es uno de los tipos permitidos"
+                _logger.warning(f"Zacalog: Syncer {msg}")
                 self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
             
             #ready = True
@@ -111,7 +103,7 @@ class Picking(models.Model):
                 groups = self.env['procurement.group'].search([('id', '=', picking.group_id.id)])
                 for group in groups:
                     if not group.sale_id:
-                        return # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
+                        continue # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
                     #_logger.info(f"Zacalog: El picking {self.name} ({self.state}) ha sido modificado. Grupo: {self.group_id.id}; sale: {group.sale_id.id} ({ready})")
 
             #if not ready:
@@ -158,7 +150,10 @@ class Picking(models.Model):
                 if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
                     self.write({"x_status": 1})
                 else:
-                    self._syncMagento() #sincroniza cualquier otra cosa
+                    self._syncMagento(picking) #sincroniza cualquier otra cosa
+                    
+        if self.env['res.config.settings'].getSyncerSyncActive():
+            self.env['zacatrus.connector'].procStockUpdateQueue()
 
     sourceCodes = {
         13: "WH",
@@ -186,14 +181,14 @@ class Picking(models.Model):
             parentLocationId = _from.location_id.id
 
         # Warehouse moves
-        shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13]
-        if picking.location_dest_id.id in shopLocations or parentLocationDestId == 13:
+        shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13, 1717]
+        if picking.location_dest_id.id in shopLocations or parentLocationDestId in [13, 1717]:
             out = False
             if not picking.location_dest_id.id in self.sourceCodes:
                 sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[picking.location_dest_id.id]
-        elif picking.location_id.id in shopLocations or parentLocationId == 13:
+        elif picking.location_id.id in shopLocations or parentLocationId in [13, 1717]:
             out = True
             if not picking.location_id.id in self.sourceCodes:
                 sourceCode = "WH"
