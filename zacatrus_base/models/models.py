@@ -268,13 +268,13 @@ class Zconnector(models.Model):
 
         return ret
         
-    def increaseStock(self, sku, qty, setLastRepo = False, source = False):
-        self.decreaseStock(sku, qty*(-1), setLastRepo, source)
+    def increaseStock(self, sku, qty, setLastRepo = False, source = False, origin = False):
+        self.decreaseStock(sku, qty*(-1), setLastRepo, source, origin)
 
-    def decreaseStock(self, sku, qty, setLastRepo = False, source = False):
-        self._queueStockUpdate(sku, qty, True, setLastRepo, source)
+    def decreaseStock(self, sku, qty, setLastRepo = False, source = False, origin = False):
+        self._queueStockUpdate(sku, qty, True, setLastRepo, source, origin)
         
-    def _queueStockUpdate(self, sku, qty, relative = True, setLastRepo = False, source = "WH"):
+    def _queueStockUpdate(self, sku, qty, relative = True, setLastRepo = False, source = "WH", origin = False):
         if relative and qty == 0:
             return
     
@@ -291,7 +291,7 @@ class Zconnector(models.Model):
         #db.queue.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
         #db.stocklog.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
 
-        data = {'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False}
+        data = {'origin': origin, 'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False}
 
         self.env['zacatrus_base.queue'].create( data )
 
