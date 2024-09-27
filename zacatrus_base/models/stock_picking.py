@@ -130,16 +130,15 @@ class Picking(models.Model):
                 else:
                     self.write({"x_status": 1})
                     continue
-            elif picking.picking_type_id.id in self.SEGOVIA_INTERNAL_TYPES:
-                if picking.picking_type_id.id == 936 or picking.location_dest_id.id == 936: #AMAZON_LOCATION_ID
-                    if picking.state == 'done':
-                        self._syncMagento(picking)
-                else:
-                    picking.write({"x_status": 1}) # Movimientos internos no se procesan en Segovia
             elif team in [14]: #Amazon: Lo de Amazon no se procesa porque la balda de amazon está fuera del stock
                 picking.write({"x_status": 1})
             elif picking.state == 'cancel':
                 picking.write({"x_status": 1}) #Todos los cancelados
+            elif picking.picking_type_id.id in self.SEGOVIA_INTERNAL_TYPES:
+                if picking.picking_type_id.id == 936 or picking.location_dest_id.id == 936: #AMAZON_LOCATION_ID
+                    self._syncMagento(picking)
+                else:
+                    picking.write({"x_status": 1}) # Movimientos internos no se procesan en Segovia
             elif (picking.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
                 and picking.location_dest_id.id != 10 #picking.INTER_COMPANY_LOCATION_ID
                 #and not interShopMove
@@ -190,13 +189,15 @@ class Picking(models.Model):
         #shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13, 1717]
         shopLocations = Picking.SHOP_LOCATIONS + [13, 1717]
         if picking.location_dest_id.id in shopLocations or parentLocationDestId in [13, 1717]:#[13, 11, 1717, 1716]:
-            out = False
-            if not picking.location_dest_id.id in self.sourceCodes:
-                _logger.warning(f"Zacalog: Dest source not found.")
-                return
-                #sourceCode = "WH"
-            else:
-                sourceCode = self.sourceCodes[picking.location_dest_id.id]
+            #Al ser una entrada, hay que esperar a que el movimiento esté validado picking.state == 'done'
+            if picking.state == 'done':
+                out = False
+                if not picking.location_dest_id.id in self.sourceCodes:
+                    _logger.warning(f"Zacalog: Dest source not found.")
+                    return
+                    #sourceCode = "WH"
+                else:
+                    sourceCode = self.sourceCodes[picking.location_dest_id.id]
         elif picking.location_id.id in shopLocations or parentLocationId in [13, 1717]:
             out = True
             if not picking.location_id.id in self.sourceCodes:
