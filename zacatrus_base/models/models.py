@@ -268,13 +268,13 @@ class Zconnector(models.Model):
 
         return ret
         
-    def increaseStock(self, sku, qty, setLastRepo = False, source = False):
-        self.decreaseStock(sku, qty*(-1), setLastRepo, source)
+    def increaseStock(self, sku, qty, setLastRepo = False, source = False, origin = False):
+        self.decreaseStock(sku, qty*(-1), setLastRepo, source, origin)
 
-    def decreaseStock(self, sku, qty, setLastRepo = False, source = False):
-        self._queueStockUpdate(sku, qty, True, setLastRepo, source)
+    def decreaseStock(self, sku, qty, setLastRepo = False, source = False, origin = False):
+        self._queueStockUpdate(sku, qty, True, setLastRepo, source, origin)
         
-    def _queueStockUpdate(self, sku, qty, relative = True, setLastRepo = False, source = "WH"):
+    def _queueStockUpdate(self, sku, qty, relative = True, setLastRepo = False, source = "WH", origin = False):
         if relative and qty == 0:
             return
     
@@ -291,7 +291,7 @@ class Zconnector(models.Model):
         #db.queue.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
         #db.stocklog.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
 
-        data = {'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False}
+        data = {'origin': origin, 'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False}
 
         self.env['zacatrus_base.queue'].create( data )
 
@@ -332,6 +332,27 @@ class Zconnector(models.Model):
             
         return True
 
+    def setProductAttribute(self, sku, code, value):
+        url = self._getUrl() + "products/"+sku+""
+        token = self._getToken()
+        if token:
+            hed = {'Authorization': 'Bearer ' + token}
+
+            data = {
+                "product": {
+                    "custom_attributes": [{
+                            "attribute_code": code,
+                            "value": value
+                        }]
+                }
+            }
+
+            response = requests.put(url, headers=hed, json=data)
+
+            if response.status_code == 200:
+                return True #response.json()
+
+        return False
 
     def _procItem(self, item):
         ok = False
@@ -351,7 +372,7 @@ class Zconnector(models.Model):
             ok = True
 
         if ok and item.sku and item.last_repo:
-            self.setProductAttribute(item.sku, "last_repo", item.last_repo)
+            self.setProductAttribute(item.sku, "last_repo", str(item.last_repo))
 
         if ok:
             item.write({"done": True})
@@ -366,10 +387,11 @@ class Zconnector(models.Model):
             #    item["sku"] = m.group(1)
             #    self._procItem(item)
 
-    def procStockUpdateQueue(self):
+    def procStockUpdateQueue(self):        
         items = self.env['zacatrus_base.queue'].search([('done', '=', False)])
         for item in items:
             try:
                 self._procItem(item)
             except Exception as e:
                 _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
+                raise e

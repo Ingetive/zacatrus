@@ -16,3 +16,4 @@ class Queue(models.Model):
     last_repo = fields.Date()
     source = fields.Char()
     done = fields.Boolean()
+    origin = fields.Char()
