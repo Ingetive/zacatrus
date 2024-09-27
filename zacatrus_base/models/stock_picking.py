@@ -90,7 +90,7 @@ class Picking(models.Model):
             if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
                 _logger.warning(f"Zacalog: Syncer {msg}")
-                self.write({"x_status": 1})
+                picking.write({"x_status": 1})
                 #self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
                 continue
             
