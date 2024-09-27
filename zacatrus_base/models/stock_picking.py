@@ -23,13 +23,14 @@ class Picking(models.Model):
     OTHER_TYPES = [62, 2, 53, 100, 3] #SCRAPPED_IN_TYPE_ID, PURCHASE_TRANSFER_TYPE, FROM_TRANSLOAN_TO_SEGOVIA, FROM_SHOPS_TO_SEGOVIA_TYPE, PICK_TYPE
     DISTRI_TYPES = [104, 102, 103] #Distri pick, distri recepciones, distri out
     INTERNAL_TYPES = [33,59,10,15,21,39,68,89] #Reservas
+    SEGOVIA_INTERNAL_TYPES = [4]
     # 3: Al cambiar el filtro se dejaron sin procesar las salidas de Segovia. Más abajo comprueba que no sean ventas web por el 'canal de ventas' (team_id).
  
     # NO se tienen que hacer:
     INTERNAL_TYPES = [4] # Por ejemplo para reponer la balda de Amazon
     OTHER_NOT_TYPES = [73, 78, 74] # Kame
 
-    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES + INTERNAL_TYPES
+    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES + INTERNAL_TYPES + SEGOVIA_INTERNAL_TYPES
     # Faltan las de reservas
     NOT_ALLOWED_OPERATION_TYPES = INTERNAL_TYPES + OTHER_NOT_TYPES
 
@@ -130,7 +131,13 @@ class Picking(models.Model):
                 else:
                     self.write({"x_status": 1})
                     continue
-            elif team in [14]: #Amazon: Lo de Amazon no se procesa. Comprobar por qué.
+            elif picking.picking_type_id.id in self.SEGOVIA_INTERNAL_TYPES:
+                if picking.picking_type_id.id == 936 or picking.location_dest_id.id == 936: #AMAZON_LOCATION_ID
+                    if picking.state == 'done':
+                        self._syncMagento(picking)
+                else:
+                    picking.write({"x_status": 1}) # Movimientos internos no se procesan en Segovia
+            elif team in [14]: #Amazon: Lo de Amazon no se procesa porque la balda de amazon está fuera del stock
                 picking.write({"x_status": 1})
             elif picking.state == 'cancel':
                 picking.write({"x_status": 1}) #Todos los cancelados
