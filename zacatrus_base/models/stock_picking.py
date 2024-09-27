@@ -90,6 +90,7 @@ class Picking(models.Model):
             if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
                 _logger.warning(f"Zacalog: Syncer {msg}")
+                self.write({"x_status": 1})
                 #self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
                 continue
             
@@ -180,25 +181,28 @@ class Picking(models.Model):
         sourceCode = None
 
         #self.env['zacatrus.connector']
-        dests = self.env['stock.location'].search([('id', '=', picking.location_dest_id.id)])
-        for dest in dests:
-            parentLocationDestId = dest.location_id.id
-        froms = self.env['stock.location'].search([('id', '=', picking.location_id.id)])
-        for _from in froms:
-            parentLocationId = _from.location_id.id
+        dest = self.env['stock.location'].browse(picking.location_dest_id.id)
+        parentLocationDestId = dest.location_id.id
+        _from = self.env['stock.location'].browse(picking.location_id.id)
+        parentLocationId = _from.location_id.id
 
         # Warehouse moves
-        shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13, 1717]
+        #shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13, 1717]
+        shopLocations = Picking.SHOP_LOCATIONS + [13, 1717]
         if picking.location_dest_id.id in shopLocations or parentLocationDestId in [13, 1717]:#[13, 11, 1717, 1716]:
             out = False
             if not picking.location_dest_id.id in self.sourceCodes:
-                sourceCode = "WH"
+                _logger.warning(f"Zacalog: Dest source not found.")
+                return
+                #sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[picking.location_dest_id.id]
         elif picking.location_id.id in shopLocations or parentLocationId in [13, 1717]:
             out = True
             if not picking.location_id.id in self.sourceCodes:
-                sourceCode = "WH"
+                _logger.warning(f"Zacalog: Source not found.")
+                return
+                #sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[picking.location_id.id]
         else:
