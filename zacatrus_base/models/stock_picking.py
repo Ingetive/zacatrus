@@ -13,7 +13,7 @@ class Picking(models.Model):
     _inherit = 'stock.picking'
     #x_sync_status = fields.Integer(default=0)
 
-    FROM_SHOP_DELIVERY_TYPE=[11,16,20,30,36,56,65,86]
+    FROM_SHOP_DELIVERY_TYPE = [11,16,20,30,36,56,65,86]
     SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937,126]
     SHOP_LOCATIONS = [20, 26, 38, 45, 53, 103, 115, 148] #50: Ferias
 
@@ -90,10 +90,8 @@ class Picking(models.Model):
             if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
                 _logger.warning(f"Zacalog: Syncer {msg}")
-                self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                #self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
                 continue
-            
-            #TODO: La balda de Amazon no debería contar para el stock. No es crítico porque son solo nuestros juegos.
             
             if not picking.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
                 msg = f"{picking.name} {picking.picking_type_id.name} ({picking.picking_type_id.id}) no es uno de los tipos permitidos"
@@ -191,7 +189,7 @@ class Picking(models.Model):
 
         # Warehouse moves
         shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13, 1717]
-        if picking.location_dest_id.id in shopLocations or parentLocationDestId in [13, 11, 1717, 1716]:
+        if picking.location_dest_id.id in shopLocations or parentLocationDestId in [13, 1717]:#[13, 11, 1717, 1716]:
             out = False
             if not picking.location_dest_id.id in self.sourceCodes:
                 sourceCode = "WH"
