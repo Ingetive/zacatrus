@@ -50,7 +50,7 @@
             <field name="name">zacatrus_base.queue.form</field>
             <field name="model">zacatrus_base.queue</field>
             <field name="arch" type="xml">
-                <form string="Paquete de pedidos EDI">
+                <form string="Producto a actualizar">
                     <sheet>
                         <group>
                             <field name="create_date"/>
@@ -60,6 +60,7 @@
                             <field name="last_repo"/>
                             <field name="source"/>
                             <field name="done"/>
+                            <field name="origin"/>
                         </group>
                     </sheet>
                 </form>

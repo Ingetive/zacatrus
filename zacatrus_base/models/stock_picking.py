@@ -32,7 +32,7 @@ class Picking(models.Model):
 
     ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES + INTERNAL_TYPES + SEGOVIA_INTERNAL_TYPES
     # Faltan las de reservas
-    NOT_ALLOWED_OPERATION_TYPES = INTERNAL_TYPES + OTHER_NOT_TYPES
+    NOT_ALLOWED_OPERATION_TYPES = OTHER_NOT_TYPES
 
     def setPartnerCarrier(self):
         # TODO: Migración => Revisar con datos como funcionaria la acción automatizada
