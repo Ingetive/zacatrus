@@ -40,6 +40,8 @@
                     <field name="sku"/>
                     <field name="qty"/>
                     <field name="source"/>
+                    <field name="forecast"/>
+                    <field name="picking_id"/>
                     <field name="done"/>
                 </tree>
             </field>
@@ -60,7 +62,8 @@
                             <field name="last_repo"/>
                             <field name="source"/>
                             <field name="done"/>
-                            <field name="origin"/>
+                            <field name="forecast"/>
+                            <field name="picking_id"/>
                         </group>
                     </sheet>
                 </form>

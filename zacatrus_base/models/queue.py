@@ -17,3 +17,5 @@ class Queue(models.Model):
     source = fields.Char()
     done = fields.Boolean()
     origin = fields.Char()
+    forecast = fields.Boolean()
+    picking_id = fields.Many2one('stock.picking', string="Picking of origin", help="El picking que lo ha producido.", readonly=False)

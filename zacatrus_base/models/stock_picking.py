@@ -224,9 +224,9 @@ class Picking(models.Model):
             product = o.product_id
             if o[qtyField]:
                 if out:
-                    self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode, picking.name)
+                    self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode, picking)
                 else:
-                    self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], picking.picking_type_id.id == 2, sourceCode, picking.name)
+                    self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], picking.picking_type_id.id == 2, sourceCode, picking)
         
         picking.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
