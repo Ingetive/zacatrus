@@ -281,6 +281,17 @@ class Zconnector(models.Model):
         res = self._getData('customers', customer)
         return res
 
+    def getSalableQty(self, sku, source = None):
+        if not source:
+            source = "WH"
+
+        url = f"inventory/get-product-salable-quantity/{sku}/4"
+
+        return self._getData(url)
+
+    def getStock(self, sku, source = None, multi = False):
+        return self._getStock(sku, source = None, multi = False)
+    
     def _getStock(self, sku, source = None, multi = False):
         if not source:
             source = "WH"
@@ -298,13 +309,20 @@ class Zconnector(models.Model):
         if not response or "message" in response:
             _logger.error(f"Zacalog: Error getting stock for {sku}: {response['message']}")
         else:
-            for item in response["items"]:
-                if item["source_code"] == source:
+            if not multi:
+                for item in response["items"]:
+                    if item["source_code"] == source:
+                        item["qty"] = item["quantity"]
+                        ret = item
+                    if not ret:
+                        response["qty"] = 0
+                        ret = response
+            else:
+                items = {}
+                for item in response["items"]:
                     item["qty"] = item["quantity"]
-                    ret = item
-                if not ret:
-                    response["qty"] = 0
-                    ret = response
+                    items[item["source_code"]] = item
+                ret = items
 
         return ret
         
@@ -332,7 +350,7 @@ class Zconnector(models.Model):
         #db.stocklog.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
 
         data = {
-            'forecast': False if picking.status == 'done' else True, 
+            'forecast': False if picking.state == 'done' else True, 
             'picking_id': picking, 
             'relative': relative,
             'sku': sku, 'qty': qty, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False
@@ -406,7 +424,7 @@ class Zconnector(models.Model):
         if 'source' in item:
             source = item['source']
         else:
-            source = self.defaultStockSource
+            source = "WH"
         if item['sku']:
             if not item["relative"]:
                 #TODO: De momento son todos relativos

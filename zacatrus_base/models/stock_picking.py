@@ -326,3 +326,160 @@ class Picking(models.Model):
                 else:
                     msg = f"NO puedo avisar al rider para que recoja {picking.name}"
                     sc.sendWarnLimited(msg, channel, f"{picking.id}")
+
+    def getStock(self, productId, location_s = None, mindReserved = False, mindChilds = True, mindAmazon = False):
+        single = True
+        if not location_s:
+            location_s = [13]
+        else:
+            if not isinstance(location_s, list):
+                location_s = [location_s]
+            else:
+                single = False
+
+        qtys = {}
+        for locationId in location_s:
+            allLocations = [locationId]
+            if locationId == 13 and mindChilds:
+                for lid in [13, 938]: # Segovia, sotano
+                    locations = self.env['stock.location'].browse(lid)
+                    if mindAmazon:
+                        try:
+                            locations.remove(936) # Amazon
+                        except:
+                            pass
+                    for location in locations:
+                        allLocations += location.child_ids.ids
+
+            if locationId == 1717 and mindChilds: #Distri
+                for lid in [1717]:
+                    locations = self.env['stock.location'].browse(lid)
+                    for location in locations:
+                        allLocations += location.child_ids.ids
+
+            args = [('location_id', 'in', allLocations), ('product_id', '=', productId)] 
+            quants = self.env['stock.quant'].search(args)
+            qtys[locationId] = 0
+            for quant in quants:
+                qtys[locationId] += quant.quantity
+                if mindReserved:
+                    qtys[locationId] -= quant.reserved_quantity
+
+            if single:
+                return qtys[locationId]
+
+        return qtys
+
+    def fix(self, update = True):
+        locationsToSync = self.SHOP_LOCATIONS + [13, 1717, 938] #SEGOVIA_LOCATION_ID, SEGOVIA_DISTRI_LOCATION_ID, SEGOVIA_SOTANO_ID
+
+        moves = self.env['stock.move'].search([
+            ('write_date', '>', datetime.datetime.now() - datetime.timedelta(hours = 24))            
+        ])
+        productsToCheck = []
+        for move in moves:
+            if not move.product_id.id in productsToCheck:
+                productsToCheck.append(move.product_id.id)
+
+        args = [
+            ('active','=',True),
+            ('type', '=', 'product'),
+            ('id', 'in', productsToCheck),
+            #('default_code', 'in', ['ALTDISBO01SP', 'MC48ES', 'MELMACGAMES-295895PACK']) 
+        ] 
+
+        products = self.env['product.product'].search(args)
+        #magento = self.getMagentoConnector()
+
+        productsSkus = self.getProductsSkus()
+        for odooProduct in products:
+            odooStock = self.getStock(odooProduct['id'], locationsToSync, True, True, True)
+            magentoStock = self.env['zacatrus.connector'].getStock(odooProduct['default_code'], None, True)
+            if odooStock:
+                for stockLocation in locationsToSync:
+                    if stockLocation in self.sourceCodes:
+                        sourceCode = self.sourceCodes[stockLocation]
+                        if magentoStock and not sourceCode in magentoStock:
+                            magentoStock[sourceCode] = {"qty": 0}
+                        if not stockLocation in odooStock:
+                            odooStock[stockLocation] = 0  
+
+                        if stockLocation == 13 and 938 in odooStock:
+                            odooStock[stockLocation] += odooStock[938]
+
+                        if odooProduct and odooProduct['default_code'] and magentoStock:
+                            if magentoStock[sourceCode]['qty'] != odooStock[stockLocation]:
+                                saleable = self.env['zacatrus.connector'].getSalableQty(odooProduct['default_code'], sourceCode)
+                                if ( saleable >= 0                                
+                                    or sourceCode not in ['default', 'wh', 'WH', 'FR_TL']
+                                    ):
+                                    #if magentoStock[sourceCode]['qty'] >= 0: #exlude preorders
+                                    #    count += 1
+
+                                    if odooStock[stockLocation] > magentoStock[sourceCode]['qty']:
+                                        if magentoStock[sourceCode]['qty'] >= 0: #exlude preorders
+                                            if not self.isScheduledSale(odooProduct.default_code, productsSkus):
+                                                _logger.warning(f"^ {sourceCode} {odooProduct.default_code} ^ M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
+                                                if update:
+                                                    increase = odooStock[stockLocation] - magentoStock[sourceCode]['qty']
+                                                    self.env['zacatrus.connector'].increaseStock(odooProduct.default_code, increase, False, sourceCode)
+
+                                    if odooStock[stockLocation] < magentoStock[sourceCode]['qty']:
+                                        if odooStock[stockLocation] < magentoStock[sourceCode]['qty']:
+                                            decrease = magentoStock[sourceCode]['qty'] - odooStock[stockLocation]
+                                            sku = odooProduct.default_code
+                                            if not odooStock[stockLocation] < 0 and not self.isScheduled(sku, sourceCode):
+                                                _logger.warning(f"v {sourceCode} {sku} v M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
+                                                if update:
+                                                    self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
+            else:
+                raise Exception("Connection failed.")
+
+
+    def isScheduled(self, sku, source):
+        args = [
+            ('sku', '=', sku),
+            ('forecast', '=', True),
+            ('create_date', '>', datetime.datetime.now() - datetime.timedelta(days = 3)),  
+            ('source', '=', source)
+        ]
+        queue = self.env['zacatrus_base.queue'].search(args)
+        for item in queue:
+            if item.picking_id.state not in ['cancel', 'done']:
+                return True
+        
+        return False
+    
+    def getProductsSkus(self):
+        productsSkus = []
+        args = [
+            ('picking_type_id', 'in', [3, 104]), # segovia, distri
+            ('create_date', '>', datetime.datetime.now() - datetime.timedelta(days = 3)),
+            ('state', 'not in', ['cancel', 'done']),
+        ]
+        productIds = []
+        pickings = self.env['stock.picking'].search(args)
+        for picking in pickings:
+            margs = [
+                ('picking_id', '=', picking.id)
+            ]
+            moves = self.env['stock.move'].search_read(margs)
+            for move in moves:
+                productIds.append(move.product_id.id)
+            
+        if productIds:
+            pargs = [
+                ('id', 'in', productIds)
+            ]
+            products = self.env['product.product'].search(pargs)
+            for product in products:
+                if product.default_code not in productsSkus:
+                    productsSkus.append(product.default_code)
+
+        return productsSkus
+                    
+    def isScheduledSale(self, sku, productsSkus):   
+        if sku in productsSkus:
+            return True
+        
+        return False
