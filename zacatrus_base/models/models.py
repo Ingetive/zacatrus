@@ -291,6 +291,9 @@ class Zconnector(models.Model):
 
     def getStock(self, sku, source = None, multi = False):
         return self._getStock(sku, source = None, multi = False)
+
+    def getStocks(self, sku):
+        return self._getStock(sku, None, True)
     
     def _getStock(self, sku, source = None, multi = False):
         if not source:
@@ -299,9 +302,12 @@ class Zconnector(models.Model):
         if not sku or sku == "":
             return False
         
-        url_ = "inventory/source-items"
-        query = "searchCriteria[filter_groups][0][filters][0][field]=sku&searchCriteria[filter_groups][0][filters][0][value]="+sku+"&searchCriteria[filter_groups][0][filters][0][condition_type]=eq"
-        url = url_+"?"+query
+        if source:
+            url_ = "inventory/source-items"
+            query = "searchCriteria[filter_groups][0][filters][0][field]=sku&searchCriteria[filter_groups][0][filters][0][value]="+sku+"&searchCriteria[filter_groups][0][filters][0][condition_type]=eq"
+            url = url_+"?"+query
+        else:
+            url = "stockItems/" + sku
 
         response = self._getData(url)
 
@@ -351,7 +357,7 @@ class Zconnector(models.Model):
 
         data = {
             'forecast': False if picking.state == 'done' else True, 
-            'picking_id': picking, 
+            'picking_id': picking.id if picking else False, 
             'relative': relative,
             'sku': sku, 'qty': qty, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False
         }

@@ -112,9 +112,9 @@ class Picking(models.Model):
             #    return
             
             team = False
-            if picking.picking_type_id.id == 3: #self.SEGOVIA_PICK_TYPE_ID
+            if picking.picking_type_id.id in [3, 104]: #self.SEGOVIA_PICK_TYPE_ID, Distri: Pick
                 if picking.sale_id:
-                    team = picking.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon
+                    team = picking.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon, 13: zacatrus.fr
 
             #Esto ya no debería ocurrir TODO: Poner una alerta si pasa
             #if self.partner_id:
@@ -124,7 +124,7 @@ class Picking(models.Model):
             #            if parent.parent_id and parent.parent_id.id == 1: # Is Zacatrus
             #                interShopMove = True
             
-            if team == 6: #Already decreased in Magento
+            if team in [6, 13]: #Already decreased in Magento
                 if picking.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                     self._syncMagento(picking, True) # reverse = True (último parámetro)
                 else:
@@ -148,7 +148,10 @@ class Picking(models.Model):
                     if picking.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
                         msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({picking.sale_id['x_shipping_method']})"
                         self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
-                                            
+                else:                            
+                    self._syncMagento(picking) # Salidas de tienda varias. Para movimiento entre tiendas por ejemplo
+
+
                     #if self.sale_id['x_shipping_method'] == 'zacaship':
                     #    self._syncGlovo(self, self.sale_id)                                
                     #if self.sale_id['x_shipping_method'] == 'stock_pickupatstore':
@@ -194,15 +197,16 @@ class Picking(models.Model):
                 out = False
                 if not picking.location_dest_id.id in self.sourceCodes:
                     _logger.warning(f"Zacalog: Dest source not found.")
-                    return
                     #sourceCode = "WH"
                 else:
                     sourceCode = self.sourceCodes[picking.location_dest_id.id]
         elif picking.location_id.id in shopLocations or parentLocationId in [13, 1717]:
+            #En las salidas, hay que descontarlo en cuanto se reserva.
+            #TODO: ¡OJO! fix-stock lo va a igualar por la noche con lo cual deshará cualquier movimiento que haya quedado en un estado intermedio.
+            #TODO: Habría que ver qué hacer en el caso de cancelaciones y tal: Para subir nota.
             out = True
             if not picking.location_id.id in self.sourceCodes:
                 _logger.warning(f"Zacalog: Source not found.")
-                return
                 #sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[picking.location_id.id]
@@ -394,7 +398,7 @@ class Picking(models.Model):
         productsSkus = self.getProductsSkus()
         for odooProduct in products:
             odooStock = self.getStock(odooProduct['id'], locationsToSync, True, True, True)
-            magentoStock = self.env['zacatrus.connector'].getStock(odooProduct['default_code'], None, True)
+            magentoStock = self.env['zacatrus.connector'].getStocks(odooProduct.default_code)
             if odooStock:
                 for stockLocation in locationsToSync:
                     if stockLocation in self.sourceCodes:
@@ -419,7 +423,7 @@ class Picking(models.Model):
                                     if odooStock[stockLocation] > magentoStock[sourceCode]['qty']:
                                         if magentoStock[sourceCode]['qty'] >= 0: #exlude preorders
                                             if not self.isScheduledSale(odooProduct.default_code, productsSkus):
-                                                _logger.warning(f"^ {sourceCode} {odooProduct.default_code} ^ M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
+                                                _logger.warning(f"Zacalog: ^ {sourceCode} {odooProduct.default_code} ^ M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
                                                 if update:
                                                     increase = odooStock[stockLocation] - magentoStock[sourceCode]['qty']
                                                     self.env['zacatrus.connector'].increaseStock(odooProduct.default_code, increase, False, sourceCode)
@@ -429,7 +433,7 @@ class Picking(models.Model):
                                             decrease = magentoStock[sourceCode]['qty'] - odooStock[stockLocation]
                                             sku = odooProduct.default_code
                                             if not odooStock[stockLocation] < 0 and not self.isScheduled(sku, sourceCode):
-                                                _logger.warning(f"v {sourceCode} {sku} v M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
+                                                _logger.warning(f"Zacalog: v {sourceCode} {sku} v M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
                                                 if update:
                                                     self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
             else:
