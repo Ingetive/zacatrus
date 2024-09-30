@@ -467,7 +467,7 @@ class Picking(models.Model):
             margs = [
                 ('picking_id', '=', picking.id)
             ]
-            moves = self.env['stock.move'].search_read(margs)
+            moves = self.env['stock.move'].search(margs)
             for move in moves:
                 productIds.append(move.product_id.id)
             
