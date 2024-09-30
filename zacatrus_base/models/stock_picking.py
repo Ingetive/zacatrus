@@ -194,15 +194,16 @@ class Picking(models.Model):
                 out = False
                 if not picking.location_dest_id.id in self.sourceCodes:
                     _logger.warning(f"Zacalog: Dest source not found.")
-                    return
                     #sourceCode = "WH"
                 else:
                     sourceCode = self.sourceCodes[picking.location_dest_id.id]
         elif picking.location_id.id in shopLocations or parentLocationId in [13, 1717]:
+            #En las salidas, hay que descontarlo en cuanto se reserva.
+            #TODO: ¡OJO! fix-stock lo va a igualar por la noche con lo cual deshará cualquier movimiento que haya quedado en un estado intermedio.
+            #TODO: Habría que ver qué hacer en el caso de cancelaciones y tal: Para subir nota.
             out = True
             if not picking.location_id.id in self.sourceCodes:
                 _logger.warning(f"Zacalog: Source not found.")
-                return
                 #sourceCode = "WH"
             else:
                 sourceCode = self.sourceCodes[picking.location_id.id]
@@ -326,3 +327,55 @@ class Picking(models.Model):
                 else:
                     msg = f"NO puedo avisar al rider para que recoja {picking.name}"
                     sc.sendWarnLimited(msg, channel, f"{picking.id}")
+
+    def fix(self):
+        locationsToSync = self.SHOP_LOCATIONS + [13, 1717, 938] #SEGOVIA_LOCATION_ID, SEGOVIA_DISTRI_LOCATION_ID, SEGOVIA_SOTANO_ID
+
+        dateFrom = datetime.datetime.now() - datetime.timedelta(hours = 24)
+        moves = self.env['stock.move'].search_read([('write_date', '>', dateFrom)])
+        productsToCheck = []
+        for move in moves:
+            if not move['product_id'][0] in productsToCheck:
+                productsToCheck.append(move['product_id'][0])
+
+        args = [('active','=',True), ('type', '=', 'product'), ('id', 'in', productsToCheck)]
+
+        products = self.env['product.product'].search_read(args)
+        for odooProduct in products:
+            odooStock = self.getStock(odooProduct['id'], locationsToSync, True, True, True)
+            magentoStock = self.env['zacatrus.connector'].getStocks(odooProduct['default_code'])
+            if not odooStock:
+                raise Exception("Connection failed.")
+            else:
+                for stockLocation in locationsToSync:
+                    sourceCodes = self.sourceCodes
+                    if stockLocation in sourceCodes:
+                        sourceCode = sourceCodes[stockLocation]
+                        if magentoStock and not sourceCode in magentoStock:
+                            magentoStock[sourceCode] = {"qty": 0}
+                        if not stockLocation in odooStock:
+                            odooStock[stockLocation] = 0  
+
+                        if stockLocation == self.SEGOVIA_LOCATION_ID and self.SEGOVIA_SOTANO_ID in odooStock:
+                            odooStock[stockLocation] += odooStock[self.SEGOVIA_SOTANO_ID]
+
+                        if odooProduct and odooProduct['default_code'] and magentoStock:
+                            if magentoStock[sourceCode]['qty'] != odooStock[stockLocation]:
+                                saleable = self.env['zacatrus.connector'].getSalableQty(odooProduct['default_code'], sourceCode)
+                                if ( saleable >= 0 or sourceCode not in ['default', 'wh', 'WH', 'FR_TL'] ):
+                                    if magentoStock[sourceCode]['qty'] >= 0: #exlude preorders
+                                        pass #TODO: Esto no se está usando: count += 1 
+
+                                    #Increase Magento stock
+                                    if odooStock[stockLocation] > magentoStock[sourceCode]['qty']:
+                                        if magentoStock[sourceCode]['qty'] >= 0: #exlude preorders
+                                            increase = odooStock[stockLocation] - magentoStock[sourceCode]['qty']
+                                            self.env['zacatrus.connector'].increaseStock(odooProduct['default_code'], increase, False, sourceCode)
+                                            #magento.procStockUpdateQueue()
+
+                                    #Decrease Magento stock
+                                    if odooStock[stockLocation] < magentoStock[sourceCode]['qty']:
+                                        if odooStock[stockLocation] < magentoStock[sourceCode]['qty']:
+                                            decrease = magentoStock[sourceCode]['qty'] - odooStock[stockLocation]
+                                            self.env['zacatrus.connector'].decreaseStock(odooProduct['default_code'], decrease, False, sourceCode)
+                                            #magento.procStockUpdateQueue()
