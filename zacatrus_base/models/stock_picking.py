@@ -112,9 +112,9 @@ class Picking(models.Model):
             #    return
             
             team = False
-            if picking.picking_type_id.id == 3: #self.SEGOVIA_PICK_TYPE_ID
+            if picking.picking_type_id.id in [3, 104]: #self.SEGOVIA_PICK_TYPE_ID, Distri: Pick
                 if picking.sale_id:
-                    team = picking.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon
+                    team = picking.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon, 13: zacatrus.fr
 
             #Esto ya no debería ocurrir TODO: Poner una alerta si pasa
             #if self.partner_id:
@@ -124,7 +124,7 @@ class Picking(models.Model):
             #            if parent.parent_id and parent.parent_id.id == 1: # Is Zacatrus
             #                interShopMove = True
             
-            if team == 6: #Already decreased in Magento
+            if team in [6, 13]: #Already decreased in Magento
                 if picking.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                     self._syncMagento(picking, True) # reverse = True (último parámetro)
                 else:
