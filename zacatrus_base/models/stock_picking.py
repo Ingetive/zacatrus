@@ -148,7 +148,10 @@ class Picking(models.Model):
                     if picking.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
                         msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({picking.sale_id['x_shipping_method']})"
                         self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
-                                            
+                else:                            
+                    self._syncMagento(picking) # Salidas de tienda varias. Para movimiento entre tiendas por ejemplo
+
+
                     #if self.sale_id['x_shipping_method'] == 'zacaship':
                     #    self._syncGlovo(self, self.sale_id)                                
                     #if self.sale_id['x_shipping_method'] == 'stock_pickupatstore':
