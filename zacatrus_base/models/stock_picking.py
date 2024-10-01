@@ -87,7 +87,7 @@ class Picking(models.Model):
         ]
         pickings = self.search(args)
         for picking in pickings:                
-            if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES:
+            if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES: #Basicamente Kame
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
                 _logger.warning(f"Zacalog: Syncer {msg}")
                 picking.write({"x_status": 1})
@@ -99,37 +99,23 @@ class Picking(models.Model):
                 _logger.warning(f"Zacalog: Syncer {msg}")
                 self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
             
-            #ready = True
             if picking.state == 'confirmed' and picking.group_id:
                 # En espera y con grupo de abastecimento
                 groups = self.env['procurement.group'].search([('id', '=', picking.group_id.id)])
                 for group in groups:
                     if not group.sale_id:
                         continue # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
-                    #_logger.info(f"Zacalog: El picking {self.name} ({self.state}) ha sido modificado. Grupo: {self.group_id.id}; sale: {group.sale_id.id} ({ready})")
 
-            #if not ready:
-            #    return
-            
             team = False
             if picking.picking_type_id.id in [3, 104]: #self.SEGOVIA_PICK_TYPE_ID, Distri: Pick
                 if picking.sale_id:
                     team = picking.sale_id.team_id.id #6: web, 11: pickOp, 14: amazon, 13: zacatrus.fr
-
-            #Esto ya no debería ocurrir TODO: Poner una alerta si pasa
-            #if self.partner_id:
-            #    if "zacatrus" in self.partner_id.name.lower():
-            #        parents = self.env['res.partner'].search([('id', '=', self.partner_id.id)])
-            #        for parent in parents:
-            #            if parent.parent_id and parent.parent_id.id == 1: # Is Zacatrus
-            #                interShopMove = True
             
             if team in [6, 13]: #Already decreased in Magento
                 if picking.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                     self._syncMagento(picking, True) # reverse = True (último parámetro)
                 else:
                     self.write({"x_status": 1})
-                    continue
             elif team in [14]: #Amazon: Lo de Amazon no se procesa porque la balda de amazon está fuera del stock
                 picking.write({"x_status": 1})
             elif picking.state == 'cancel':
@@ -143,14 +129,12 @@ class Picking(models.Model):
                 and picking.location_dest_id.id != 10 #picking.INTER_COMPANY_LOCATION_ID
                 #and not interShopMove
                 ):
-                #self._syncMagento() # OJO: Tengo dudas, Creo que no debe hacerse porque viene de magento y ya debería estar al día. Nunca ha estado.
                 if self.sale_id:
                     if picking.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
                         msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({picking.sale_id['x_shipping_method']})"
                         self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
                 else:                            
                     self._syncMagento(picking) # Salidas de tienda varias. Para movimiento entre tiendas por ejemplo
-
 
                     #if self.sale_id['x_shipping_method'] == 'zacaship':
                     #    self._syncGlovo(self, self.sale_id)                                
@@ -423,7 +407,9 @@ class Picking(models.Model):
                                     if odooStock[stockLocation] > magentoStock[sourceCode]['qty']:
                                         if magentoStock[sourceCode]['qty'] >= 0: #exlude preorders
                                             if not self.isScheduledSale(odooProduct.default_code, productsSkus):
-                                                _logger.warning(f"Zacalog: ^ {sourceCode} {odooProduct.default_code} ^ M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
+                                                msg = f"^ {sourceCode} {odooProduct.default_code} ^ Mage:{magentoStock[sourceCode]['qty']} -> Odoo:{odooStock[stockLocation]}"
+                                                _logger.warning(f"Zacalog: {msg}")
+                                                self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", Notifier.LEVEL_WARNING)
                                                 if update:
                                                     increase = odooStock[stockLocation] - magentoStock[sourceCode]['qty']
                                                     self.env['zacatrus.connector'].increaseStock(odooProduct.default_code, increase, False, sourceCode)
@@ -433,7 +419,9 @@ class Picking(models.Model):
                                             decrease = magentoStock[sourceCode]['qty'] - odooStock[stockLocation]
                                             sku = odooProduct.default_code
                                             if not odooStock[stockLocation] < 0 and not self.isScheduled(sku, sourceCode):
-                                                _logger.warning(f"Zacalog: v {sourceCode} {sku} v M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}")
+                                                msg = f"{sourceCode} {sku} v M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}"
+                                                _logger.warning(f"Zacalog: {msg}")
+                                                self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", Notifier.LEVEL_WARNING)
                                                 if update:
                                                     self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
             else:
@@ -469,7 +457,8 @@ class Picking(models.Model):
             ]
             moves = self.env['stock.move'].search(margs)
             for move in moves:
-                productIds.append(move.product_id.id)
+                if move.product_id.id not in productIds:
+                    productIds.append(move.product_id.id)
             
         if productIds:
             pargs = [
