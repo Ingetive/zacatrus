@@ -3,7 +3,6 @@
 import logging
 
 from odoo import models, fields, api
-import datetime, csv, io
 from .notifier import Notifier
 
 _logger = logging.getLogger(__name__)

@@ -1,12 +1,12 @@
 import logging
 from odoo import models
-import urllib
+import datetime
 
 _logger = logging.getLogger(__name__)
 
 class Syncer(models.TransientModel):
     _name = 'zacatrus.syncer'
-    _description = 'Zacatrus helper para sincronizar inventario y controlar stocks'
+    _description = 'Zacatrus Syncer'
         
     FROM_SHOP_DELIVERY_TYPE = [11,16,20,30,36,56,65,86]
     SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937,126]
@@ -28,7 +28,7 @@ class Syncer(models.TransientModel):
     ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES + INTERNAL_TYPES + SEGOVIA_INTERNAL_TYPES
     # Faltan las de reservas
     NOT_ALLOWED_OPERATION_TYPES = OTHER_NOT_TYPES
-    
+
     def sync(self):             
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
@@ -41,7 +41,7 @@ class Syncer(models.TransientModel):
             ('x_status', 'in', [0, '0', False]), #, 601, 602, 607]), #607: snooze
             #('picking_type_id', 'in', allowedOperationTypes),
         ]
-        pickings = self.search(args)
+        pickings = self.env['stock.picking'].search(args)
         for picking in pickings:                
             if picking.picking_type_id.id in self.NOT_ALLOWED_OPERATION_TYPES: #Basicamente Kame
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
@@ -71,7 +71,7 @@ class Syncer(models.TransientModel):
                 if picking.state == 'cancel': # If it is a cancel, we have to return stock to Odoo manually
                     self._syncMagento(picking, True) # reverse = True (último parámetro)
                 else:
-                    self.write({"x_status": 1})
+                    picking.write({"x_status": 1})
             elif team in [14]: #Amazon: Lo de Amazon no se procesa porque la balda de amazon está fuera del stock
                 picking.write({"x_status": 1})
             elif picking.state == 'cancel':
@@ -81,11 +81,11 @@ class Syncer(models.TransientModel):
                     self._syncMagento(picking)
                 else:
                     picking.write({"x_status": 1}) # Movimientos internos no se procesan en Segovia
-            elif (picking.picking_type_id.id in Picking.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
+            elif (picking.picking_type_id.id in Syncer.FROM_SHOP_DELIVERY_TYPE #Envíos que salen de tiendas
                 and picking.location_dest_id.id != 10 #picking.INTER_COMPANY_LOCATION_ID
                 #and not interShopMove
                 ):
-                if self.sale_id:
+                if picking.sale_id:
                     if picking.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
                         msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({picking.sale_id['x_shipping_method']})"
                         self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
@@ -95,10 +95,10 @@ class Syncer(models.TransientModel):
                     #if self.sale_id['x_shipping_method'] == 'zacaship':
                     #    self._syncGlovo(self, self.sale_id)                                
                     #if self.sale_id['x_shipping_method'] == 'stock_pickupatstore':
-                    #    self._syncPickupatstore(self, self.sale_id)
+                    #    self._syncPickupatstore(self, picking.sale_id, picking)
             else:
-                if self.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
-                    self.write({"x_status": 1})
+                if picking.picking_type_id.id in [28]: #ferias #TODO: ¿por qué?
+                    picking.write({"x_status": 1})
                 else:
                     self._syncMagento(picking) #sincroniza cualquier otra cosa
                     
@@ -129,8 +129,8 @@ class Syncer(models.TransientModel):
         parentLocationId = _from.location_id.id
 
         # Warehouse moves
-        #shopLocations = Picking.SHOP_RESERVE_LOCATIONS + Picking.SHOP_LOCATIONS + [13, 1717]
-        shopLocations = Picking.SHOP_LOCATIONS + [13, 1717]
+        #shopLocations = Syncer.SHOP_RESERVE_LOCATIONS + Syncer.SHOP_LOCATIONS + [13, 1717]
+        shopLocations = Syncer.SHOP_LOCATIONS + [13, 1717]
         if picking.location_dest_id.id in shopLocations or parentLocationDestId in [13, 1717]:#[13, 11, 1717, 1716]:
             #Al ser una entrada, hay que esperar a que el movimiento esté validado picking.state == 'done'
             if picking.state == 'done':
@@ -175,20 +175,20 @@ class Syncer(models.TransientModel):
         picking.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
 
-    def _syncPickupatstore(self, sale):
+    def _syncPickupatstore(self, sale, picking):
         if sale['team_id'][0] == 6:
             sc = self.env['zacatrus_base.slack']
-            channel = sc.getSlackChannelByLocation(self.location_id.id)
+            channel = sc.getSlackChannelByLocation(picking.location_id.id)
 
-            if self.state in ['assigned', 'confirmed']: 
-                if self.x_status == 0:
+            if picking.state in ['assigned', 'confirmed']: 
+                if picking.x_status == 0:
                     sc.sendWarn(f"Ha llegado un nuevo pedido para recogida en tienda: {self.name} (#{sale.client_order_ref}). Por favor, prepáralo (en Odoo) y guárdalo en una bolsa hasta que vengan a buscarlo. Cuando termines aviso al cliente.", channel)
-                    self.write({"x_status": 601})
-            elif self.state == 'done' and self.x_status in [601, 602, 607]:
-                self.write({"x_status": 603})
+                    picking.write({"x_status": 601})
+            elif picking.state == 'done' and picking.x_status in [601, 602, 607]:
+                picking.write({"x_status": 603})
                 try:
                     msg = f"No he conseguido avisar al cliente. Por favor, llama o manda un email para que pase a recoger su pedido ({sale.client_order_ref})."
-                    if self.notifyCustomer(self.sale_id):
+                    if self.notifyCustomer(picking.sale_id):
                         msg = f"Ok, cliente avisado  (pedido #{sale.client_order_ref})."
                 except Exception as e:
                     msg = f"No he conseguido avisar al cliente. Por favor, llama o manda un email para que pase a recoger su pedido ({sale.client_order_ref}). ({e})"
