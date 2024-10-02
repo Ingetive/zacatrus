@@ -356,7 +356,7 @@ class Zconnector(models.Model):
         #db.stocklog.bulk_write([InsertOne({'sku': sku, 'qty': qty, 'relative': relative, 'last_repo': lastRepo, 'created_at': datetime.now(), 'source': sourceCode})])
 
         data = {
-            'forecast': False if picking.state == 'done' else True, 
+            'forecast': False if not picking or picking.state == 'done' else True, 
             'picking_id': picking.id if picking else False, 
             'relative': relative,
             'sku': sku, 'qty': qty, 'last_repo': lastRepo, 'create_date': datetime.datetime.now(), 'source': sourceCode, 'done': False
