@@ -3,7 +3,7 @@
 
     <record id="pos_aplazame_get_transactions" model="ir.cron">
         <field name="name">Zacatrus Syncer: Sincronizar stocks con Magento</field>
-        <field name="model_id" ref="model_stock_picking"/>
+        <field name="model_id" ref="model_zacatrus_syncer"/>
         <field name="state">code</field>
         <field name="code">model.sync()</field>
         <field name='interval_number'>1</field>
