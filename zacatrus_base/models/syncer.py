@@ -1,7 +1,7 @@
 import logging
 from odoo import models
 import datetime
-from notifier import Notifier
+from .notifier import Notifier
 
 _logger = logging.getLogger(__name__)
 
