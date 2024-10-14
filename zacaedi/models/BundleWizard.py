@@ -194,15 +194,15 @@ class BundleWizard(models.Model):
                     buffer = file.read().decode('unicode_escape')
                 orders = EdiTalker.readBuffer( buffer )
                 for order in orders:
-                    orderDate = datetime.strptime(order['data']['time'], "%Y%m%d")
-                    past = datetime.now() - timedelta(days=6)
-                    if orderDate < past:
-                        msg = f"El pedido {order['data']['orderNumber']} es demasiado antiguo (>6 días) "
-                        _logger.error (f"Zacalog: EDI: {msg}")
-                        EdiTalker.saveError(self.env, 201, order, msg)
-                        #TODO: Delete from ftp
-                        #ftp.remove(os.path.join(path, fileName))
-                        raise Exception (msg)
+                    #orderDate = datetime.strptime(order['data']['time'], "%Y%m%d")
+                    #past = datetime.now() - timedelta(days=6)
+                    #if orderDate < past:
+                    #    msg = f"El pedido {order['data']['orderNumber']} es demasiado antiguo (>6 días) "
+                    #    _logger.error (f"Zacalog: EDI: {msg}")
+                    #    EdiTalker.saveError(self.env, 201, order, msg)
+                    #    #TODO: Delete from ftp
+                    #    #ftp.remove(os.path.join(path, fileName))
+                    #    raise Exception (msg)
                         
                     try:
                         createdOrder = EdiTalker.createSaleOrderFromEdi( self.env, order )
