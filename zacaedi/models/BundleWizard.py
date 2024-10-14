@@ -203,7 +203,7 @@ class BundleWizard(models.Model):
                     #    #TODO: Delete from ftp
                     #    #ftp.remove(os.path.join(path, fileName))
                     #    raise Exception (msg)
-                        
+                    #    
                     try:
                         createdOrder = EdiTalker.createSaleOrderFromEdi( self.env, order )
                         EdiTalker.deleteError(self.env, order)
