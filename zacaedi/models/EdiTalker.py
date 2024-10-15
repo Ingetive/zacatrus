@@ -631,7 +631,7 @@ class EdiTalker ():
             raise e
 
 
-        if invoicingPartner['id'] not in [5661, 5967, 5758]: # ECI, Juguettos, Fnac
+        if invoicingPartner['id'] not in [5661, 5967, 5758, 171374]: # ECI, Juguettos, Fnac
             EdiTalker.saveError(env, 102, ediOrder, "No es ninguno de los clientes de EDI.")
             raise Exception(f"wrong client {invoicingPartner['id']}")
 
