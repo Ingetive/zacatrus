@@ -179,7 +179,7 @@
                             </div>
                         </div>
                     </div>
-                    <h2>Reonciliation</h2>
+                    <h2>Reconciliation</h2>
                     <div class="row mt16 o_settings_container" name="taxes_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="reconcile_one_month_only"

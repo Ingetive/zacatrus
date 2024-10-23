@@ -47,13 +47,13 @@ class Syncer(models.TransientModel):
                 msg = f"{picking.picking_type_id.name} ({picking.picking_type_id.id}) es uno de los tipos NO permitidos"
                 _logger.warning(f"Zacalog: Syncer {msg}")
                 picking.write({"x_status": 1})
-                #self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                #self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                 continue
             
             if not picking.picking_type_id.id in self.ALLOWED_OPERATION_TYPES:
                 msg = f"{picking.name} {picking.picking_type_id.name} ({picking.picking_type_id.id}) no es uno de los tipos permitidos"
                 _logger.warning(f"Zacalog: Syncer {msg}")
-                self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
             
             if picking.state == 'confirmed' and picking.group_id:
                 # En espera y con grupo de abastecimento
@@ -88,7 +88,7 @@ class Syncer(models.TransientModel):
                 if picking.sale_id:
                     if picking.sale_id['x_shipping_method'] not in ['zacaship', 'stock_pickupatstore']:
                         msg = f"Esto es un pedido que sale de tienda, pero no es ni una recogida ni un Trus ({picking.sale_id['x_shipping_method']})"
-                        self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", Notifier.LEVEL_WARNING)
+                        self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                 else:                            
                     self._syncMagento(picking) # Salidas de tienda varias. Para movimiento entre tiendas por ejemplo
 
@@ -151,7 +151,7 @@ class Syncer(models.TransientModel):
             else:
                 sourceCode = self.sourceCodes[picking.location_id.id]
         else:
-            self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, f"{picking.name} is not a warehouse move", "syncer", Notifier.LEVEL_WARNING)
+            self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, f"{picking.name} is not a warehouse move", "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
             return
 
         if sourceCode:
@@ -221,7 +221,7 @@ class Syncer(models.TransientModel):
                 except:
                     _logger.error(f"Zacalog: {msg}")
                     msg = f"Could not notify customer for order {order.name}."
-                    self.env['zacatrus_base.notifier'].notify('sale.order', order.id, msg, "syncer", Notifier.LEVEL_ERROR)
+                    self.env['zacatrus_base.notifier'].notify('sale.order', order.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_ERROR)
                         
         return False
 
@@ -361,7 +361,7 @@ class Syncer(models.TransientModel):
                                                 if not self.isScheduledSale(odooProduct.default_code, productsSkus):
                                                     msg = f"^ {sourceCode} {odooProduct.default_code} ^ Mage:{magentoStock[sourceCode]['qty']} -> Odoo:{odooStock[stockLocation]}"
                                                     _logger.warning(f"Zacalog: {msg}")
-                                                    self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", Notifier.LEVEL_WARNING)
+                                                    self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                                                     if update:
                                                         increase = odooStock[stockLocation] - magentoStock[sourceCode]['qty']
                                                         self.env['zacatrus.connector'].increaseStock(odooProduct.default_code, increase, False, sourceCode)
@@ -373,7 +373,7 @@ class Syncer(models.TransientModel):
                                                 if not odooStock[stockLocation] < 0 and not self.isScheduled(sku, sourceCode):
                                                     msg = f"{sourceCode} {sku} v M:{magentoStock[sourceCode]['qty']} -> O:{odooStock[stockLocation]}"
                                                     _logger.warning(f"Zacalog: {msg}")
-                                                    self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", Notifier.LEVEL_WARNING)
+                                                    self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                                                     if update:
                                                         self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
             else:
