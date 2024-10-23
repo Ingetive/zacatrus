@@ -395,11 +395,13 @@ class Zconnector(models.Model):
 
         try:
             self._getData(url, postParams, method)
+
+            #Double check:
+            newStock = self._getStock(sku, source)
+            return int(newStock['qty']) == int(qty)
         except Exception as e:
             _logger.error(f"Zacalog: _doPutStock exception: "+ str(e))
             return False
-            
-        return True
 
     def setProductAttribute(self, sku, code, value):
         url = self._getUrl() + "products/"+sku+""
