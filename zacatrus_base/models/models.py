@@ -383,7 +383,6 @@ class Zconnector(models.Model):
 
 
     def _doPutStock(self, sku, qty, source = False, manageStock = True):
-        ret = False
         method = False
         if source:
             postParams = {"sourceItems": [{"sku": sku,"source_code": source, "quantity": qty,"status": 1 if qty > 0 else 0,"extension_attributes": { } }]}
@@ -394,6 +393,7 @@ class Zconnector(models.Model):
             method = "put"
 
         try:
+            _logger.info(f"Zacalog: _doPutStock setting {sku} to {qty} in {source}")
             self._getData(url, postParams, method)
 
             #Double check:
