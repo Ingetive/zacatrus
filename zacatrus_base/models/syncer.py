@@ -338,8 +338,12 @@ class Syncer(models.TransientModel):
         for odooProduct in products:
             odooStock = self.getStock(odooProduct['id'], locationsToSync, True, True, True) # Previsto / disponible
             odooStockReal = self.getStock(odooProduct['id'], locationsToSync, False, True, True) # Stock real
-            magentoStock = self.env['zacatrus.connector'].getStocks(odooProduct.default_code)
-            if odooStock:
+            magentoStock = False
+            try:
+                magentoStock = self.env['zacatrus.connector'].getStocks(odooProduct.default_code)
+            except Exception as e:
+                _logger.error(f"Zacalog: Unable to get stock from Magento for {odooProduct.default_code}")
+            if odooStock and magentoStock:
                 for stockLocation in locationsToSync:
                     if stockLocation in self.sourceCodes:
                         # No se actualiza cuando el stock real es ditinto del disponible para evitar tocar los movimientos que están en proceso
@@ -377,9 +381,6 @@ class Syncer(models.TransientModel):
                                                     self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                                                     if update:
                                                         self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
-            else:
-                raise Exception("Connection failed.")
-
 
     def isScheduled(self, sku, source):
         args = [

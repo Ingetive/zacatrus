@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 import logging
+import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -38,10 +39,13 @@ class Notifier(models.Model):
             usersConfig = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.notify_user_ids')
             if usersConfig:
                 userIds = [int(i) for i in usersConfig.split(",")]
+
+                someTimeAgo = datetime.datetime.now() - datetime.timedelta(days = 1)
                 args = [
                     ('model', '=', model),
                     ('res_id', '=', resId),
                     ('body', '=', msg),
+                    ('write_date', '>=', someTimeAgo)
                 ]
                 count =  self.env['mail.message'].search_count(args)
                 if count == 0:
