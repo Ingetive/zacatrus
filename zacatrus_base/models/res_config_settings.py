@@ -165,3 +165,6 @@ class ResConfigSettings(models.TransientModel):
 
     def getSyncerSyncActive(self):
         return self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.syncer_sync_active')
+
+    def setSyncerSyncActive(self, isActive):
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.syncer_sync_active', isActive)

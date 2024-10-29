@@ -59,6 +59,6 @@ class SaleOrder(models.Model):
                 
             if carrier_id:
                 r.write({'carrier_id': carrier_id})
-            else:
-                _logger.warning(f"Zacalog: Al Pedido de Venta {r.name} no se le ha podido asignar ningún método de envío.")
+            #else:
+            #    _logger.warning(f"Zacalog: Al Pedido de Venta {r.name} no se le ha podido asignar ningún método de envío.")
                 

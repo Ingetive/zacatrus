@@ -29,7 +29,7 @@ class MailNotification(models.Model):
                         ]
                         count =  self.env['mail.message'].search_read(args)
                         if count:
-                            _logger.warning(f"Zacalog: MailNotification: bloqueado uno de 'asignado a'.")
+                            #_logger.warning(f"Zacalog: MailNotification: bloqueado uno de 'asignado a'.")
                             notification.unlink()
 
         return False

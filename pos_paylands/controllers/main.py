@@ -10,7 +10,7 @@ class PaylandsController(http.Controller):
     def handler(self, **kwargs):
         notification = json.loads(http.request.httprequest.data)
 
-        _logger.info("Zacalog: Paylands callback: "+ str(notification))
+        #_logger.info("Zacalog: Paylands callback: "+ str(notification))
 
         # Check hash
         signature = http.request.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_signature')

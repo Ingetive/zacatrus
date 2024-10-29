@@ -381,16 +381,14 @@ class Zconnector(models.Model):
         _logger.error(f"Zacalog: _doDecreaseStock: No quantities got from magento for {sku}")
         return False
 
-
     def _doPutStock(self, sku, qty, source = False, manageStock = True):
         method = False
         if source:
             postParams = {"sourceItems": [{"sku": sku,"source_code": source, "quantity": qty,"status": 1 if qty > 0 else 0,"extension_attributes": { } }]}
             url = "inventory/source-items"
         else:
-            postParams = {"stockItem":{"qty":qty, "is_in_stock": (qty > 0), "manage_stock": manageStock}}
-            url = "products/"+sku+"/stockItems/1"
-            method = "put"
+            _logger.error(f"Zacalog: _doPutStock source code not provided.")
+            return False
 
         try:
             _logger.info(f"Zacalog: _doPutStock setting {sku} to {qty} in {source}")
@@ -458,11 +456,19 @@ class Zconnector(models.Model):
             #    item["sku"] = m.group(1)
             #    self._procItem(item)
 
-    def procStockUpdateQueue(self):        
-        items = self.env['zacatrus_base.queue'].search([('done', '=', False)])
-        for item in items:
-            try:
-                self._procItem(item)
-            except Exception as e:
-                _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
-                raise e
+    def procStockUpdateQueue(self):
+        #time.sleep(random.uniform(0, 1)) # Un número aleatorio de milisegundos entre 0 y 1 segundos para evitar que dos procesos se cuelen a la vez
+        if not self.env['res.config.settings'].getSyncerSyncActive():
+            _logger.error("Zacalog: procStockUpdateQueue: CONCURRENCY or not syncing active.")
+        else:
+            self.env['res.config.settings'].setSyncerSyncActive(False) # Se desactiva para evitar concurrencia
+
+            items = self.env['zacatrus_base.queue'].search([('done', '=', False)])
+            for item in items:
+                try:
+                    self._procItem(item)
+                except Exception as e:
+                    _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
+                    raise e
+                
+            self.env['res.config.settings'].setSyncerSyncActive(True) # Se vuelve a activar

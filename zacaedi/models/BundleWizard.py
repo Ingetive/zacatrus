@@ -145,10 +145,10 @@ class BundleWizard(models.Model):
 
         idx = 0
         ftp = False
-        _logger.info(f"Zacalog: EDI: Seeking bundle...")
+        #_logger.info(f"Zacalog: EDI: Seeking bundle...")
         for bundle in bundles:
             isError = False
-            _logger.info(f"Zacalog: EDI: Sending bundle {bundle['id']}...")
+            #_logger.info(f"Zacalog: EDI: Sending bundle {bundle['id']}...")
             for order in bundle.order_ids:
                 if order.x_edi_status == EdiTalker.EDI_STATUS_READY:
                     try:

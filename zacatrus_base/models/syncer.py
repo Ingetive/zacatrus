@@ -103,8 +103,7 @@ class Syncer(models.TransientModel):
                 else:
                     self._syncMagento(picking) #sincroniza cualquier otra cosa
                     
-        if self.env['res.config.settings'].getSyncerSyncActive():
-            self.env['zacatrus.connector'].procStockUpdateQueue()
+        self.env['zacatrus.connector'].procStockUpdateQueue()
 
     sourceCodes = {
         13: "WH",
