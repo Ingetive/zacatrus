@@ -142,7 +142,6 @@ class Syncer(models.TransientModel):
                     sourceCode = self.sourceCodes[picking.location_dest_id.id]
         elif picking.location_id.id in shopLocations or parentLocationId in [13, 1717]:
             #En las salidas, hay que descontarlo en cuanto se reserva.
-            #TODO: ¡OJO! fix-stock lo va a igualar por la noche con lo cual deshará cualquier movimiento que haya quedado en un estado intermedio.
             #TODO: Habría que ver qué hacer en el caso de cancelaciones y tal: Para subir nota.
             out = True
             if not picking.location_id.id in self.sourceCodes:
@@ -151,7 +150,9 @@ class Syncer(models.TransientModel):
             else:
                 sourceCode = self.sourceCodes[picking.location_id.id]
         else:
-            self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, f"{picking.name} is not a warehouse move", "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
+            msg = f"{picking.name} is not a warehouse move"
+            #self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
+            _logger.warning(f"Zacalog: syncer: {msg}")
             return
 
         if sourceCode:
