@@ -56,7 +56,8 @@ class Syncer(models.TransientModel):
                 _logger.warning(f"Zacalog: Syncer {msg}")
                 self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
             
-            if picking.state == 'confirmed' and picking.group_id:
+            #if picking.state == 'confirmed' and picking.group_id:
+            if picking.state != 'done' and picking.group_id:
                 # En espera y con grupo de abastecimento
                 groups = self.env['procurement.group'].search([('id', '=', picking.group_id.id)])
                 for group in groups:
