@@ -20,15 +20,17 @@ class Syncer(models.TransientModel):
     DISTRI_TYPES = [104, 102, 103] #Distri pick, distri recepciones, distri out
     INTERNAL_TYPES = [33,59,10,15,21,39,68,89] #Reservas
     SEGOVIA_INTERNAL_TYPES = [4]
+
+    WAREHOUSE_INTERNAL_TYPES = [106, 4]
     # 3: Al cambiar el filtro se dejaron sin procesar las salidas de Segovia. Más abajo comprueba que no sean ventas web por el 'canal de ventas' (team_id).
  
     # NO se tienen que hacer:
     #INTERNAL_TYPES = [4] # Por ejemplo para reponer la balda de Amazon
     OTHER_NOT_TYPES = [73, 78, 74] # Kame
 
-    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES + INTERNAL_TYPES + SEGOVIA_INTERNAL_TYPES
+    ALLOWED_OPERATION_TYPES = FROM_SHOP_DELIVERY_TYPE + POS_TYPES + SHOP_IN_TYPES + FROM_SHOP_RETURN_TYPE + OTHER_TYPES + DISTRI_TYPES + INTERNAL_TYPES # + SEGOVIA_INTERNAL_TYPES
     # Faltan las de reservas
-    NOT_ALLOWED_OPERATION_TYPES = OTHER_NOT_TYPES
+    NOT_ALLOWED_OPERATION_TYPES = WAREHOUSE_INTERNAL_TYPES + OTHER_NOT_TYPES
 
     def sync(self):             
         if not self.env['res.config.settings'].getSyncerActive():
