@@ -463,7 +463,7 @@ class Zconnector(models.Model):
         else:
             self.env['res.config.settings'].setSyncerSyncActive(False) # Se desactiva para evitar concurrencia
 
-            items = self.env['zacatrus_base.queue'].search([('done', '=', False)],limit=50)
+            items = self.env['zacatrus_base.queue'].search([('done', '=', False)],limit=20)
             for item in items:
                 try:
                     self._procItem(item)
