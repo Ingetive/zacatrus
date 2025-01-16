@@ -33,6 +33,7 @@ class Syncer(models.TransientModel):
     NOT_ALLOWED_OPERATION_TYPES = WAREHOUSE_INTERNAL_TYPES + OTHER_NOT_TYPES
 
     def sync(self):             
+        _logger.info("Zacalog: Syncer starts sync.")
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
             return
@@ -106,7 +107,9 @@ class Syncer(models.TransientModel):
                 else:
                     self._syncMagento(picking) #sincroniza cualquier otra cosa
                     
+        _logger.info("Zacalog: Syncer starts procStockUpdateQueue.")
         self.env['zacatrus.connector'].procStockUpdateQueue()
+        _logger.info("Zacalog: Syncer ends sync.")
 
     sourceCodes = {
         13: "WH",
