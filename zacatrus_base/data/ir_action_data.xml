@@ -11,4 +11,14 @@
         <field name="numbercall">-1</field>
     </record>
 
+    <record id="pos_zconnector_proc_queue" model="ir.cron">
+        <field name="name">Zacatrus Syncer: Ejecutar cola</field>
+        <field name="model_id" ref="model_zacatrus_connector"/>
+        <field name="state">code</field>
+        <field name="code">model.procStockUpdateQueue(24)</field>
+        <field name='interval_number'>1</field>
+        <field name='interval_type'>minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+
 </odoo>

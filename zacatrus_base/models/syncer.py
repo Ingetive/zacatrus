@@ -108,8 +108,8 @@ class Syncer(models.TransientModel):
                 else:
                     self._syncMagento(picking) #sincroniza cualquier otra cosa
                     
-        _logger.info("Zacalog: Syncer starts procStockUpdateQueue.")
-        self.env['zacatrus.connector'].procStockUpdateQueue()
+        #_logger.info("Zacalog: Syncer starts procStockUpdateQueue.")
+        #self.env['zacatrus.connector'].procStockUpdateQueue()
         _logger.info("Zacalog: Syncer ends sync.")
 
         return True
