@@ -33,7 +33,7 @@ class Syncer(models.TransientModel):
     NOT_ALLOWED_OPERATION_TYPES = WAREHOUSE_INTERNAL_TYPES + OTHER_NOT_TYPES
 
     @api.model
-    def sync(self):             
+    def sync(self):
         _logger.info("Zacalog: Syncer starts sync.")
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
@@ -111,6 +111,8 @@ class Syncer(models.TransientModel):
         _logger.info("Zacalog: Syncer starts procStockUpdateQueue.")
         self.env['zacatrus.connector'].procStockUpdateQueue()
         _logger.info("Zacalog: Syncer ends sync.")
+
+        return True
 
     sourceCodes = {
         13: "WH",
@@ -389,6 +391,8 @@ class Syncer(models.TransientModel):
                                                     self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                                                     if update:
                                                         self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
+
+        return True
 
     def isScheduled(self, sku, source):
         args = [
