@@ -1,5 +1,5 @@
 import logging
-from odoo import models
+from odoo import models, api
 import datetime
 from .notifier import Notifier
 
@@ -32,6 +32,7 @@ class Syncer(models.TransientModel):
     # Faltan las de reservas
     NOT_ALLOWED_OPERATION_TYPES = WAREHOUSE_INTERNAL_TYPES + OTHER_NOT_TYPES
 
+    @api.model
     def sync(self):             
         _logger.info("Zacalog: Syncer starts sync.")
         if not self.env['res.config.settings'].getSyncerActive():
@@ -321,6 +322,7 @@ class Syncer(models.TransientModel):
 
         return qtys
 
+    @api.model
     def fix(self, update = True, all = False):
         locationsToSync = self.SHOP_LOCATIONS + [13, 1717, 938] #SEGOVIA_LOCATION_ID, SEGOVIA_DISTRI_LOCATION_ID, SEGOVIA_SOTANO_ID
 
