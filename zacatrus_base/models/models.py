@@ -106,7 +106,7 @@ class Zconnector(models.Model):
             isCustomer = True
 
         if token:
-            hed = {'Authorization': 'Bearer ' + token}
+            hed = {'Authorization': 'Bearer ' + token, "User-Agent": "Zaca Odoo"}
             if method and method == 'put':
                 response = requests.put(self._getUrl(isCustomer) + purl, headers=hed, json=postParams)
             elif postParams:
@@ -405,7 +405,7 @@ class Zconnector(models.Model):
         url = self._getUrl() + "products/"+sku+""
         token = self._getToken()
         if token:
-            hed = {'Authorization': 'Bearer ' + token}
+            hed = {'Authorization': 'Bearer ' + token, "User-Agent": "Zaca Odoo"}
 
             data = {
                 "product": {
