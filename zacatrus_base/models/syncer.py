@@ -1,5 +1,5 @@
 import logging
-from odoo import models
+from odoo import models, api
 import datetime
 from .notifier import Notifier
 
@@ -32,7 +32,9 @@ class Syncer(models.TransientModel):
     # Faltan las de reservas
     NOT_ALLOWED_OPERATION_TYPES = WAREHOUSE_INTERNAL_TYPES + OTHER_NOT_TYPES
 
-    def sync(self):             
+    @api.model
+    def sync(self):
+        _logger.info("Zacalog: Syncer starts sync.")
         if not self.env['res.config.settings'].getSyncerActive():
             _logger.warning("Zacalog: Syncer not active.")
             return
@@ -106,7 +108,11 @@ class Syncer(models.TransientModel):
                 else:
                     self._syncMagento(picking) #sincroniza cualquier otra cosa
                     
-        self.env['zacatrus.connector'].procStockUpdateQueue()
+        #_logger.info("Zacalog: Syncer starts procStockUpdateQueue.")
+        #self.env['zacatrus.connector'].procStockUpdateQueue()
+        _logger.info("Zacalog: Syncer ends sync.")
+
+        return True
 
     sourceCodes = {
         13: "WH",
@@ -318,6 +324,7 @@ class Syncer(models.TransientModel):
 
         return qtys
 
+    @api.model
     def fix(self, update = True, all = False):
         locationsToSync = self.SHOP_LOCATIONS + [13, 1717, 938] #SEGOVIA_LOCATION_ID, SEGOVIA_DISTRI_LOCATION_ID, SEGOVIA_SOTANO_ID
 
@@ -384,6 +391,8 @@ class Syncer(models.TransientModel):
                                                     self.env['zacatrus_base.notifier'].notify('product.product', odooProduct.id, msg, "fix-stock", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
                                                     if update:
                                                         self.env['zacatrus.connector'].decreaseStock(sku, decrease, False, sourceCode)
+
+        return True
 
     def isScheduled(self, sku, source):
         args = [

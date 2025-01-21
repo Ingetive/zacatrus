@@ -456,19 +456,15 @@ class Zconnector(models.Model):
             #    item["sku"] = m.group(1)
             #    self._procItem(item)
 
-    def procStockUpdateQueue(self):
-        #time.sleep(random.uniform(0, 1)) # Un número aleatorio de milisegundos entre 0 y 1 segundos para evitar que dos procesos se cuelen a la vez
-        if not self.env['res.config.settings'].getSyncerSyncActive():
-            _logger.error("Zacalog: procStockUpdateQueue: CONCURRENCY or not syncing active.")
-        else:
-            self.env['res.config.settings'].setSyncerSyncActive(False) # Se desactiva para evitar concurrencia
-
-            items = self.env['zacatrus_base.queue'].search([('done', '=', False)])
-            for item in items:
-                try:
-                    self._procItem(item)
-                except Exception as e:
-                    _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
-                    raise e
-                
-            self.env['res.config.settings'].setSyncerSyncActive(True) # Se vuelve a activar
+    @api.model
+    def procStockUpdateQueue(self, limit=24):
+        _logger.info("Zacalog: Zconnector: starts procStockUpdateQueue.")
+        items = self.env['zacatrus_base.queue'].search([('done', '=', False)], limit=limit)
+        for item in items:
+            try:
+                self._procItem(item)
+            except Exception as e:
+                _logger.error(f"Zacalog: Error syncing item {item['sku']}: {e}")
+            
+        _logger.info("Zacalog: Zconnector: ends procStockUpdateQueue.")
+        return True
