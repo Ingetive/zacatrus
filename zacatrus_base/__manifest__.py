@@ -1,6 +1,6 @@
 {
     "name": "Zacatrus Base",
-    "version": "16.0.0.0.1",
+    "version": "16.0.0.0.2",
     "category": "Point Of Sale",
     "summary": "Base settings for Zacatrus modules",
     'author': "Zacatrus",
