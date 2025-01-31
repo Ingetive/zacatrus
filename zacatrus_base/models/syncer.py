@@ -329,7 +329,7 @@ class Syncer(models.TransientModel):
         return qtys
 
     @api.model
-    def fix(self, update = True, all = False):
+    def fix(self, update = True, days = False):
         locationsToSync = self.SHOP_LOCATIONS + [13, 1717, 938] #SEGOVIA_LOCATION_ID, SEGOVIA_DISTRI_LOCATION_ID, SEGOVIA_SOTANO_ID
 
         args = [
@@ -337,13 +337,15 @@ class Syncer(models.TransientModel):
             ('type', '=', 'product'),
             #('default_code', 'in', ['ALTDISBO01SP', 'MC48ES', 'MELMACGAMES-295895PACK']) 
         ] 
-        if not all:
+        if not days:
             moves = self.env['stock.move'].search( [ ('write_date', '>', datetime.datetime.now() - datetime.timedelta(hours = 24)) ] )
-            productsToCheck = []
-            for move in moves:
-                if not move.product_id.id in productsToCheck:
-                    productsToCheck.append(move.product_id.id)
-            args.append( ('id', 'in', productsToCheck) )
+        else:
+            moves = self.env['stock.move'].search( [ ('write_date', '>', datetime.datetime.now() - datetime.timedelta(days = days)) ] )
+        productsToCheck = []
+        for move in moves:
+            if not move.product_id.id in productsToCheck:
+                productsToCheck.append(move.product_id.id)
+        args.append( ('id', 'in', productsToCheck) )
 
         products = self.env['product.product'].search(args)
         #magento = self.getMagentoConnector()
