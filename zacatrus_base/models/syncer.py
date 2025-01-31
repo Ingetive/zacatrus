@@ -177,7 +177,11 @@ class Syncer(models.TransientModel):
     def _syncMoves(self, picking, out, sourceCode):
         qtyField = 'quantity_done' if picking.state == 'done' else 'product_uom_qty'
         
-        os = self.env['stock.move'].search([("picking_id", "=", picking.id)])
+        args = [
+            ("picking_id", "=", picking.id),
+            ("x_status", "in", [0, '0', False])
+        ]
+        os = self.env['stock.move'].search(args)
         for o in os:
             product = o.product_id
             if o[qtyField]:
@@ -185,8 +189,11 @@ class Syncer(models.TransientModel):
                     self.env['zacatrus.connector'].decreaseStock(product.default_code, o[qtyField], False, sourceCode, picking)
                 else:
                     self.env['zacatrus.connector'].increaseStock(product.default_code, o[qtyField], picking.picking_type_id.id == 2, sourceCode, picking)
+                
+            o.write({"x_status": 1})
         
-        picking.write({"x_status": 1})
+        if picking.state == 'done':
+            picking.write({"x_status": 1})
         #self.getMagentoConnector().procStockUpdateQueue()
 
     def _syncPickupatstore(self, sale, picking):
