@@ -60,17 +60,17 @@ class Syncer(models.TransientModel):
                 _logger.warning(f"Zacalog: Syncer {msg}")
                 self.env['zacatrus_base.notifier'].notify('stock.picking', picking.id, msg, "syncer", self.env['zacatrus_base.notifier'].LEVEL_WARNING)
             
-            if picking.state == 'confirmed' and picking.group_id:
-            #if picking.state != 'done' and picking.group_id:
-                # En espera y con grupo de abastecimento
-                isSale = False
-                groups = self.env['procurement.group'].search([('id', '=', picking.group_id.id)])
-                for group in groups:
-                    if  group.sale_id:
-                        isSale = True
-                
-                if not isSale:
-                    continue # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
+            #if picking.state == 'confirmed' and picking.group_id:
+            ##if picking.state != 'done' and picking.group_id:
+            #    # En espera y con grupo de abastecimento
+            #    isSale = False
+            #    groups = self.env['procurement.group'].search([('id', '=', picking.group_id.id)])
+            #    for group in groups:
+            #        if  group.sale_id:
+            #            isSale = True
+            #    
+            #    if not isSale:
+            #        continue # Si viene de un abastecimiento sin venta, no procesamos los 'en espera'
 
             team = False
             if picking.picking_type_id.id in [3, 104]: #self.SEGOVIA_PICK_TYPE_ID, Distri: Pick
@@ -336,7 +336,7 @@ class Syncer(models.TransientModel):
         return qtys
 
     @api.model
-    def fix(self, update = True, all = False):
+    def fix(self, update = True, days = False):
         locationsToSync = self.SHOP_LOCATIONS + [13, 1717, 938] #SEGOVIA_LOCATION_ID, SEGOVIA_DISTRI_LOCATION_ID, SEGOVIA_SOTANO_ID
 
         args = [
@@ -344,13 +344,15 @@ class Syncer(models.TransientModel):
             ('type', '=', 'product'),
             #('default_code', 'in', ['ALTDISBO01SP', 'MC48ES', 'MELMACGAMES-295895PACK']) 
         ] 
-        if not all:
+        if not days:
             moves = self.env['stock.move'].search( [ ('write_date', '>', datetime.datetime.now() - datetime.timedelta(hours = 24)) ] )
-            productsToCheck = []
-            for move in moves:
-                if not move.product_id.id in productsToCheck:
-                    productsToCheck.append(move.product_id.id)
-            args.append( ('id', 'in', productsToCheck) )
+        else:
+            moves = self.env['stock.move'].search( [ ('write_date', '>', datetime.datetime.now() - datetime.timedelta(days = days)) ] )
+        productsToCheck = []
+        for move in moves:
+            if not move.product_id.id in productsToCheck:
+                productsToCheck.append(move.product_id.id)
+        args.append( ('id', 'in', productsToCheck) )
 
         products = self.env['product.product'].search(args)
         #magento = self.getMagentoConnector()
