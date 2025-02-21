@@ -9,6 +9,7 @@
                 <group string="Zacatrus" name="zacatrus">
 						<field name="x_sku" />
                         <field name="x_box" />
+                        <field name="x_embalaje" />
                         <field name="x_deposito"/>
                         <field name="x_discontinued"/>
                         <field name="x_manufacturer" readonly="1"/>
