@@ -140,6 +140,23 @@ class BundleWizard(models.Model):
                 self.env['zacatrus_base.notifier'].info("zacaedi.bundle", bundle.id, "Todas las facturas enviadas.")
 
     @api.model
+    def createSeresPickingByOrderId(self, orderId):
+        try:
+            path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath')
+            
+            order = self.env['sale.order'].browse(orderId)
+            buffer = EdiTalker.savePickingsToSeres(self.env, order)
+            
+            ftp = BundleWizard._getFtp(self.env)
+            with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
+                file.write(buffer)
+            order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT, 'x_edi_status_updated': datetime.now()})
+        except Exception as e:
+            msg = f"No se ha podido enviar el albarán del pedido {order['name']}: " + str(e)
+            _logger.error(f"Zacalog: EDI: {msg}")
+            self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
+     
+    @api.model
     def createSeresPickings(self):
         bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_READY)], order="id desc")
 
