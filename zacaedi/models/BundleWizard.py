@@ -157,8 +157,11 @@ class BundleWizard(models.Model):
             self.env['zacatrus_base.notifier'].error("sale.order", order['id'], msg)
      
     @api.model
-    def createSeresPickings(self):
-        bundles =  self.env['zacaedi.bundle'].search([('status', '=', EDI_BUNDLE_STATUS_READY)], order="id desc")
+    def createSeresPickings(self, bundleId = False):
+        args = [('status', '=', EDI_BUNDLE_STATUS_READY)]
+        if bundleId:
+            args = [('id', '=', bundleId)]
+        bundles =  self.env['zacaedi.bundle'].search(args, order="id desc")
 
         idx = 0
         ftp = False
@@ -167,18 +170,18 @@ class BundleWizard(models.Model):
             isError = False
             #_logger.info(f"Zacalog: EDI: Sending bundle {bundle['id']}...")
             for order in bundle.order_ids:
-                if order.x_edi_status == EdiTalker.EDI_STATUS_READY:
+                if bundleId or order.x_edi_status == EdiTalker.EDI_STATUS_READY:
                     try:
                         path = self.env['ir.config_parameter'].sudo().get_param('zacaedi.outputpath')
                         idx += 1
                         if idx == 1:
                             ftp = BundleWizard._getFtp(self.env)
-        
-                        buffer = EdiTalker.savePickingsToSeres(self.env, order)
-        
-                        with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
-                            file.write(buffer)
-                        order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT, 'x_edi_status_updated': datetime.now()})
+                        if ftp:
+                            buffer = EdiTalker.savePickingsToSeres(self.env, order)
+            
+                            with ftp.file(os.path.join(path, str(order['id'])+'.txt'), "wb") as file:
+                                file.write(buffer)
+                            order.write({'x_edi_status': EdiTalker.EDI_STATUS_SENT, 'x_edi_status_updated': datetime.now()})
                     except Exception as e:
                         msg = f"No se ha podido enviar el albarán del pedido {order['name']}: " + str(e)
                         _logger.error(f"Zacalog: EDI: {msg}")
