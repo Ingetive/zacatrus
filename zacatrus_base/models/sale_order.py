@@ -46,3 +46,31 @@ class SaleOrder(models.Model):
                         invoiceId.action_post()
                     except:
                         pass
+
+
+    @api.model
+    def check_stuck(self):
+        daysAgo = datetime.datetime.now() - datetime.timedelta(days=1)
+
+        pickings = self.env['stock.picking'].search([
+            ('create_date', '>', daysAgo),
+            ('state', '=', 'confirmed'),
+            ('picking_type_id', 'in', [3,103])
+        ], order='create_date DESC', limit=10)
+
+        for picking in pickings:
+            if picking['sale_id']:
+                moves = self.env['stock.move'].search([
+                    ('picking_id', '=', picking.id)
+                ], order='create_date DESC')
+                available = True
+                for move in moves:
+                    #print(move.product_id.name, move.product_id.virtual_available)
+                    if move.product_id.virtual_available <= 0:
+                        available = False
+                        break
+                if not available:
+                    msg = f"El pedido {picking['sale_id'].name} no se ha enviado. Puede que falte stock de algún producto. Por favor, revisar y avisar al cliente si corresponde. Gracias."
+
+                    #print( msg )
+                    self.env['zacatrus_base.slack'].sendWarn( msg )
