@@ -21,4 +21,7 @@
         'report/zacaedi_views.xml',
     ],
     "installable": True,
+    'external_dependencies': {
+        'python': ['barcode'],
+    },
 }
