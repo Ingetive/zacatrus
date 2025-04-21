@@ -31,7 +31,4 @@
            'zacasocios/static/src/js/FichasSystem.js',
        ],
     },
-    'external_dependencies': {
-        'python': ['barcode'],
-    },
 }
