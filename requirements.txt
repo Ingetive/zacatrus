@@ -1,2 +1,3 @@
 git+https://github.com/OCA/openupgradelib.git@master
 paramiko==3.4.0
+python-barcode

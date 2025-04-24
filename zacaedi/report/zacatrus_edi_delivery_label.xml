@@ -31,19 +31,19 @@
             
             
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
-              <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:100px;">DESTINO MERCANCÍA</div>
-              <div style="float:left; padding:12px; width: 28%;  min-height:100px;">
+              <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:140px;">DESTINO MERCANCÍA</div>
+              <div style="float:left; padding:12px; width: 30%;  min-height:100px;">
                 <div><span t-if="o.partner_id.parent_id" t-esc="o.partner_id.parent_id.name"/></div>
                 <div><span t-if="dest and len(dest) &gt; 1" t-esc="dest[1]"/></div>
                 <div><span t-esc="o.sale_id.partner_id.street"/></div>
               </div>
-              <div style="float:left; padding:12px; font-size: 40px;width: 20%;">
+              <div style="float:left; padding:12px 6px; font-size: 40px;width: 24%;">
                   <strong><span t-if="dest" t-esc="dest[0]"/></strong>
               </div>
-              <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
+              <div style="float:left; padding: 12px; font-size: 0.9em;text-align: center;">
                 <div>
                 <t t-set="barcode1" t-value="'91'+'01'+ dest[0]"/> 
-                  <img alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode1 or ''), 280, 80)"/>
+                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode1 or ''), 64, 24)"/>
                 </div>
                 <div><span t-esc="'('+barcode1[:2]+') '+barcode1[2:]"/></div>
               </div>
@@ -51,8 +51,8 @@
 
 
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
-              <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:100px;">DATOS ASOCIADOS A LA EMPRESA</div>
-              <div style="float:left; padding:12px;  min-height:100px;width: 40%;">
+              <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:140px;">DATOS ASOCIADOS A LA EMPRESA</div>
+              <div style="float:left; padding:12px;  min-height:100px;width: 32%;">
                 <div>DPTO-P.VENTA: 831 - 00</div>
                 <div>PEDIDO: <span t-esc="int(o.sale_id.client_order_ref)"/></div>
                 <div>ALBARÁN: <span t-esc="int(o.sale_id.origin)"/></div>
@@ -60,7 +60,7 @@
               <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
                 <t t-set="barcode2" t-value="'98'+'831'+'00'+ o.sale_id.client_order_ref + str(int(o.sale_id.origin))"/>
                 <div>
-                  <img alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode2 or ''), 300, 80)"/>
+                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode2 or ''), 120, 24)"/>
                 </div>
                 <div><span t-esc="'('+barcode2[:2]+') '+barcode2[2:]"/></div>
               </div>
@@ -85,7 +85,7 @@
               
               <t t-set="barcode3" t-value="barcode3 + str(digit)"/>
               <div>
-                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode3 or ''), 500, 100)"/>
+                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode3 or ''), 180, 30)"/>
               </div>
               <div>
                 <span t-esc="'('+barcode3[:2]+') '+barcode3[2:]"/>

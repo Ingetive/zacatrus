@@ -5,6 +5,7 @@ import requests, re
 
 _logger = logging.getLogger(__name__)
 
+# env['pos_paylands.paylands']._getOneDay('10-03-2025')
 class Paylands(models.Model):
     _name = 'pos_paylands.paylands'
     _description = 'Paylands connector'
@@ -77,7 +78,7 @@ class Paylands(models.Model):
                                         sessionId = sessionIndexes[sessionIndex]
                                     else:
                                         args = [
-                                            ('pos_reference', 'in', [f"Orden {order['additional']}", f"Pedido {order['additional']}"])
+                                            ('pos_reference', 'in', [f"Orden {order['additional']}", f"Pedido {order['additional']}", f"Commande {order['additional']}"])
                                         ]
                                         oorders = self.env['pos.order'].search_read(args)
                                         for oorder in oorders:

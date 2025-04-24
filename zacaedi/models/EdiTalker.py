@@ -273,12 +273,14 @@ class EdiTalker ():
         lines = env['sale.order.line'].search_read(args)
         
         return lines
-    
+        
     def loadProduct(env, product_id):
         args = [('id', '=', product_id)]
         products = env['product.product'].search_read(args)
 
         for product in products:
+            template = env['product.template'].browse(product['product_tmpl_id'][0])
+            product['x_embalaje'] = template.x_embalaje
             return product
     
     def getGLNFromPartnerId(env, partner_id):
@@ -497,7 +499,7 @@ class EdiTalker ():
         line = line + '{:<15}'.format( buyerProductNumber ) #Número de articulo del comprador (IN)
         line = line + '{:<16}'.format( str('{0:.3f}'.format( (picking['product_qty']) )) )
         line = line + '{:<6}'.format( '' )
-        line = line + '{:<16}'.format( '1' ) # UC Unidades de consumo en unidad de expedición
+        line = line + '{:<16}'.format( product['x_embalaje'] ) # UC Unidades de consumo en unidad de expedición
         line = line + '{:<12}'.format( '' )
         line = line + '{:<6}'.format( 'ON' )
         line = line + '{:<17}'.format( orderNumber ) # Número de pedido
