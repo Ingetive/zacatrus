@@ -15,7 +15,6 @@
             <t t-set="warehouse" t-if="o.partner_id.name" t-value="o.partner_id.name.split('-')"/>
             <t t-set="dest" t-if="o.sale_id.partner_id.name" t-value="o.sale_id.partner_id.name.split('-')"/>
             
-            
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%; min-height:100px;">LUGAR DE ENTREGA</div>
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 60%; min-height:100px;text-align: center;">
@@ -28,7 +27,6 @@
                 <div style="font-size: 40px;"><strong>1 / 1</strong></div>
               </div>
             </div>
-            
             
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:140px;">DESTINO MERCANCÍA</div>
@@ -43,12 +41,11 @@
               <div style="float:left; padding: 12px; font-size: 0.9em;text-align: center;">
                 <div>
                 <t t-set="barcode1" t-value="'91'+'01'+ dest[0]"/> 
-                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode1 or ''), 64, 24)"/>
+                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode1 or ''), 58, 20)"/>
                 </div>
                 <div><span t-esc="'('+barcode1[:2]+') '+barcode1[2:]"/></div>
               </div>
             </div>
-
 
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:140px;">DATOS ASOCIADOS A LA EMPRESA</div>
@@ -60,16 +57,15 @@
               <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
                 <t t-set="barcode2" t-value="'98'+'831'+'00'+ o.sale_id.client_order_ref + str(int(o.sale_id.origin))"/>
                 <div>
-                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode2 or ''), 120, 24)"/>
+                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode2 or ''), 120, 20)"/>
                 </div>
                 <div><span t-esc="'('+barcode2[:2]+') '+barcode2[2:]"/></div>
               </div>
             </div>
             
-
             <div style="text-align: center;">
               <t t-set="barcode3" t-value="'00'+'9'+'8613318'+str(o.sale_id.id).zfill(9)"/>
-              
+
               <!-- search of the control digit -->
               <t t-set="odd" t-value="True"/>
               <t t-set="result" t-value="0"/>
@@ -85,7 +81,7 @@
               
               <t t-set="barcode3" t-value="barcode3 + str(digit)"/>
               <div>
-                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode3 or ''), 180, 30)"/>
+                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode3 or ''), 180, 26)"/>
               </div>
               <div>
                 <span t-esc="'('+barcode3[:2]+') '+barcode3[2:]"/>
