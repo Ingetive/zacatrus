@@ -46,6 +46,7 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.ftppassword', self.ftppassword)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.inputpath', self.inputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.outputpath', self.outputpath)
+        self.env['ir.config_parameter'].sudo().set_param('zacaedi.invoicesoutputpath', self.invoicesoutputpath)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.block_partner_ids', self.block_partner_ids)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.notify_user_ids', self.notify_user_ids)
         self.env['ir.config_parameter'].sudo().set_param('zacaedi.error_level', self.error_level)
