@@ -8,7 +8,7 @@
     "category": "Point of Sale",
     "version": "16.0.1.0.0",
     "license": "LGPL-3",
-    "depends": ["point_of_sale"],
+    "depends": ["point_of_sale","zacatrus_base"],
     "assets": {
         "point_of_sale.assets": [
             "pos_receipt_hide_price/static/src/js/ReceiptScreen.js",
