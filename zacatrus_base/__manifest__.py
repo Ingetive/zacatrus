@@ -27,4 +27,9 @@
         'data/ir_action_data.xml'
     ],
     "installable": True,
+    'assets': {
+        'point_of_sale.assets': [
+            'zacatrus_base/static/src/xml/zaca_order_receipt.xml',
+        ],
+    },
 }
