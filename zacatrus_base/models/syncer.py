@@ -9,16 +9,16 @@ class Syncer(models.TransientModel):
     _name = 'zacatrus.syncer'
     _description = 'Zacatrus Syncer'
         
-    FROM_SHOP_DELIVERY_TYPE = [11,16,20,30,36,56,65,86]
-    SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937,126]
-    SHOP_LOCATIONS = [20, 26, 38, 45, 53, 103, 115, 148] #50: Ferias
+    FROM_SHOP_DELIVERY_TYPE = [11,16,20,30,36,56,86]
+    SHOP_RESERVE_LOCATIONS = [122,120,121,123,124,125,937]
+    SHOP_LOCATIONS = [20, 26, 38, 45, 53, 103, 148] #50: Ferias
 
     POS_TYPES = [6, 24, 70, 40, 86, 61, 18, 30, 28,90] 
-    SHOP_IN_TYPES = [29, 64, 85, 55, 35, 23, 13, 8]
+    SHOP_IN_TYPES = [29, 85, 55, 35, 23, 13, 8]
     FROM_SHOP_RETURN_TYPE = [48, 49, 50, 51, 52, 60, 72, 92]  
     OTHER_TYPES = [62, 2, 53, 100, 3] #SCRAPPED_IN_TYPE_ID, PURCHASE_TRANSFER_TYPE, FROM_TRANSLOAN_TO_SEGOVIA, FROM_SHOPS_TO_SEGOVIA_TYPE, PICK_TYPE
     DISTRI_TYPES = [104, 102, 103] #Distri pick, distri recepciones, distri out
-    INTERNAL_TYPES = [33,59,10,15,21,39,68,89] #Reservas
+    INTERNAL_TYPES = [33,59,10,15,21,39,89] #Reservas
     SEGOVIA_INTERNAL_TYPES = [4]
 
     WAREHOUSE_INTERNAL_TYPES = [106, 4]
@@ -126,7 +126,7 @@ class Syncer(models.TransientModel):
         38: "V",
         26: "S",
         45: "I",
-        115: "Z",
+        #115: "Z",
         148: "A",
         #59: "FR_TL"
         1717: "FR_TL"
