@@ -14,4 +14,7 @@
     'data': [],
     'installable': True,
     'license': 'Other proprietary',
+    'data': [
+        'views/amazon_account_inherit.xml',
+    ],
 }

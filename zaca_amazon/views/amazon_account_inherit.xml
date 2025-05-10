@@ -1,0 +1,20 @@
+<odoo>
+    <data>
+        <record id="view_amazon_account_form_inherit_fba" model="ir.ui.view">
+            <field name="name">amazon.account.form.inherit.fba</field>
+            <field name="model">amazon.account</field>
+            <field name="inherit_id" ref="sale_amazon.amazon_account_view_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Ajouter le champ juste après location_id -->
+                <xpath expr="//field[@name='location_id']" position="after">
+                    <field name="fba_location_id"
+                           groups="stock.group_stock_multi_locations"
+                           attrs="{'required': [('id', '!=', False)],
+                                   'invisible': [('id', '=', False)]}"/>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>
