@@ -81,7 +81,7 @@ class AmazonAccount(models.Model):
                             _logger.info(f"Zacalog: Amazon shipment exists {shipmentId} {picking.name}")
                         if not exists:
                             self._assignShipment(shipmentId)
-                    if status not in ['CHECKED_IN']:
+                    if status in ['CHECKED_IN']:
                         shipments = self.env['stock.picking'].search([
                                 ('x_amz_shipping_id', '=', shipmentId),
                             ])
