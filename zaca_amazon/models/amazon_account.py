@@ -45,6 +45,34 @@ class AmazonAccount(models.Model):
             shipment.write({'x_amz_shipping_id': _id})
             _logger.info(f"Zacalog: Amazon shipment assigned {_id} {shipment.name}")
 
+
+    def _generate_stock_moves(self, order):
+        """ Generate a stock move for each product of the provided sales order.
+
+        :param recordset order: The sales order to generate the stock moves for, as a `sale.order`
+                                record.
+        :return: The generated stock moves.
+        :rtype: recordset of `stock.move`
+        """
+        customers_location = self.env.ref('stock.stock_location_customers')
+        for order_line in order.order_line.filtered(
+            lambda l: l.product_id.type != 'service' and not l.display_type
+        ):
+            stock_move = self.env['stock.move'].create({
+                'name': _('Amazon move : %s', order.name),
+                'company_id': self.company_id.id,
+                'product_id': order_line.product_id.id,
+                'product_uom_qty': order_line.product_uom_qty,
+                'product_uom': order_line.product_uom.id,
+                'location_id': self.fba_location_id.id,
+                'location_dest_id': customers_location.id,
+                'state': 'confirmed',
+                'sale_line_id': order_line.id,
+            })
+            stock_move._action_assign()
+            stock_move._set_quantity_done(order_line.product_uom_qty)
+            stock_move._action_done()
+
     def sync_fba_inbound_shipments(self):
         accounts = self or self.search([])
         for account in accounts:
@@ -81,7 +109,7 @@ class AmazonAccount(models.Model):
                             _logger.info(f"Zacalog: Amazon shipment exists {shipmentId} {picking.name}")
                         if not exists:
                             self._assignShipment(shipmentId)
-                    if status in ['CHECKED_IN']:
+                    if status not in ['CHECKED_IN']:
                         shipments = self.env['stock.picking'].search([
                                 ('x_amz_shipping_id', '=', shipmentId),
                             ])
