@@ -103,9 +103,10 @@ class Aplazame(models.Model):
                             'amount': amount/100,
                             'date': order['confirmed']
                         }
+                        dt = datetime.fromisoformat(order['confirmed'])
                         statementId = self.env['zacatrus.zconta'].createStatementFromApi(
                             data, 
-                            statementId, f"Aplazame POS { order['confirmed'].strftime('%d-%m-%Y')}", 
+                            statementId, f"Aplazame POS {dt.strftime('%d-%m-%Y')}", 
                             48 #TODO
                         )
 
