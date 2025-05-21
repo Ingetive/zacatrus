@@ -31,11 +31,12 @@ class AmazonAccount(models.Model):
 
         return super()._sync_orders(auto_commit)
 
-    def _assignShipment(self, _id):
+    def _assignShipment(self, _id, account):
         shipments = self.env['stock.picking'].search([
-                ('picking_type_id', '=', 115),
+                ('picking_type_id', 'in', [115,122]),
                 ('state', '=', 'assigned'),
                 ('x_amz_shipping_id', '=', False),
+                ('location_dest_id', '=', account.fba_location_id.id)
             ])
         count = 0
         for shipment in shipments:
@@ -108,7 +109,7 @@ class AmazonAccount(models.Model):
                             exists = True
                             _logger.info(f"Zacalog: Amazon shipment exists {shipmentId} {picking.name}")
                         if not exists:
-                            self._assignShipment(shipmentId)
+                            self._assignShipment(shipmentId, account)
                     if status not in ['CHECKED_IN']:
                         shipments = self.env['stock.picking'].search([
                                 ('x_amz_shipping_id', '=', shipmentId),
