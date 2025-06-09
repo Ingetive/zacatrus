@@ -340,7 +340,124 @@
                         </div>
                     </div>
 
+                    <h2>Synchronisation</h2>
+                    <div class="row mt16 o_settings_container" name="sync_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="last_sync_date"
+                            title="Dernière date de synchronisation">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Dernière synchronisation" for="last_sync_date"/>
+                                    <div class="text-muted">
+                                        Date et heure de la dernière synchronisation
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="last_sync_date" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="sales_team"
+                            title="Équipe commerciale pour la recherche des adresses de livraison">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Équipe commerciale" for="sales_team_id"/>
+                                    <div class="text-muted">
+                                        Équipe commerciale pour la recherche des adresses de livraison
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sales_team_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="row mt16 o_settings_container" name="sync_filter_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="subscriber_pricelist"
+                            title="Listes de prix pour le filtrage des abonnés">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Listes de prix des abonnés" for="subscriber_pricelist_ids"/>
+                                    <div class="text-muted">
+                                        Listes de prix utilisées pour filtrer les nouveaux abonnés
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="subscriber_pricelist_ids" colspan="4" nolabel="1" widget="many2many_tags"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="subscriber_fiscal_position"
+                            title="Positions fiscales pour le filtrage des abonnés">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Positions fiscales des abonnés" for="subscriber_fiscal_position_ids"/>
+                                    <div class="text-muted">
+                                        Positions fiscales utilisées pour filtrer les nouveaux abonnés
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="subscriber_fiscal_position_ids" colspan="4" nolabel="1" widget="many2many_tags"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Sendy</h2>
+                    <div class="row mt16 o_settings_container" name="sendy_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="sendy_url"
+                            title="URL de l'installation Sendy">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="URL Sendy" for="sendy_url"/>
+                                    <div class="text-muted">
+                                        URL de votre installation Sendy
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sendy_url" colspan="4" nolabel="1" placeholder="https://newsletter.example.com"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="sendy_api_key"
+                            title="Clé API Sendy">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Clé API" for="sendy_api_key"/>
+                                    <div class="text-muted">
+                                        Clé API pour l'authentification Sendy
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sendy_api_key" colspan="4" nolabel="1" password="True"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt16 o_settings_container" name="sendy_list_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="sendy_list_id"
+                            title="ID de la liste des abonnés">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="ID Liste" for="sendy_list_id"/>
+                                    <div class="text-muted">
+                                        ID de la liste des abonnés dans Sendy
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sendy_list_id" colspan="4" nolabel="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </xpath>

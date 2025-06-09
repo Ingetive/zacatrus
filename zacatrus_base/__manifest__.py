@@ -14,6 +14,7 @@
         'purchase',
         'sale',
         'zacatrus',
+        'zaca_amazon',
         #'delivery_dhl_parcel'
     ],
     "data": [
