@@ -25,7 +25,8 @@
         'report/stock_picking.xml',
         'report/report_delivery_document.xml',
         'data/mail_template.xml',
-        'data/ir_action_data.xml'
+        'data/ir_action_data.xml',
+        'data/ir_cron_data.xml'
     ],
     "installable": True,
     'assets': {

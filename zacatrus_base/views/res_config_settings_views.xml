@@ -363,27 +363,27 @@
                     <div class="row mt16 o_settings_container" name="sync_filter_container_es">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="subscriber_pricelist_es"
-                            title="Liste de prix pour le filtrage des abonnés espagnols">
+                            title="Listes de prix pour le filtrage des abonnés espagnols">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Liste de prix des abonnés" for="subscriber_pricelist_es_id"/>
+                                    <label string="Listes de prix des abonnés" for="subscriber_pricelist_es_ids"/>
                                     <div class="text-muted">
-                                        Liste de prix utilisée pour filtrer les nouveaux abonnés espagnols
+                                        Listes de prix utilisées pour filtrer les nouveaux abonnés espagnols
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="subscriber_pricelist_es_id" colspan="4" nolabel="1" />
+                                        <field name="subscriber_pricelist_es_ids" colspan="4" nolabel="1" widget="many2many_tags"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="sales_team_es"
-                            title="Équipe commerciale espagnole">
+                            title="Canal de ventas b2c España">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Équipe commerciale" for="sales_team_es_id"/>
+                                    <label string="Canal de ventas b2c España" for="sales_team_es_id"/>
                                     <div class="text-muted">
-                                        Équipe commerciale pour la recherche des adresses de livraison espagnoles
+                                        Canal de ventas de los pedidos en España españolas
                                     </div>
                                     <div class="content-group mt16">
                                         <field name="sales_team_es_id" colspan="4" nolabel="1" />
@@ -397,15 +397,15 @@
                     <div class="row mt16 o_settings_container" name="sync_filter_container_fr">
                         <div class="col-12 col-lg-6 o_setting_box"
                             id="subscriber_pricelist_fr"
-                            title="Liste de prix pour le filtrage des abonnés français">
+                            title="Listes de prix pour le filtrage des abonnés français">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Liste de prix des abonnés" for="subscriber_pricelist_fr_id"/>
+                                    <label string="Listes de prix des abonnés" for="subscriber_pricelist_fr_ids"/>
                                     <div class="text-muted">
-                                        Liste de prix utilisée pour filtrer les nouveaux abonnés français
+                                        Listes de prix utilisées pour filtrer les nouveaux abonnés français
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="subscriber_pricelist_fr_id" colspan="4" nolabel="1" />
+                                        <field name="subscriber_pricelist_fr_ids" colspan="4" nolabel="1" widget="many2many_tags"/>
                                     </div>
                                 </div>
                             </div>
@@ -484,28 +484,28 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2b_es_list_id" title="Liste B2B Espagne">
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2b_es_list_ids" title="Listes B2B Espagne">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Liste B2B Espagne" for="sendy_b2b_es_list_id"/>
+                                    <label string="Listes B2B Espagne" for="sendy_b2b_es_list_ids"/>
                                     <div class="text-muted">
-                                        ID de la liste Sendy pour les clients B2B espagnols
+                                        Listes Sendy pour les clients B2B espagnols (IDs séparés par des virgules)
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="sendy_b2b_es_list_id" colspan="4" nolabel="1" />
+                                        <field name="sendy_b2b_es_list_ids" colspan="4" nolabel="1"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2b_fr_list_id" title="Liste B2B France">
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2b_fr_list_ids" title="Listes B2B France">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Liste B2B France" for="sendy_b2b_fr_list_id"/>
+                                    <label string="Listes B2B France" for="sendy_b2b_fr_list_ids"/>
                                     <div class="text-muted">
-                                        ID de la liste Sendy pour les clients B2B français
+                                        Listes Sendy pour les clients B2B français (IDs séparés par des virgules)
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="sendy_b2b_fr_list_id" colspan="4" nolabel="1" />
+                                        <field name="sendy_b2b_fr_list_ids" colspan="4" nolabel="1"/>
                                     </div>
                                 </div>
                             </div>
