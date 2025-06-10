@@ -2,6 +2,7 @@
 
 import logging, os
 from odoo import api, fields, models
+import ast
 
 _logger = logging.getLogger(__name__)   
 
@@ -40,34 +41,57 @@ class ResConfigSettings(models.TransientModel):
     
     last_sync_date = fields.Datetime(string='Dernière date de synchronisation', readonly=False, help='Date de la dernière synchronisation')
     
-    # Champs modifiés avec des tables de relation spécifiques
-    subscriber_pricelist_ids = fields.Many2many(
-        'product.pricelist', 
-        'zacatrus_subscriber_pricelist_rel',  # Nom spécifique de la table de relation
-        'config_id',
-        'pricelist_id',
-        string='Listes de prix pour abonnés', 
-        help='Listes de prix utilisées pour filtrer les nouveaux abonnés',
-        readonly=False
+    # Configuration Sendy
+    sendy_url = fields.Char(
+        string='Sendy URL',
+        config_parameter='zacatrus_base.sendy_url'
     )
-    subscriber_fiscal_position_ids = fields.Many2many(
-        'account.fiscal.position',
-        'zacatrus_subscriber_fiscal_position_rel',  # Nom spécifique de la table de relation
-        'config_id',
-        'fiscal_position_id',
-        string='Positions fiscales pour abonnés',
-        help='Positions fiscales utilisées pour filtrer les nouveaux abonnés',
-        readonly=False
+    sendy_api_key = fields.Char(
+        string='Sendy API Key',
+        config_parameter='zacatrus_base.sendy_api_key'
+    )
+    
+    # Listes Sendy pour chaque type de client
+    sendy_b2c_es_list_id = fields.Char(
+        string='Sendy B2C ES List ID',
+        config_parameter='zacatrus_base.sendy_b2c_es_list_id'
+    )
+    sendy_b2c_fr_list_id = fields.Char(
+        string='Sendy B2C FR List ID',
+        config_parameter='zacatrus_base.sendy_b2c_fr_list_id'
+    )
+    sendy_b2b_es_list_id = fields.Char(
+        string='Sendy B2B ES List ID',
+        config_parameter='zacatrus_base.sendy_b2b_es_list_id'
+    )
+    sendy_b2b_fr_list_id = fields.Char(
+        string='Sendy B2B FR List ID',
+        config_parameter='zacatrus_base.sendy_b2b_fr_list_id'
+    )
+    
+    # Configuration des abonnés
+    subscriber_pricelist_es_id = fields.Many2one(
+        'product.pricelist',
+        string='Subscriber Pricelist (Spain)',
+        config_parameter='zacatrus_base.subscriber_pricelist_es_id'
+    )
+    sales_team_es_id = fields.Many2one(
+        'crm.team',
+        string='Sales Team (Spain)',
+        config_parameter='zacatrus_base.sales_team_es_id'
     )
 
-    # Configuration Sendy
-    sendy_url = fields.Char(string='URL Sendy', help='URL de votre installation Sendy', readonly=False)
-    sendy_api_key = fields.Char(string='Clé API Sendy', help='Clé API pour l\'authentification Sendy', readonly=False)
-    sendy_list_id = fields.Char(string='ID Liste Sendy', help='ID de la liste des abonnés dans Sendy', readonly=False)
-    
-    # Configuration équipe commerciale
-    sales_team_id = fields.Many2one('crm.team', string='Équipe commerciale', 
-        help='Équipe commerciale pour la recherche des adresses de livraison', readonly=False)
+    # Subscriber configuration - France
+    subscriber_pricelist_fr_id = fields.Many2one(
+        'product.pricelist',
+        string='Subscriber Pricelist (France)',
+        config_parameter='zacatrus_base.subscriber_pricelist_fr_id'
+    )
+    sales_team_fr_id = fields.Many2one(
+        'crm.team',
+        string='Sales Team (France)',
+        config_parameter='zacatrus_base.sales_team_fr_id'
+    )
 
     @api.model
     def get_values(self):
@@ -80,14 +104,6 @@ class ResConfigSettings(models.TransientModel):
             cardProductId = int(self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.card_product_id'))
         if self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id') and self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id').isnumeric():
             fichasProductId = int(self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id'))
-        
-        # Récupérer les IDs des relations Many2many
-        pricelist_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.subscriber_pricelist_ids')
-        fiscal_position_ids = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.subscriber_fiscal_position_ids')
-        
-        # Convertir les chaînes en listes d'IDs
-        pricelist_ids = eval(pricelist_ids) if pricelist_ids else []
-        fiscal_position_ids = eval(fiscal_position_ids) if fiscal_position_ids else []
         
         # Récupérer l'ID de l'équipe commerciale
         sales_team_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sales_team_id')
@@ -116,15 +132,6 @@ class ResConfigSettings(models.TransientModel):
             glovo_api_secret=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.glovo_api_secret'),
             
             last_sync_date=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.last_sync_date', default=fields.Datetime.now()),
-            
-            # Nouveaux champs
-            subscriber_pricelist_ids=[(6, 0, pricelist_ids)],
-            subscriber_fiscal_position_ids=[(6, 0, fiscal_position_ids)],
-            
-            # Valeurs Sendy
-            sendy_url=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sendy_url'),
-            sendy_api_key=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sendy_api_key'),
-            sendy_list_id=self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sendy_list_id'),
             
             # Équipe commerciale
             sales_team_id=int(sales_team_id) if sales_team_id else False,
@@ -164,20 +171,12 @@ class ResConfigSettings(models.TransientModel):
         
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.last_sync_date', self.last_sync_date)
         
-        # Nouveaux paramètres (stockés comme chaînes de liste d'IDs)
-        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.subscriber_pricelist_ids', 
-            str(self.subscriber_pricelist_ids.ids) if self.subscriber_pricelist_ids else '[]')
-        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.subscriber_fiscal_position_ids', 
-            str(self.subscriber_fiscal_position_ids.ids) if self.subscriber_fiscal_position_ids else '[]')
-
-        # Paramètres Sendy
-        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.sendy_url', self.sendy_url)
-        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.sendy_api_key', self.sendy_api_key)
-        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.sendy_list_id', self.sendy_list_id)
-        
         # Équipe commerciale
         self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.sales_team_id', 
             self.sales_team_id.id if self.sales_team_id else False)
+        
+        # Date de synchronisation
+        self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.last_sync_date', self.last_sync_date)
 
         super(ResConfigSettings, self).set_values()
 

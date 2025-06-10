@@ -357,50 +357,70 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <h2>Configuration Espagne</h2>
+                    <div class="row mt16 o_settings_container" name="sync_filter_container_es">
                         <div class="col-12 col-lg-6 o_setting_box"
-                            id="sales_team"
-                            title="Équipe commerciale pour la recherche des adresses de livraison">
+                            id="subscriber_pricelist_es"
+                            title="Liste de prix pour le filtrage des abonnés espagnols">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Équipe commerciale" for="sales_team_id"/>
+                                    <label string="Liste de prix des abonnés" for="subscriber_pricelist_es_id"/>
                                     <div class="text-muted">
-                                        Équipe commerciale pour la recherche des adresses de livraison
+                                        Liste de prix utilisée pour filtrer les nouveaux abonnés espagnols
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="sales_team_id" colspan="4" nolabel="1" />
+                                        <field name="subscriber_pricelist_es_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box"
+                            id="sales_team_es"
+                            title="Équipe commerciale espagnole">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Équipe commerciale" for="sales_team_es_id"/>
+                                    <div class="text-muted">
+                                        Équipe commerciale pour la recherche des adresses de livraison espagnoles
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sales_team_es_id" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row mt16 o_settings_container" name="sync_filter_container">
+                    <h2>Configuration France</h2>
+                    <div class="row mt16 o_settings_container" name="sync_filter_container_fr">
                         <div class="col-12 col-lg-6 o_setting_box"
-                            id="subscriber_pricelist"
-                            title="Listes de prix pour le filtrage des abonnés">
+                            id="subscriber_pricelist_fr"
+                            title="Liste de prix pour le filtrage des abonnés français">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Listes de prix des abonnés" for="subscriber_pricelist_ids"/>
+                                    <label string="Liste de prix des abonnés" for="subscriber_pricelist_fr_id"/>
                                     <div class="text-muted">
-                                        Listes de prix utilisées pour filtrer les nouveaux abonnés
+                                        Liste de prix utilisée pour filtrer les nouveaux abonnés français
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="subscriber_pricelist_ids" colspan="4" nolabel="1" widget="many2many_tags"/>
+                                        <field name="subscriber_pricelist_fr_id" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box"
-                            id="subscriber_fiscal_position"
-                            title="Positions fiscales pour le filtrage des abonnés">
+                            id="sales_team_fr"
+                            title="Équipe commerciale française">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Positions fiscales des abonnés" for="subscriber_fiscal_position_ids"/>
+                                    <label string="Équipe commerciale" for="sales_team_fr_id"/>
                                     <div class="text-muted">
-                                        Positions fiscales utilisées pour filtrer les nouveaux abonnés
+                                        Équipe commerciale pour la recherche des adresses de livraison françaises
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="subscriber_fiscal_position_ids" colspan="4" nolabel="1" widget="many2many_tags"/>
+                                        <field name="sales_team_fr_id" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
@@ -408,57 +428,89 @@
                     </div>
 
                     <h2>Sendy</h2>
-                    <div class="row mt16 o_settings_container" name="sendy_setting_container">
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="sendy_url"
-                            title="URL de l'installation Sendy">
+                    <div class="row mt16 o_settings_container" name="sendy_container">
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_url" title="URL">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="URL Sendy" for="sendy_url"/>
+                                    <label string="URL" for="sendy_url"/>
                                     <div class="text-muted">
                                         URL de votre installation Sendy
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="sendy_url" colspan="4" nolabel="1" placeholder="https://newsletter.example.com"/>
+                                        <field name="sendy_url" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="sendy_api_key"
-                            title="Clé API Sendy">
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_api_key" title="API Key">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="Clé API" for="sendy_api_key"/>
+                                    <label string="API Key" for="sendy_api_key"/>
                                     <div class="text-muted">
                                         Clé API pour l'authentification Sendy
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="sendy_api_key" colspan="4" nolabel="1" password="True"/>
+                                        <field name="sendy_api_key" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row mt16 o_settings_container" name="sendy_list_container">
-                        <div class="col-12 col-lg-6 o_setting_box"
-                            id="sendy_list_id"
-                            title="ID de la liste des abonnés">
+                    <div class="row mt16 o_settings_container" name="sendy_lists_container">
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2c_es_list_id" title="Liste B2C Espagne">
                             <div class="o_setting_right_pane">
                                 <div>
-                                    <label string="ID Liste" for="sendy_list_id"/>
+                                    <label string="Liste B2C Espagne" for="sendy_b2c_es_list_id"/>
                                     <div class="text-muted">
-                                        ID de la liste des abonnés dans Sendy
+                                        ID de la liste Sendy pour les clients B2C espagnols
                                     </div>
                                     <div class="content-group mt16">
-                                        <field name="sendy_list_id" colspan="4" nolabel="1"/>
+                                        <field name="sendy_b2c_es_list_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2c_fr_list_id" title="Liste B2C France">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Liste B2C France" for="sendy_b2c_fr_list_id"/>
+                                    <div class="text-muted">
+                                        ID de la liste Sendy pour les clients B2C français
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sendy_b2c_fr_list_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2b_es_list_id" title="Liste B2B Espagne">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Liste B2B Espagne" for="sendy_b2b_es_list_id"/>
+                                    <div class="text-muted">
+                                        ID de la liste Sendy pour les clients B2B espagnols
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sendy_b2b_es_list_id" colspan="4" nolabel="1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="sendy_b2b_fr_list_id" title="Liste B2B France">
+                            <div class="o_setting_right_pane">
+                                <div>
+                                    <label string="Liste B2B France" for="sendy_b2b_fr_list_id"/>
+                                    <div class="text-muted">
+                                        ID de la liste Sendy pour les clients B2B français
+                                    </div>
+                                    <div class="content-group mt16">
+                                        <field name="sendy_b2b_fr_list_id" colspan="4" nolabel="1" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </xpath>
         </field>

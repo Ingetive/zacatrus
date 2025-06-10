@@ -13,7 +13,7 @@
         'product',
         'purchase',
         'sale',
-        'zacatrus',
+        #'zacatrus',
         'zaca_amazon',
         #'delivery_dhl_parcel'
     ],
