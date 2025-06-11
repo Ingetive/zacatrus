@@ -5,7 +5,7 @@
         <xpath expr="//div[hasclass('page')]/div[last()]" position="before">
             <div class="row">
                 <div class="col-12 text-center">
-                    <img src="/zacatrus_base/static/img/credito_caucion.png" alt="Crédito y Caución" style="max-height: 50px;"/>
+                    <img src="/zacatrus_base/static/img/credito_caucion.png" alt="Crédito y Caución" style="max-height: 100px;"/>
                 </div>
             </div>
         </xpath>
