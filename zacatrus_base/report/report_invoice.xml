@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_zacatrus" inherit_id="account.report_invoice_document">
+        <!-- Ajout du logo Crédito y Caución -->
+        <xpath expr="//div[hasclass('page')]/div[last()]" position="before">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <img src="/zacatrus_base/static/img/credito_caucion.png" alt="Crédito y Caución" style="max-height: 100px;"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Enregistrement du rapport -->
+    <record id="account_invoices_zacatrus" model="ir.actions.report">
+        <field name="name">Facturas Zacatrus</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">zacatrus_base.report_invoice_document_zacatrus</field>
+        <field name="report_file">zacatrus_base.report_invoice_document_zacatrus</field>
+        <field name="print_report_name">'Facture - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo> 

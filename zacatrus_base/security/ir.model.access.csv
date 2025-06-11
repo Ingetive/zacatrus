@@ -4,3 +4,4 @@ access_zacatrus_base_queue,access_zacatrus_base_queue,model_zacatrus_base_queue,
 access_zacatrus_base_pickupmail,access_zacatrus_base_pickupmail,model_zacatrus_base_pickupmail,base.group_user,1,1,1,1
 access_zacatrus_base_slackcounter,access_zacatrus_base_slackcounter,model_zacatrus_base_slackcounter,base.group_user,1,1,1,1
 access_zacatrus_base_syncer,access_zacatrus_base_syncer,model_zacatrus_syncer,base.group_user,1,1,1,1
+access_zacatrus_subscriber_process_user,zacatrus.subscriber.process.user,model_zacatrus_subscriber_process,base.group_user,1,1,1,1

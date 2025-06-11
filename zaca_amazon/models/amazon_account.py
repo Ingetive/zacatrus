@@ -33,7 +33,7 @@ class AmazonAccount(models.Model):
 
     def _assignShipment(self, _id, account):
         shipments = self.env['stock.picking'].search([
-                ('picking_type_id', 'in', [115,122]),
+                #('picking_type_id', 'in', [115,122]),
                 ('state', '=', 'assigned'),
                 ('x_amz_shipping_id', '=', False),
                 ('location_dest_id', '=', account.fba_location_id.id)
