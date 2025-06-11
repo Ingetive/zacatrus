@@ -24,6 +24,7 @@
         'report/zacatrus_base_views.xml',
         'report/stock_picking.xml',
         'report/report_delivery_document.xml',
+        'report/report_invoice.xml',
         'data/mail_template.xml',
         'data/ir_action_data.xml',
         'data/ir_cron_data.xml'
