@@ -47,6 +47,10 @@ class SubscriberProcess(models.Model):
         pricelist_es_ids = [int(x) for x in pricelist_es_ids_str.split(',') if x.strip()]
         pricelist_fr_ids = [int(x) for x in pricelist_fr_ids_str.split(',') if x.strip()]
         
+        # Convert team IDs to integers
+        sales_team_es_id = int(sales_team_es_id) if sales_team_es_id else False
+        sales_team_fr_id = int(sales_team_fr_id) if sales_team_fr_id else False
+        
         # Get Sendy list IDs
         b2c_es_list_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sendy_b2c_es_list_id')
         b2c_fr_list_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sendy_b2c_fr_list_id')
