@@ -173,9 +173,9 @@ class Zacasocios(models.Model):
 
 		# Mettre à jour le champ pos du partenaire si la réponse est OK
 		if pos:
-			partner = self.env['res.partner'].search([('email', '=', email)], limit=1)
-			if partner:
-				partner.write({'pos': pos})
+			partners = self.env['res.partner'].search([('email', '=', email)])
+			if partners:
+				partners.write({'pos': pos})
 
 		return item
 
