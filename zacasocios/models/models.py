@@ -171,6 +171,12 @@ class Zacasocios(models.Model):
 			'spent': spent, 'attempts': 0
 		})
 
+		# Mettre à jour le champ pos du partenaire si la réponse est OK
+		if pos:
+			partners = self.env['res.partner'].search([('email', '=', email)])
+			if partners:
+				partners.write({'pos': pos})
+
 		return item
 
 	def procFichasUpdateQueue(self):
