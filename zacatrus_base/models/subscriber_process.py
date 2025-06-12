@@ -11,15 +11,22 @@ class SubscriberProcess(models.Model):
     
     def _prepare_subscriber_data(self, partner):
         """Prépare les données d'un abonné pour Sendy"""
+        custom_fields = {
+            'company': partner.company_name or '',
+            'phone': partner.phone or '',
+            'city': partner.city or '',
+            'country': partner.country_id.code if partner.country_id else '',
+        }
+        
+        # Ajouter le premier mot du POS s'il est défini
+        if partner.pos:
+            pos_first_word = partner.pos.split()[0] if partner.pos else ''
+            custom_fields['pos'] = pos_first_word
+            
         return {
             'email': partner.email,
             'name': partner.name,
-            'custom_fields': {
-                'company': partner.company_name or '',
-                'phone': partner.phone or '',
-                'city': partner.city or '',
-                'country': partner.country_id.code if partner.country_id else '',
-            }
+            'custom_fields': custom_fields
         }
     
     @api.model
