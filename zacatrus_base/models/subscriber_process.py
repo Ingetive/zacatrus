@@ -6,7 +6,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class SubscriberProcess(models.Model):
-    _name = 'zacatrus_subscriber_process'
+    _name = 'zacatrus.subscriber.process'
     _description = 'Process to find new subscribers'
     
     def _prepare_subscriber_data(self, partner):
@@ -46,6 +46,10 @@ class SubscriberProcess(models.Model):
         # Convert string IDs to list of integers
         pricelist_es_ids = [int(x) for x in pricelist_es_ids_str.split(',') if x.strip()]
         pricelist_fr_ids = [int(x) for x in pricelist_fr_ids_str.split(',') if x.strip()]
+        
+        # Convert team IDs to integers
+        sales_team_es_id = int(sales_team_es_id) if sales_team_es_id else False
+        sales_team_fr_id = int(sales_team_fr_id) if sales_team_fr_id else False
         
         # Get Sendy list IDs
         b2c_es_list_id = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.sendy_b2c_es_list_id')
