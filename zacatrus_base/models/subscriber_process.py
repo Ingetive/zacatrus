@@ -6,7 +6,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class SubscriberProcess(models.Model):
-    _name = 'zacatrus.subscriber.process'
+    _name = 'zacatrus_subscriber_process'
     _description = 'Process to find new subscribers'
     
     def _prepare_subscriber_data(self, partner):
