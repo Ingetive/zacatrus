@@ -60,10 +60,13 @@ class SubscriberProcess(models.Model):
         b2b_fr_lists = [x.strip() for x in b2b_fr_list_ids.split(',') if x.strip()] if b2b_fr_list_ids else []
         
         # Initialize subscriber lists for each type
-        b2c_es_subscribers = []
-        b2c_fr_subscribers = []
         b2b_es_subscribers = []
         b2b_fr_subscribers = []
+        b2c_es_subscribers = []
+        b2c_fr_subscribers = []
+        # Recherche des partenaires
+        es_b2b_customers = False
+        fr_b2b_customers = False
         processed_emails = set()  # Pour éviter les doublons
         
         # 1. Recherche des nouveaux clients selon les filtres configurés
@@ -72,23 +75,14 @@ class SubscriberProcess(models.Model):
             ('email', '!=', False),     # Only customers with email
             ('email', '!=', '')         # Exclude empty emails
         ]
-        
-        # Recherche des partenaires
-        es_b2b_customers = False
-        fr_b2b_customers = False
-        b2c_es_subscribers = []
-        b2c_fr_subscribers = []
-
-        
+                
         # Filtrer les clients espagnols par liste de prix
         if pricelist_es_ids:
-            print(f"pricelist_es_ids: {pricelist_es_ids}")
             new_customers = self.env['res.partner'].search(domain)
             es_b2b_customers = new_customers.filtered(
                 lambda p: p.property_product_pricelist.id in pricelist_es_ids
             )
             for customer in es_b2b_customers:
-                print(f"customer: {customer}")
                 if customer.email and customer.email not in processed_emails:
                     b2b_es_subscribers.append(self._prepare_subscriber_data(customer))
                     processed_emails.add(customer.email)
@@ -118,10 +112,7 @@ class SubscriberProcess(models.Model):
             for order in sale_orders:
                 partner = order.partner_shipping_id
                 if partner and partner.email and partner.email not in processed_emails:
-                    if pricelist_es_ids and partner.property_product_pricelist.id in pricelist_es_ids:
-                        b2c_es_subscribers.append(self._prepare_subscriber_data(partner))
-                    else:
-                        b2b_es_subscribers.append(self._prepare_subscriber_data(partner))
+                    b2c_es_subscribers.append(self._prepare_subscriber_data(partner))
                     processed_emails.add(partner.email)
 
         # Pour la France
@@ -137,10 +128,7 @@ class SubscriberProcess(models.Model):
             for order in sale_orders:
                 partner = order.partner_shipping_id
                 if partner and partner.email and partner.email not in processed_emails:
-                    if pricelist_fr_ids and partner.property_product_pricelist.id in pricelist_fr_ids:
-                        b2c_fr_subscribers.append(self._prepare_subscriber_data(partner))
-                    else:
-                        b2b_fr_subscribers.append(self._prepare_subscriber_data(partner))
+                    b2c_fr_subscribers.append(self._prepare_subscriber_data(partner))
                     processed_emails.add(partner.email)
         
         # Inscrire les abonnés à leurs listes Sendy respectives
