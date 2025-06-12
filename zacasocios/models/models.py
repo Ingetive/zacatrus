@@ -274,6 +274,11 @@ class Zacasocios(models.Model):
 							item.write({"qty": (-1)*left})
 
 		if ok:
+			# Mettre à jour le champ pos du partenaire si la réponse est OK
+			if item.pos:
+				partner = self.env['res.partner'].search([('email', '=', item.email)], limit=1)
+				if partner:
+					partner.write({'pos': item.pos})
 			item.unlink()
 
 		return ok

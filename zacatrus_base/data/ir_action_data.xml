@@ -21,4 +21,15 @@
         <field name="numbercall">-1</field>
     </record>
 
+    <data noupdate="1">
+        <record id="action_init_pos_field" model="ir.actions.server">
+            <field name="name">Initialize POS Field</field>
+            <field name="model_id" ref="model_res_partner"/>
+            <field name="binding_model_id" ref="model_res_partner"/>
+            <field name="binding_view_types">form</field>
+            <field name="state">code</field>
+            <field name="code">model._init_pos_field()</field>
+        </record>
+    </data>
+
 </odoo>
