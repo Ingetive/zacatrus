@@ -134,6 +134,25 @@ class SubscriberProcess(models.Model):
                 if partner and partner.email and partner.email not in processed_emails:
                     b2c_fr_subscribers.append(self._prepare_subscriber_data(partner))
                     processed_emails.add(partner.email)
+
+        # 3. Recherche des clients avec tarif Zacasocio et code barre 242
+        zacasocio_customers = self.env['res.partner'].search([
+            ('property_product_pricelist', '=', 3),
+            ('write_date', '>=', last_sync),
+            ('email', '!=', False),
+            ('email', '!=', '')
+        ])
+        
+        # Filtrer les clients par code barre
+        for customer in zacasocio_customers:
+            if customer.barcode and customer.barcode.startswith('242') and customer.email not in processed_emails:
+                ## Déterminer si le client est espagnol ou français
+                #if customer.country_id and customer.country_id.code == 'ES':
+                #    b2c_es_subscribers.append(self._prepare_subscriber_data(customer))
+                #elif customer.country_id and customer.country_id.code == 'FR':
+                #    b2c_fr_subscribers.append(self._prepare_subscriber_data(customer))
+                b2c_es_subscribers.append(self._prepare_subscriber_data(customer))
+                processed_emails.add(customer.email)
         
         # Inscrire les abonnés à leurs listes Sendy respectives
         sendy = self.env['zacatrus.sendy.integration']
