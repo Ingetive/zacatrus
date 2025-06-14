@@ -20,8 +20,8 @@ class SubscriberProcess(models.Model):
         
         # Ajouter le premier mot du POS s'il est défini
         if partner.pos:
-            pos_first_word = partner.pos.split()[0] if partner.pos else ''
-            custom_fields['pos'] = pos_first_word
+            #pos_first_word = partner.pos.split()[0] if partner.pos else ''
+            custom_fields['pos'] = partner.pos
             
         return {
             'email': partner.email,
