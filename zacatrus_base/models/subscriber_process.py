@@ -30,17 +30,42 @@ class SubscriberProcess(models.Model):
         }
     
     @api.model
+    def updatePos(self, fromDate = False):
+        # Rechercher les commandes POS récentes
+        domain = [
+            ('partner_id', '!=', False),
+            ('config_id', '!=', False)
+        ]
+        
+        if fromDate:
+            domain.append(('date_order', '>=', fromDate))
+            
+        # Rechercher les commandes POS
+        orders = self.env['pos.order'].search(domain, order='date_order desc')
+        
+        # Pour chaque commande, mettre à jour le client si nécessaire
+        for order in orders:
+            partner = order.partner_id
+            if partner and partner.property_product_pricelist.id == 3:
+                if not partner.pos or '(' in partner.pos:
+                    # Extraire le nom du POS sans l'utilisateur
+                    pos_name = order.config_id.name.split('(')[0].strip()
+                    partner.write({'pos': pos_name})
+        
+    
+    @api.model
     def send_subscribers(self):
         """
         Process that runs daily at 8:30 AM to find new customers since the last synchronization date
         and subscribes them to Sendy
         """
-        # Get the last sync date from config settings
-        config = self.env['res.config.settings'].create({})
+        
         last_sync = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.last_sync_date')
         
         if not last_sync:
             last_sync = fields.Datetime.now() - timedelta(days=1)
+        
+        self.updatePos(last_sync)
         
         # Get the filter values for Spain
         pricelist_es_ids_str = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.subscriber_pricelist_es_ids', '')

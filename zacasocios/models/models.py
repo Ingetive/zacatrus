@@ -171,14 +171,6 @@ class Zacasocios(models.Model):
 			'spent': spent, 'attempts': 0
 		})
 
-		# Mettre à jour le champ pos du partenaire si la réponse est OK
-		if pos:
-			# Extraire uniquement la partie avant le '('
-			pos_name = pos.split('(')[0].strip()
-			partners = self.env['res.partner'].search([('email', '=', email)])
-			if partners:
-				partners.write({'pos': pos_name})
-
 		return item
 
 	def procFichasUpdateQueue(self):
