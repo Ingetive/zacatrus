@@ -46,7 +46,7 @@ class SubscriberProcess(models.Model):
         # Pour chaque commande, mettre à jour le client si nécessaire
         for order in orders:
             partner = order.partner_id
-            if partner and partner.property_product_pricelist.id == 3:
+            if partner:
                 if not partner.pos or '(' in partner.pos:
                     # Extraire le nom du POS sans l'utilisateur
                     pos_name = order.config_id.name.split('(')[0].strip()
