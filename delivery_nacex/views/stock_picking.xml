@@ -20,6 +20,7 @@
             <xpath expr="//group[@name='carrier_data']" position="inside">
                 <field name="etiqueta_envio_zpl"/>
                 <field name="x_tracking"/>
+                <field name="x_tracking_nx"/>
                 <field name="bultos"/>
                 <field name="picking_contenedor"/>
             </xpath>
