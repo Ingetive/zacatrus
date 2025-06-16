@@ -19,7 +19,7 @@
     </record>
     
     <record id="delivery_carrier_nacex_peninsula" model="delivery.carrier">
-        <field name="name">Nacex STD</field>
+        <field name="name">Pluspack</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>
