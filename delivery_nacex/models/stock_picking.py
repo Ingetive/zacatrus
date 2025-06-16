@@ -21,6 +21,7 @@ class Picking(models.Model):
     bultos = fields.Integer('Bultos')
     picking_contenedor = fields.Many2one('stock.picking', 'Albarán contenedor')
     codigo_expedicion = fields.Char("Código Expedición")
+    x_tracking_nx = fields.Char("Tracking NX de la mensajeria", compute='_compute_tracking_nx')
 
     @api.depends('etiqueta_envio_zpl')
     def _compute_tracking(self):
@@ -29,6 +30,14 @@ class Picking(models.Model):
                 r.x_tracking = re.search('[0-9]{4}\\/[0-9]{8}', r.etiqueta_envio_zpl).group(0)
             except:
                 r.x_tracking = False
+
+    @api.depends('etiqueta_envio_zpl')
+    def _compute_tracking_nx(self):
+        for r in self:
+            try:
+                r.x_tracking_nx = re.search(r'\^FD(NX[^\^]+)\^', r.etiqueta_envio_zpl).group(1)
+            except:
+                r.x_tracking_nx = False
     
     def send_to_shipper(self):
         if not self.env.context.get("force_send_to_shipper") and self.carrier_id.delivery_type == 'nacex' and self.state != "assigned":
