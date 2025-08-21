@@ -41,7 +41,7 @@
               <div style="float:left; padding: 12px; font-size: 0.9em;text-align: center;">
                 <div>
                 <t t-set="barcode1" t-value="'91'+'01'+ dest[0]"/> 
-                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode1 or ''), 58, 20)"/>
+                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('gs1_128', quote_plus(barcode1 or ''), 52, 20)"/>
                 </div>
                 <div><span t-esc="'('+barcode1[:2]+') '+barcode1[2:]"/></div>
               </div>
@@ -57,7 +57,7 @@
               <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
                 <t t-set="barcode2" t-value="'98'+'831'+'00'+ o.sale_id.client_order_ref + str(int(o.sale_id.origin))"/>
                 <div>
-                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode2 or ''), 120, 20)"/>
+                  <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('gs1_128', quote_plus(barcode2 or ''), 120, 20)"/>
                 </div>
                 <div><span t-esc="'('+barcode2[:2]+') '+barcode2[2:]"/></div>
               </div>
@@ -81,7 +81,7 @@
               
               <t t-set="barcode3" t-value="barcode3 + str(digit)"/>
               <div>
-                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code128', quote_plus(barcode3 or ''), 180, 26)"/>
+                <img style="margin-top:12px;" alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('gs1_128', quote_plus(barcode3 or ''), 180, 26)"/>
               </div>
               <div>
                 <span t-esc="'('+barcode3[:2]+') '+barcode3[2:]"/>
