@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 class BarcodeSVGController(http.Controller):
 
     @http.route('/edi/barcode/svg', type='http', auth='public')
-    def barcode_svg(self, value=None, barcode_type='code128', width=None, height=None):
+    def barcode_svg(self, value=None, barcode_type='gs1_128', width=None, height=None):
         if not value:
             return request.make_response('Missing value', [('Content-Type', 'text/plain')])
 
@@ -25,7 +25,7 @@ class BarcodeSVGController(http.Controller):
 
             quiet_zone = 3.0  # mm
 
-            # Estimation des modules nécessaires
+            # Estimation des modules nécessaires pour GS1-128
             estimated_modules = len(value) * 11
 
             # Calcul automatique du module_width si width est défini
