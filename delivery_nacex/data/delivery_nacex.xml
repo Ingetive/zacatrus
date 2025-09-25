@@ -51,7 +51,7 @@
     </record>
     
     <record id="delivery_carrier_nacex_baleares" model="delivery.carrier">
-        <field name="name">Nacex Baleares</field>
+        <field name="name">Baleares Marítimo</field>
         <field name="product_id" ref="delivery_nacex.product_product_delivery_nacex"/>
         <field name="delivery_type">nacex</field>
         <field name="nacex_user">4002.ZACATRUSWS</field>
