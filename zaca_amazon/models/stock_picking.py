@@ -47,7 +47,7 @@ class Picking(models.Model):
                 ).text = picking_.carrier_id.name
                 ElementTree.SubElement(
                     fulfillment_data_, 'ShipperTrackingNumber'
-                ).text = picking_.codigo_expedicion
+                ).text = picking_.codigo_expedicion if picking_.codigo_expedicion else picking_.carrier_tracking_ref
 
                 # Add the items.
                 confirmed_order_lines_ = picking_._get_confirmed_order_lines()
