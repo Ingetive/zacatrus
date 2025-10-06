@@ -619,6 +619,7 @@ class EdiTalker ():
         invoicingPartner = False
         shippingPartner = False
         buyerPartner = False
+        department = False
         try:
             for partner in ediOrder['partner']:
                 if partner ['calificator'] == "IV":
@@ -627,6 +628,7 @@ class EdiTalker ():
                     shippingPartner = EdiTalker.createOrRetrieveECIClient( env, partner )
                 if partner ['calificator'] == "BY":
                     buyerPartner = EdiTalker.createOrRetrieveECIClient( env, partner )
+                    department = partner['ref1']
                 #print (partner)
         except Exception as e:
             EdiTalker.saveError(env, 101, ediOrder, str(e))
@@ -665,7 +667,7 @@ class EdiTalker ():
             'x_edi_shipment': ediOrder['header']['shipmentId'],
             'x_edi_status': EdiTalker.EDI_STATUS_INIT,
             'x_edi_status_updated': datetime.datetime.now(),
-            'x_edi_department': buyerPartner['ref1']
+            'x_edi_department': department
         }
         createdOrder = env['sale.order'].create(_order)
 

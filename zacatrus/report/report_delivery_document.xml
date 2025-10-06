@@ -43,7 +43,7 @@
 	                    N. proveedor: 0010997
 	                </div>
 	                <div t-if="o.sale_id.partner_invoice_id.id == 5661">
-	                    Departamento: <span t-field="o.sale_id.x_edi_department"/>
+	                    Departamento: <span t-field="o.sale_id.x_edi_department"/> 
 	                </div>
 	                <div>
 	                    N. pedido: <span t-field="o.sale_id.client_order_ref"/>
