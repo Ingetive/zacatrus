@@ -7,7 +7,8 @@
         <field name="arch" type="xml">
             <xpath expr="//group[@name='sale_shipping']" position="inside">
                 <field name="x_edi_order" readonly="1"/>
-                <field name="x_edi_shipment" readonly="1"/>                
+                <field name="x_edi_shipment" readonly="1"/>
+                <field name="x_edi_department" readonly="0"/>                
             </xpath>
         </field>
     </record>  
