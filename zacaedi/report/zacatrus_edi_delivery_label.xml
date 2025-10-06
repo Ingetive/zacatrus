@@ -50,12 +50,12 @@
             <div style="border-bottom: 1px solid black;float:left;width:100%;">
               <div style="float:left; padding:12px; border-right: 1px solid black; width: 15%;  min-height:140px;">DATOS ASOCIADOS A LA EMPRESA</div>
               <div style="float:left; padding:12px;  min-height:100px;width: 32%;">
-                <div>DPTO-P.VENTA: 831 - 00</div>
+                <div>DPTO-P.VENTA: <span t-esc="o.sale_id.x_edi_department"/> - 00</div>
                 <div>PEDIDO: <span t-esc="int(o.sale_id.client_order_ref)"/></div>
                 <div>ALBARÁN: <span t-esc="int(o.sale_id.origin)"/></div>
               </div>
               <div style="float:left; padding:12px; font-size: 0.9em;text-align: center;">
-                <t t-set="barcode2" t-value="'98'+'831'+'00'+ o.sale_id.client_order_ref + str(int(o.sale_id.origin))"/>
+                <t t-set="barcode2" t-value="'98'+ o.sale_id.x_edi_department +'00'+ o.sale_id.client_order_ref + str(int(o.sale_id.origin))"/>
                 <div>
                   <img alt="Barcode" t-att-src="'/edi/barcode/svg?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('gs1_128', quote_plus(barcode2 or ''), 120, 20)"/>
                 </div>

@@ -13,3 +13,4 @@ class SaleOrder(models.Model):
     x_edi_shipment = fields.Char(readonly=False)
     x_edi_status = fields.Integer(readonly=False)
     x_edi_status_updated = fields.Datetime(readonly=False)
+    x_edi_department = fields.Char(readonly=False)

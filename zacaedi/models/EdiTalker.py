@@ -126,7 +126,7 @@ class EdiTalker ():
             "zip": line[388:397].strip(),
             "countryCode": line[397:400].strip(),
             "ref1Calificator": line[400:403].strip(),
-            "ref1": line[403:438].strip(),
+            "ref1": line[403:438].strip(), # Departamento para ECI
             "contactFunction": line[438:441].strip(),
             "contactId": line[441:458].strip(),
             "department": line[458:493].strip(),
@@ -361,7 +361,7 @@ class EdiTalker ():
 
         return line
 
-    def _getPartner(env, picking, atype, partner_id):
+    def _getPartner(env, picking, atype, partner_id, department = ''):
         line = '{:<6}'.format('SEH1D')
         line = line + '{:<3}'.format(atype)
         if partner_id in EDI_PARTNER:
@@ -392,7 +392,7 @@ class EdiTalker ():
         line = line + '{:<3}'.format('')
         if atype == 'BY' or atype == 'DP':
             line = line + '{:<3}'.format('API')
-            line = line + '{:<35}'.format('831')
+            line = line + '{:<35}'.format(department)
         else:
             line = line + '{:<3}'.format('')
             line = line + '{:<35}'.format('')
@@ -545,12 +545,12 @@ class EdiTalker ():
         line = ""
         line += EdiTalker.writeEncoded(EdiTalker._getHeader( order["x_edi_shipment"], 'DESADV', data["ref"]) )
         line += EdiTalker.writeEncoded(EdiTalker._getGlobalData(picking, order["x_edi_shipment"], orderNumber)  )
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'MS', 'B86133188')  ) # Emisor
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'SU', 'B86133188')  ) # Receptor del mensaje
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'MR', order['partner_invoice_id']['id'])  ) # Receptor del mensaje
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'IV', order['partner_invoice_id']['id'])  ) # Receptor del mensaje 
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'DP', order['partner_shipping_id']['id'])  ) # Almacén 5663 por ejemplo
-        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'BY', order["partner_id"]['id'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'MS', 'B86133188', order['x_edi_department'])  ) # Emisor
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'SU', 'B86133188', order['x_edi_department'])  ) # Receptor del mensaje
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'MR', order['partner_invoice_id']['id'], order['x_edi_department'])  ) # Receptor del mensaje
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'IV', order['partner_invoice_id']['id'], order['x_edi_department'])  ) # Receptor del mensaje 
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'DP', order['partner_shipping_id']['id'], order['x_edi_department'])  ) # Almacén 5663 por ejemplo
+        line += EdiTalker.writeEncoded(EdiTalker._getPartner(env, picking, 'BY', order["partner_id"]['id'], order['x_edi_department'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
 
         #logistics
         ssccNumber = str(order['id']).zfill(9) #TODO: revisar
@@ -664,7 +664,8 @@ class EdiTalker ():
             'x_edi_order': ediOrder['data']['orderNumber'],
             'x_edi_shipment': ediOrder['header']['shipmentId'],
             'x_edi_status': EdiTalker.EDI_STATUS_INIT,
-            'x_edi_status_updated': datetime.datetime.now()
+            'x_edi_status_updated': datetime.datetime.now(),
+            'x_edi_department': buyerPartner['ref1']
         }
         createdOrder = env['sale.order'].create(_order)
 
@@ -785,7 +786,7 @@ class EdiTalker ():
                             int(destCode), # Lugar de recepción
                             1, # Empresa destino
                             int(clientCode), #Lugar destino
-                            831, #Uneco
+                            int(oOrder['x_edi_department']), #Uneco
                             int(oOrder["client_order_ref"]), #pedido
                             int(oOrder["origin"]), # albarán
                             1, # Bultos
@@ -874,7 +875,7 @@ class EdiTalker ():
 
         return line
 
-    def _getInvoicePartner(env, invoice, atype, partner_id):
+    def _getInvoicePartner(env, invoice, atype, partner_id, department = ''):
         line = '{:<6}'.format('SINCP')
         line = line + '{:<3}'.format(atype)
         _partner = EdiTalker.getGLNFromPartnerId(env, partner_id)
@@ -900,7 +901,7 @@ class EdiTalker ():
         line = line + '{:<9}'.format(_partner['zip'])
         line = line + '{:<3}'.format('')
         line = line + '{:<35}'.format(_partner['vat'][:35])
-        line = line + '{:<35}'.format(831)
+        line = line + '{:<35}'.format(department)
         line = line + '{:<3}'.format('')
         line = line + '{:<17}'.format('')
         line = line + '{:<35}'.format('')
@@ -984,14 +985,14 @@ class EdiTalker ():
             line += EdiTalker.writeEncoded(EdiTalker._getHeader( order['x_edi_shipment'], 'INVOIC', partner['ref'] ))
             line += EdiTalker.writeEncoded(EdiTalker._getInvoiceData( invoice, order )  )
 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'II', 1)  ) # Emisor 1 = Zacatrus
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'SU', 1)  ) # Proveedor
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'SCO', 1)  ) # Proveedor
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'IV', order['partner_invoice_id']['id'])  ) 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'PR', order['partner_invoice_id']['id'])  ) 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'BCO', order['partner_invoice_id']['id'])  ) 
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'BY', order["partner_id"]['id'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
-            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'DP', order['partner_shipping_id']['id'])  ) # Almacén 5663 por ejemplo
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'II', 1, order['x_edi_department'])  ) # Emisor 1 = Zacatrus
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'SU', 1, order['x_edi_department'])  ) # Proveedor
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'SCO', 1, order['x_edi_department'])  ) # Proveedor
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'IV', order['partner_invoice_id']['id'], order['x_edi_department'])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'PR', order['partner_invoice_id']['id'], order['x_edi_department'])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'BCO', order['partner_invoice_id']['id'], order['x_edi_department'])  ) 
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'BY', order["partner_id"]['id'], order['x_edi_department'])  ) # Tienda compradora (destino final - viene del EDI del pedido)
+            line += EdiTalker.writeEncoded(EdiTalker._getInvoicePartner(env, invoice, 'DP', order['partner_shipping_id']['id'], order['x_edi_department'])  ) # Almacén 5663 por ejemplo
 
             lines = EdiTalker.getPickingLinesFromOrderId(env, order['id'])
             idx = 0
