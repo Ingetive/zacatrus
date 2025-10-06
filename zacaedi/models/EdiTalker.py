@@ -768,7 +768,7 @@ class EdiTalker ():
                     destCode = m.group(1)
                     clientCode = client.group(1)
 
-                    fileName = f"B86133188_1010997_{destCode}"
+                    fileName = f"B86133188_1010997_{destCode}_{oOrder['x_edi_department']}"
                     if not fileName in count:
                         count[fileName] = 0
                     with open(f"{fileName}.csv", mode='w' if count[fileName] == 0 else 'a') as abstractFile:
