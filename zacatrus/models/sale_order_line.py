@@ -15,6 +15,10 @@ class SaleOrderLine(models.Model):
         readonly=True,
         help="Indica si el descuento por caja se ha aplicado automáticamente.",
     )
+    x_original_discount = fields.Float(
+        string="Descuento original",
+        help="Descuento que tenía la línea antes de aplicar el descuento por caja.",
+    )
     @api.model_create_multi
     def create(self, vals_list):
         res = super(SaleOrderLine, self).create(vals_list)
@@ -42,16 +46,19 @@ class SaleOrderLine(models.Model):
             if line.display_type:
                 continue
             if line._compute_should_apply_box_discount():
+                # Sauvegarder la réduction originale si ce n'est pas déjà fait
+                if not line.x_box_discount_applied:
+                    line.x_original_discount = line.discount
                 percent = line.product_id.product_tmpl_id.x_box_discount_percent
                 line.update({
                     "discount": percent,
                     "x_box_discount_applied": True,
                 })
             else:
-            # On ne remet à zéro que si c’était notre remise auto
+            # Restaurer la réduction originale si c'était notre remise auto
                 if line.x_box_discount_applied:
                     line.update({
-                        "discount": 0.0,
+                        "discount": line.x_original_discount,
                         "x_box_discount_applied": False,
                     })
 
