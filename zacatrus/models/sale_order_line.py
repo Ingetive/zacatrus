@@ -46,14 +46,15 @@ class SaleOrderLine(models.Model):
             if line.display_type:
                 continue
             if line._compute_should_apply_box_discount():
-                # Sauvegarder la réduction originale si ce n'est pas déjà fait
-                if not line.x_box_discount_applied:
-                    line.x_original_discount = line.discount
                 percent = line.product_id.product_tmpl_id.x_box_discount_percent
-                line.update({
-                    "discount": percent,
-                    "x_box_discount_applied": True,
-                })
+                if percent > line.discount:
+                    # Sauvegarder la réduction originale si ce n'est pas déjà fait
+                    if not line.x_box_discount_applied:
+                        line.x_original_discount = line.discount
+                    line.update({
+                        "discount": percent,
+                        "x_box_discount_applied": True,
+                    })
             else:
             # Restaurer la réduction originale si c'était notre remise auto
                 if line.x_box_discount_applied:
