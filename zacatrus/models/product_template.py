@@ -12,3 +12,8 @@ class ProductTemplate(models.Model):
     x_discontinued = fields.Boolean('Descatalogado')
     x_sku = fields.Char('SKU')
     x_manufacturer = fields.Char('Editorial')
+    x_box_discount_percent = fields.Float(
+        string="Descuento por caja (%)",
+        help="Porcentaje de descuento aplicado cuando compran cajas enteras",
+        default=0.0,
+    )
