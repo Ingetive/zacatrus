@@ -1,6 +1,6 @@
 {
     "name": "Zacatrus EDI",
-    "version": "16.0.0.0.1",
+    "version": "18.0.0.0.1",
     "category": "Sales",
     "summary": "EDI connector and labels",
     'author': "Zacatrus",

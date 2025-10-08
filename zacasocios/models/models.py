@@ -30,6 +30,26 @@ class Zacasocios(models.Model):
 	_name = 'zacasocios.zacasocios'
 	_description = 'Zacasocios'
 
+	@api.model
+	def getFichasProductId(self):
+		"""Retourne l'ID du produit Fichas"""
+		fichasProductId = self.env['ir.config_parameter'].sudo().get_param('zacatrus_base.fichas_product_id')
+		if not fichasProductId:
+			# Créer le produit Fichas s'il n'existe pas
+			product = self.env['product.product'].create({
+				'name': 'Fichas',
+				'type': 'service',
+				'available_in_pos': True,
+				'sale_ok': True,
+				'purchase_ok': False,
+				'list_price': 0.0,
+				'standard_price': 0.0,
+			})
+			fichasProductId = product.id
+			# Sauvegarder l'ID dans la configuration
+			self.env['ir.config_parameter'].sudo().set_param('zacatrus_base.fichas_product_id', fichasProductId)
+		return int(fichasProductId)
+
 	def _isEmployee(self, email):
 		client_obj = self.env['res.partner']
 		cursor = client_obj.search_read([('email', '=', email)], ['name', 'property_product_pricelist'])

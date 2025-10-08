@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <!-- Ajouter le bouton Fichas dans les boutons de contrôle -->
+    <t t-name="point_of_sale.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension" owl="1">
+        <xpath expr="//button[@class='btn btn-light btn-lg' and contains(@class, 'control-button')]" position="after">
+            <button class="btn btn-light btn-lg control-button" t-on-click="clickFichas">
+                <i class="fa fa-gift me-2"></i>
+                <span class="control-button-label">Fichas</span>
+            </button>
+        </xpath>
+    </t>
+    
+    <!-- Alternative: Ajouter dans la barre d'outils -->
+    <t t-name="point_of_sale.PosToolbar" t-inherit="point_of_sale.PosToolbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[@class='pos-toolbar']" position="inside">
+            <button class="btn btn-success btn-lg" t-on-click="clickFichas">
+                <i class="fa fa-gift me-2"></i>
+                Fichas
+            </button>
+        </xpath>
+    </t>
+</templates>

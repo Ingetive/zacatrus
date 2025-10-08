@@ -1,6 +1,6 @@
 {
     "name": "Zacatrus Base",
-    "version": "16.0.0.0.2",
+    "version": "18.0.0.0.1",
     "category": "Point Of Sale",
     "summary": "Base settings for Zacatrus modules",
     'author': "Zacatrus",
@@ -13,9 +13,9 @@
         'product',
         'purchase',
         'sale',
-        #'zacatrus',
-        'zaca_amazon',
-        #'delivery_dhl_parcel'
+        ##'zacatrus',
+        #'zaca_amazon',
+        ##'delivery_dhl_parcel'
     ],
     "data": [
         'security/ir.model.access.csv',

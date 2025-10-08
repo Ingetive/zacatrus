@@ -18,7 +18,6 @@
         <field name="code">model.sync()</field>
         <field name='interval_number'>5</field>
         <field name='interval_type'>minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
     <record id="zacaedi_sync" model="ir.cron">
@@ -28,7 +27,6 @@
         <field name="code">model.sync()</field>
         <field name='interval_number'>5</field>
         <field name='interval_type'>minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
     <record model="ir.actions.server" id="zacaedi_send_invoice_action">
@@ -48,7 +46,6 @@
         <field name="code">model.check()</field>
         <field name='interval_number'>5</field>
         <field name='interval_type'>minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
 </odoo>

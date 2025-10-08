@@ -10,7 +10,7 @@
     'website': "https://zacatrus.es",
     "license": "AGPL-3",
     'category': 'Uncategorized',
-    'version': '16.0',
+    'version': '18.0',
     'depends': [
         'point_of_sale'
     ],
@@ -26,9 +26,8 @@
     'installable': True,
     'license': 'Other proprietary',
     'assets': {
-       'point_of_sale.assets': [
-           'zacasocios/static/src/xml/Fichas.xml',
-           'zacasocios/static/src/js/FichasSystem.js',
-       ],
+        'point_of_sale._assets_pos': [
+            'zacasocios/static/src/js/fichas_button_patch.js',
+        ],
     },
 }

@@ -6,8 +6,8 @@
         <field name="priority" eval="110"/>
         <field name="inherit_id" ref="base.res_config_settings_view_form" />
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('settings')]" position="inside">
-                <div class="app_settings_block" data-string="Zacatrus EDI" string="Zacatrus EDI" data-key="zacaedi">
+            <xpath expr="//form" position="inside">
+                <app data-string="Zacatrus EDI" string="Zacatrus EDI" name="zacaedi">
                     
                     <h2>EDI</h2>
                     <div class="row mt16 o_settings_container" name="seres_setting_container">
@@ -114,7 +114,7 @@
                     </div>
 
 
-                </div>
+                </app>
             </xpath>
         </field>
     </record>
