@@ -5,10 +5,10 @@
             <field name="name">pos_tarjezaca.card.tree</field>
             <field name="model">pos_tarjezaca.card</field>
             <field name="arch" type="xml">
-                <tree string="Tarjezacas" create="1" delete="1" edit="1" >
+                <list string="Tarjezacas" create="1" delete="1" edit="1" >
                     <field name="serial"/>
                     <field name="code"/>
-                </tree>
+                </list>
             </field>
         </record>
         <!-- Vista tipo formulario -->
@@ -47,12 +47,12 @@
             <field name="name">pos_tarjezaca.operation.tree</field>
             <field name="model">pos_tarjezaca.operation</field>
             <field name="arch" type="xml">
-                <tree string="Operaciones tarjezaca" create="0" delete="1" edit="1" >
+                <list string="Operaciones tarjezaca" create="0" delete="1" edit="1" >
                     <field name="serial"/>
                     <field name="valid"/>
                     <field name="cause"/>
                     <field name="giftcard_id"/>
-                </tree>
+                </list>
             </field>
         </record>
         <!-- Vista tipo formulario -->

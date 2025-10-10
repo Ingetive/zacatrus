@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 todos,todos,pos_paylands.model_pos_paylands_payment,,1,1,1,1
 paylands_service,paylands_service,pos_paylands.model_pos_paylands_service,base.group_erp_manager,1,1,1,1
+pos_paylands.access_pos_paylands_paylands,access_pos_paylands_paylands,pos_paylands.model_pos_paylands_paylands,base.group_user,1,1,1,1
+pos_paylands.access_pos_paylands_adyen,access_pos_paylands_adyen,pos_paylands.model_pos_paylands_adyen,base.group_user,1,1,1,1

@@ -5,25 +5,38 @@ import { NumberPopup } from "@point_of_sale/app/utils/input_popups/number_popup"
 import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { ControlButtons } from "@point_of_sale/app/screens/product_screen/control_buttons/control_buttons";
 import { patch } from "@web/core/utils/patch";
-import { useService } from "@web/core/utils/hooks";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
 
 patch(ControlButtons.prototype, {
     fichasID: false,
+    clientId: false,
+    addingPoints: false,
     setup() {
         super.setup();
-        // Ajouter le bouton Fichas après l'initialisation
+        this.pos = usePos();
+        
         setTimeout(() => {
             this.addFichasButton();
+            this.checkClient();
+        }, 1000);
+    },
+
+    checkClient() {
+        var client = this.pos.get_order().get_partner();
+        if (client && (!this.clientId || this.clientId != client.id)){
+            this.clientId = client.id;
+            this._getClientBalance();
+        }
+        setTimeout(() => {
+            this.checkClient();
         }, 1000);
     },
     
     addFichasButton() {
-        // Vérifier si le bouton existe déjà
         if (document.querySelector('#fichas_button')) {
             return;
         }
         
-        // Chercher le conteneur des boutons de contrôle
         const controlButtonsContainer = document.querySelector('.control-buttons') || 
                                       document.querySelector('.pos-control-buttons') ||
                                       document.querySelector('[class*="control"]');
@@ -41,14 +54,9 @@ patch(ControlButtons.prototype, {
             <i class="fa fa-gift me-2"></i>
             <span class="control-button-label">Fichas</span>
         `;
-        
-        // Ajouter l'événement de clic
         fichasButton.addEventListener('click', () => this.clickFichas());
         
-        // Ajouter le bouton au conteneur
         controlButtonsContainer.appendChild(fichasButton);
-        
-        console.log("Bouton Fichas ajouté à l'interface");
     },
     
     async clickFichas() {
@@ -62,38 +70,33 @@ patch(ControlButtons.prototype, {
             return;
         }
         
-        const total = order.get_total_with_tax();
-        const fichas = Math.floor(total / 10);
-        
-        if (fichas === 0) {
-            this.dialog.add(AlertDialog, {
-                title: _t("Insufficient Amount"),
-                body: _t(`Total: ${total}€\nMinimum: 10€ for 1 ficha`),
-            });
-            return;
+        if (!document.querySelector('#fichas_button').textContent.includes("Quitar")){
+            const total = order.get_total_with_tax();
+            const fichas = Math.floor(total / 10);
+            
+            if (fichas === 0) {
+                this.dialog.add(AlertDialog, {
+                    title: _t("Insufficient Amount"),
+                    body: _t(`Total: ${total}€\nMinimum: 10€ for 1 ficha`),
+                });
+                return;
+            }
+            this.addFichasToOrder();
         }
-        
-        // Demander confirmation
-        this.dialog.add(AlertDialog, {
-            title: _t("Add Fichas"),
-            body: _t(`Add ${fichas} fichas to the order?\n\nTotal: ${total}€\nFichas: ${fichas}`),
-            confirm: () => this.addFichasToOrder(fichas),
-        });
+        else {
+            this.removeFichasFromOrder();
+        }
     },
 
     async _getFichasProductId() {
         if (!this.fichasID) {
-            console.log("getting fichas product id...");
             try {
-                // Utiliser le service ORM moderne
                 const orm = this.env.services.orm;
                 const fichasProductId = await orm.call(
                     'zacasocios.zacasocios',
                     'getFichasProductId',
                     []
                 );
-                
-                console.log("Got fichas id:", fichasProductId);
                 if (fichasProductId) {
                     this.fichasID = fichasProductId;
                 }
@@ -105,114 +108,124 @@ patch(ControlButtons.prototype, {
                 });
             }
         }
+        return this.fichasID;
     },
-    
-    async addFichasToOrder(fichasCount) {
-        const order = this.pos.get_order();
+    async addFichasToOrder (  ) {
+        if (!this.addingPoints && this.fichasID){
 
-        if (!this.fichasID){
-            await this._getFichasProductId();
-        }
-        
-        try {
-            let fichasProduct = null;
-            
-            if (this.pos.models && this.pos.models["product.product"]) {
-                const products = this.pos.models["product.product"].records;
-                fichasProduct = Object.values(products).find(product => 
-                    product.id == this.fichasID
-                );
-                console.log("fichasProduct:", fichasProduct);
+            var order = this.pos.get_order();
+            var selected_orderline = order.get_selected_orderline();
+            if (!order.get_orderlines().length) {
+                console.log("no order lines.")
+                return;
             }
-            
-            // Méthode 2: Chercher dans la configuration POS
-            if (!fichasProduct && this.pos.config && this.pos.config.available_product_ids) {
-                const availableProducts = this.pos.config.available_product_ids;
-                fichasProduct = availableProducts.find(product => 
-                    product.id == this.fichasID
-                );
+            if (this.addingPoints){ 
+                console.log("already adding lines.")
             }
-            
-            // Méthode 3: Utiliser un produit existant comme base
-            if (!fichasProduct) {
-                console.log("Produit 'Fichas' non trouvé, utilisation d'une approche alternative");
-                
-                // Essayer d'utiliser le premier produit disponible comme base
-                if (this.pos.models && this.pos.models["product.product"]) {
-                    const products = this.pos.models["product.product"].records;
-                    const firstProduct = Object.values(products)[0];
-                    if (firstProduct) {
-                        fichasProduct = {
-                            ...firstProduct,
-                            id: this.fichasID,
-                            name: 'Fichas',
-                            display_name: 'Fichas',
-                            price: 0.0,
-                            lst_price: 0.0,
-                            is_fichas: true
-                        };
+            else{
+                this.addingPoints = true;
+                var orderlines = order.get_orderlines();
+                var val = this._calculateNumberOfFichas( );
+                var modified = false;
+                for(var i = 0, len = orderlines.length; i < len; i++){
+                    if (orderlines[i].product && orderlines[i].product.id == this.fichasID){
+                        orderlines[i].set_quantity(-1*val);
+                        modified = true;
                     }
                 }
-                
-                // Si toujours pas de produit, créer une ligne manuellement
-                if (!fichasProduct) {
-                    console.log("Création d'une ligne de fichas manuelle");
-                    this.addFichasLineManually(order, fichasCount);
-                    return;
+                if (this.fichas && this.fichas >= 100 && !modified){
+                    let fichasProduct = this.pos.models["product.product"].getBy("id", this.fichasID);
+                    
+                     try {
+                        const newLine = await this.pos.addLineToCurrentOrder(
+                            {product_id: fichasProduct}, 
+                            {}, 
+                            false
+                        );
+                        newLine.set_quantity(-1*val);
+                        
+                        newLine.is_fichas_line = true;
+                        newLine.fichas_protected = true;
+                        
+                        this.protectFichasLines();
+                            
+                        const button = document.querySelector('#fichas_button');
+                        if (button) {
+                            button.innerHTML = '<i class="fa fa-gift me-2"></i><span class="control-button-label">Quitar</span>';
+                        }
+                         
+                     } catch (error) {
+                         this.dialog.add(AlertDialog, {
+                             title: _t("Error"),
+                             body: _t("No se pudo agregar las fichas al pedido."),
+                         });
+                         console.error("Error adding fichas to order:", error);
+                     }
                 }
+                else {
+                    this.dialog.add(AlertDialog, {
+                        title: _t("Error"),
+                        body: _t("No hay fichas disponibles."),
+                    });
+                    console.log("no fichas to add.");
+                }
+                this.addingPoints = false;
+                
             }
-            
-            console.log("Produit Fichas trouvé:", fichasProduct);
-            
-            // Supprimer les fichas existantes (remettre à zéro)
-            order._fichas_count = 0;
-            order._fichas_display = null;
-            
-            // Utiliser la méthode manuelle pour éviter les erreurs de taxes_id
-            this.addFichasLineManually(order, fichasCount);
-            
-        } catch (error) {
-            console.error("Error adding fichas:", error);
-            this.dialog.add(AlertDialog, {
-                title: _t("Error"),
-                body: _t("Error adding fichas to the order."),
-            });
+        }
+    },
+
+    protectFichasLines() {
+        const order = this.pos.get_order();
+        if (!order) return;
+        
+        const orderlines = order.get_orderlines();
+        orderlines.forEach(line => {
+            if (line.product_id && line.product_id.id == this.fichasID) {
+                const originalSetQuantity = line.set_quantity;
+                line.set_quantity = function(qty) {
+                    if (this.is_fichas_line) {
+                        return false;
+                    }
+                    return originalSetQuantity.call(this, qty);
+                };
+                
+                const originalSetUnitPrice = line.set_unit_price;
+                line.set_unit_price = function(price) {
+                    if (this.is_fichas_line) {
+                        return false;
+                    }
+                    return originalSetUnitPrice.call(this, price);
+                };
+            }
+        });
+    },
+
+    removeFichasFromOrder() {
+        const order = this.pos.get_order();
+        if (!order) {
+            console.log("No order found");
+            return;
+        }
+        
+        const orderlines = order.get_orderlines();
+        let fichasRemoved = false;
+        
+        for (let i = orderlines.length - 1; i >= 0; i--) {
+            const line = orderlines[i];
+            if (line.product_id && line.product_id.id == this.fichasID) {
+                order.removeOrderline(line);
+                fichasRemoved = true;
+            }
+        }
+        
+        if (fichasRemoved) {
+            this._setText();
+        } else {
+            console.log("Zacalog: no fichas found to remove");
         }
     },
     
-    addFichasLineManually(order, fichasCount) {
-        try {
-            console.log("Ajout manuel de fichas à la commande");
-            
-            // Stocker les fichas dans un champ personnalisé de la commande
-            if (!order._fichas_count) {
-                order._fichas_count = 0;
-            }
-            order._fichas_count += fichasCount;
-            
-            // Ajouter un champ personnalisé pour l'affichage
-            order._fichas_display = `${order._fichas_count} fichas`;
-            
-            // Mettre à jour le total de la commande (sans ajouter de ligne)
-            this.updateOrderTotal(order);
-            
-            // Forcer la mise à jour de l'interface
-            this.forceUIUpdate();
-            
-            // Message de succès
-            this.dialog.add(AlertDialog, {
-                title: _t("Success"),
-                body: _t(`${fichasCount} fichas added to the order!\n\nTotal fichas: ${order._fichas_count}`),
-            });
-            
-        } catch (error) {
-            console.error("Error adding fichas manually:", error);
-            this.dialog.add(AlertDialog, {
-                title: _t("Error"),
-                body: _t("Error adding fichas to the order."),
-            });
-        }
-    },
     
     forceUIUpdate() {
         try {
@@ -234,7 +247,6 @@ patch(ControlButtons.prototype, {
     
     updateOrderTotal(order) {
         try {
-            // Recalculer le total de la commande (sans les fichas)
             const lines = order.get_orderlines();
             let total = 0.0;
             
@@ -251,11 +263,123 @@ patch(ControlButtons.prototype, {
                 order.amount_total = total;
             }
             
-            console.log("Total de la commande mis à jour:", total);
-            console.log("Fichas dans la commande:", order._fichas_count || 0);
-            
         } catch (error) {
             console.error("Error updating order total:", error);
+        }
+    },
+
+    _fichasApplied( ) {
+        if (this.fichasID){
+            var order = this.pos.get_order();
+            var orderlines = order.get_orderlines();
+            for(var i = 0, len = orderlines.length; i < len; i++){
+                const line = orderlines[i];
+                if (line.product_id && line.product_id.id == this.fichasID){
+                    return true;
+                }
+            }
+        }
+        return false;
+    },
+
+    _calculateNumberOfFichas(  ){
+        if (this.fichasID){
+            var order = this.pos.get_order();
+            var total     = order ? order.get_total_with_tax() : 0;
+            var orderlines = order.get_orderlines();
+            for(var i = 0, len = orderlines.length; i < len; i++){
+                 if (orderlines[i].product && orderlines[i].product.id == this.fichasID){
+                    total = total - orderlines[i].get_price_with_tax();
+                }
+            }
+
+            var ret = 0;
+
+            if (this.fichas){
+                ret = this.fichas;
+                if (ret > total*100 / 2)
+                    ret = total*100 /2;
+
+                ret = parseInt(ret / 100) * 100;
+            }
+
+            return ret;
+        }
+    },
+    _setText(){
+        if (! this._fichasApplied()){
+            if (this.fichas && this.fichas > 0){         
+                var available = this._calculateNumberOfFichas();
+                 const button = document.querySelector('#fichas_button');
+                 if (button) {
+                    button.innerHTML = '<i class="fa fa-gift me-2"></i>' +
+                        '<span class="control-button-label">' + available + ' F.</span>';
+                 }
+            }
+            else {
+                const button = document.querySelector('#fichas_button');
+                if (button) {
+                    button.innerHTML = '<i class="fa fa-gift me-2"></i>' +
+                        '<span class="control-button-label">Fichas</span>';
+                }
+            }
+        }
+        else {
+            const button = document.querySelector('#fichas_button');
+            if (button) {
+                button.innerHTML = '<i class="fa fa-gift me-2"></i>' +
+                    '<span class="control-button-label">Quitar</span>';
+            }
+        }
+    },
+
+    async _getClientBalance(  ) {
+        if (! this.fichasID){
+            await this._getFichasProductId();
+        }
+
+        var order = this.pos.get_order();
+        var client = order.get_partner();
+
+        //order.set_pricelist(client.pricelist_id);
+
+        this.fichas = false;
+        if (client != null){
+            this.zacasocio = false;
+            if (client && client.property_product_pricelist && client.property_product_pricelist.id == 3){
+                this.zacasocio = true;
+                if (!client.email){
+                    this.dialog.add(AlertDialog, {
+                        title: _t("Cliente inválido"),
+                        body: _t("El cliente no tiene un email asignado."),
+                    });
+                } else {
+                    const orm = this.env.services.orm;
+                    //const fichasProductId = await orm.call(
+                    try {
+                        const _fichas = await orm.call(
+                            'zacasocios.zacasocios',
+                            'getBalance',
+                            [client.email, this.pos.config.name]
+                        )
+                        this.fichas =  Math.floor(_fichas);
+                        //core.bus.trigger('got_fichas', this.fichas);
+                        this._setText();
+                    } catch (error) {
+                        this.dialog.add(AlertDialog, {
+                            title: _t("Error"),
+                            body: _t("Error al obtener las fichas del cliente."),
+                        });
+                    }
+                }            
+            }
+            else{
+                this.fichas = 0;
+                console.log("No es zacasocio.");
+            }
+        }
+        else {
+            console.log("No client.");
         }
     }
 });

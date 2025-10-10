@@ -20,11 +20,10 @@ class PosPaymentMethod(models.Model):
         return f"https://api.paylands.com/v1{sandboxText}"
 
     def _get_payment_terminal_selection(self):
-        res = super()._get_payment_terminal_selection()
-        res.append(("paylands_payment", _("Paylands")))
-        return res
+        return super(PosPaymentMethod, self)._get_payment_terminal_selection() + [('paylands_payment', 'Paylands')]
 
     def _getPosParams(self, posId):
+        _logger.info(f"Zacalog: _getPosParams")
         config_obj = self.env['pos.config']
         cursor = config_obj.search([('id', '=', posId)])
         ret = {'device': None}
@@ -35,6 +34,7 @@ class PosPaymentMethod(models.Model):
 
     @api.model
     def paylands(self, posId, name, _data):
+        _logger.info(f"Zacalog: paylands")
         url = self._getBaseUrl(
             self.env['ir.config_parameter'].sudo().get_param('pos_paylands.paylands_sandbox_mode')
         )

@@ -13,6 +13,7 @@
         'product',
         'purchase',
         'sale',
+        'delivery'
         ##'zacatrus',
         #'zaca_amazon',
         ##'delivery_dhl_parcel'

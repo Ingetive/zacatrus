@@ -20,7 +20,7 @@
             <field name="name">zacasocios.queue.form</field>
             <field name="model">zacasocios.queue</field>
             <field name="arch" type="xml">
-                <form string="Cola de actualización de Fichas" create="0" delete="1" edit="1">
+                <form string="Cola de actualización de Fichas">
                     <sheet>
                         <group>
                             <field name="email"/>
@@ -38,18 +38,18 @@
         </record>
 
         <!-- Acción para abrir las vistas -->
-        <record id="action_zacasocios_queue" model="ir.actions.act_window">
+        <record id="action_zacasocios_queue_new" model="ir.actions.act_window">
             <field name="name">Cola de actualización de Fichas</field>
             <field name="res_model">zacasocios.queue</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
+            <field name="target">current</field>
         </record>
 
         <!-- Menú para acceder a la vista -->
-        <menuitem id="menu_zacaedi_bundle" name="Cola de actualización de Fichas"
+        <menuitem id="menu_zacasocios_queue" name="Cola de actualización de Fichas"
             sequence="200"
-            action="action_zacasocios_queue"
+            action="action_zacasocios_queue_new"
             parent="base.next_id_9" />
-
 
     </data>
 </odoo>

@@ -1,294 +1,232 @@
-odoo.define("pos_paylands.payment", function (require) {
-    "use strict";
+/** @odoo-module **/
 
-    var core = require("web.core");
-    var PaymentInterface = require("point_of_sale.PaymentInterface");
-    const {Gui} = require("point_of_sale.Gui");
-    var rpc = require('web.rpc');
+import { _t } from "@web/core/l10n/translation";
+import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
+import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
-    var _t = core._t;
+export class PaylandsPayment extends PaymentInterface {
+    setup() {
+        super.setup(...arguments);
+        this.was_cancelled = false;
+        this.remaining_polls = 4;
+        this.polling = null;
+    }
 
-    var PaylandsPayment = PaymentInterface.extend({
-        init: function () {
-            this._super.apply(this, arguments);
-        },
+    async send_payment_request(uuid) {
+        await super.send_payment_request(...arguments);
+        const line = this.pos.get_order().get_selected_paymentline();
+        line.set_payment_status("waiting");
+        try {
+            return await this._paylands_pay();
+        } catch (error) {
+            console.error(error);
+            this._showError(String(error));
+            return false;
+        }
+    }
 
-        send_payment_request: function () {
-            this._super.apply(this, arguments);
-            return this._paylands_pay();
-        },
-        send_payment_cancel: function (order, cid) {
-            this._super.apply(this, arguments);
-            return this._paylands_cancel(false);
-        },
-        close: function () {
-            this._super.apply(this, arguments);
-        },
+    async send_payment_cancel(order, uuid) {
+        super.send_payment_cancel(...arguments);
+        const line = this.pos.get_order().get_selected_paymentline();
+        const paylandsCancel = await this._paylands_cancel(false);
+        if (paylandsCancel) {
+            line.set_payment_status("retry");
+            return true;
+        }
+    }
 
-        _paylands_cancel: function (ignore_error) {
-            var self = this;
-            var config = this.pos.config;
+    async _paylands_cancel(ignore_error) {
+        try {
+            const status = await this.pos.data.silentCall(
+                'pos.payment.method',
+                'cancel',
+                [this.pos.config.id, this.pos.get_order().name]
+            );
+            this.was_cancelled = true;
+            this._showError(_t('Por favor, cancélalo en el datáfono.'), "Paylands");
+            return status;
+        } catch (error) {
+            this._showError(_t('Error de conexión.'), "Paylands error");
+            return false;
+        }
+    }
 
-            return rpc.query({
-                model: 'pos.payment.method',
-                method: 'cancel',
-                args: [this.pos.config.id, this.pos.get_order().name],
-            }, {
-                timeout: 5000,
-                shadow: true,
-            }).then(function (status) {
-                self.was_cancelled = true;
-                Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Por favor, cancélalo en el datáfono.'),});   
-            }).catch(function (status) {
-                Gui.showPopup("ErrorPopup", {title: "Paylands error", body: _t('Error de conexión.'),});
-            })
-        },
+    _reset_state() {
+        this.was_cancelled = false;
+        this.remaining_polls = 4;
+        clearTimeout(this.polling);
+    }
 
+    async _poll_for_response(resolve, reject) {
+        if (this.was_cancelled) {
+            resolve(false);
+            return;
+        }
 
-        _reset_state: function () {
-            this.was_cancelled = false;
-            this.remaining_polls = 4;
-            clearTimeout(this.polling);
-        },
+        try {
+            const res = await this.pos.data.silentCall(
+                'pos.payment.method',
+                'get_status',
+                [this.pos.config.id, this.pos.get_order().name]
+            );
 
+            console.log("get_status -> status: " + res['status']);
+            const order = this.pos.get_order();
+            const line = this.pending_paylands_line();
 
-        _paylands_get_sale_id: function () {
-            var config = this.pos.config;
-            return _.str.sprintf('%s (ID: %s)', config.display_name, config.id);
-        },
-
-        _poll_for_response: function (resolve, reject) {
-            var self = this;
-
-            if (this.was_cancelled) {
+            if (!line) {
                 resolve(false);
-                return Promise.resolve();
+                return;
             }
 
-            return rpc.query({
-                model: 'pos.payment.method',
-                method: 'get_status',
-                args: [this.pos.config.id, this.pos.get_order().name],
-            }, {
-                timeout: 5000,
-                shadow: true,
-            }).catch(function (data) {
-                if (self.remaining_polls != 0) {
-                    self.remaining_polls--;
-                } else {
+            if (res['status'] !== 0) {
+                if (res['status'] === 200) {
+                    line.set_receipt_info(res['additional']['ticket_footer']);
+                    line.transaction_id = res['additional']['uuid'];
+                    line.card_type = res['additional']['brand'];
+                    resolve(true);
+                } else if (res['status'] >= 500 && res['status'] < 600) {
+                    this._showError(_t('Denegada.'), "Paylands");
+                    line.set_payment_status('retry');
                     reject();
-                    self.poll_error_order = self.pos.get_order();
-                    return self._handle_odoo_connection_failure(data);
-                }
-                // This is to make sure that if 'data' is not an instance of Error (i.e. timeout error),
-                // this promise don't resolve -- that is, it doesn't go to the 'then' clause.
-                return Promise.reject(data);
-            }).then(function (res) {
-                console.log("get_status -> status: "+res['status']);
-                //var notification = status.latest_response;                
-                var order = self.pos.get_order();
-                var line = self.pending_paylands_line() || resolve(false);
-
-                if (res['status'] != 0) {
-                    //var response = notification.SaleToPOIResponse.PaymentResponse.Response;
-                    //var additional_response = new URLSearchParams(response.AdditionalResponse);
-
-                    if (res['status'] == 200) {
-                        var config = self.pos.config;
-                        // var payment_response = notification.SaleToPOIResponse.PaymentResponse;
-                        //var payment_result = payment_response.PaymentResult;
-
-                        /*
-                        var cashier_receipt = payment_response.PaymentReceipt.find(function (receipt) {
-                            return receipt.DocumentQualifier == 'CashierReceipt';
-                        });
-                        */
-
-                        //if (cashier_receipt) {
-                            //line.set_cashier_receipt("THIS is a test");
-                            line.set_receipt_info( res['additional']['ticket_footer'] );
-                        //}
-
-
-/*
-                        var customer_receipt = payment_response.PaymentReceipt.find(function (receipt) {
-                            return receipt.DocumentQualifier == 'CustomerReceipt';
-                        });
-                        if (customer_receipt) {
-                            line.set_receipt_info(self._convert_receipt_info(customer_receipt.OutputContent.OutputText));
-                        }
-*//*
-                        var tip_amount = payment_result.AmountsResp.TipAmount;
-                        if (config.paylands_ask_customer_for_tip && tip_amount > 0) {
-                            order.set_tip(tip_amount);
-                            line.set_amount(payment_result.AmountsResp.AuthorizedAmount);
-                        }*/
-
-                        //TODO: Poner datos de la transaccion pnp
-                        line.transaction_id = res['additional']['uuid'];
-                        line.card_type = res['additional']['brand'];
-                        //line.cardholder_name = additional_response.get('cardHolderName') || '';
-                        
-                        resolve(true);
-                    }
-                    else if (res['status'] >= 500 && res['status'] < 600) { 
-                        //var message = additional_response.get('message');
-                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Denegada...'),});
-
-                        line.set_payment_status('retry');
-                        reject();
-                    }
-                    else if (res['status'] == 300) { 
-                        //var message = additional_response.get('message');
-                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: _t('Cancelado por el usuario'),});
-
-                        line.set_payment_status('retry');
-                        reject();
-                    }
-                    else {
-                        //var message = additional_response.get('message');
-                        Gui.showPopup("ErrorPopup", {title: "Paylands", body: res['message'],});
-
-                        line.set_payment_status('retry');
-                        reject();
-
-                        // TODO:
-                        /*
-                        var message = additional_response.get('message');
-                        self._show_error(_.str.sprintf(_t('Message from Paylands: %s'), message));
-
-                        // this means the transaction was cancelled by pressing the cancel button on the device
-                        if (message.startsWith('108 ')) {
-                            resolve(false);
-                        } else {
-                            line.set_payment_status('retry');
-                            reject();
-                        }
-                        */
-                    }
+                } else if (res['status'] === 300) {
+                    this._showError(_t('Cancelado por el usuario'), "Paylands");
+                    line.set_payment_status('retry');
+                    reject();
                 } else {
-                    line.set_payment_status('waitingCard')
+                    this._showError(res['message'], "Paylands");
+                    line.set_payment_status('retry');
+                    reject();
                 }
-            });
-        },
-
-        start_get_status_polling: function () {
-            var self = this;
-            var res = new Promise(function (resolve, reject) {
-                // clear previous intervals just in case, otherwise
-                // it'll run forever
-                clearTimeout(self.polling);
-                self._poll_for_response(resolve, reject);
-                self.polling = setInterval(function () {
-                    self._poll_for_response(resolve, reject);
-                }, 5500);
-            });
-
-            // make sure to stop polling when we're done
-            res.finally(function () {
-                self._reset_state();
-            });
-
-            return res;
-        },
-
-
-        pending_paylands_line() {
-            var line = this.pos.get_order().paymentlines.find(
-            paymentLine => paymentLine.payment_method.use_payment_terminal === 'paylands_payment' && (!paymentLine.is_done()));
-            //console.log("PAYMENT TERMINAL: "+line.payment_method.use_payment_terminal);
-            return line;
-        },
-
-        _paylands_handle_response: function (response) {
-            var line = this.pending_paylands_line();
-
-            if (response.error && response.error.status_code == 401) {
-                Gui.showPopup("ErrorPopup", {title: "Paylands error", body: _t('Authentication failed. Please check your Paylands credentials.'),});
-                line.set_payment_status('force_done');
-                return Promise.resolve();
-            }
-
-            response = response.SaleToPOIRequest;
-            if (response && response.EventNotification && response.EventNotification.EventToNotify == 'Reject') {
-                console.error('error from Paylands', response);
-
-                var msg = '';
-                if (response.EventNotification) {
-                    var params = new URLSearchParams(response.EventNotification.EventDetails);
-                    msg = params.get('message');
-                }
-
-                Gui.showPopup("ErrorPopup", {title: "Paylands error", body: msg,});
-                if (line) {
-                    line.set_payment_status('force_done');
-                }
-
-                return Promise.resolve();
             } else {
                 line.set_payment_status('waitingCard');
-                return this.start_get_status_polling();
             }
-        },
-
-        _doSend( code ){
-            var self = this;
-            var order = this.pos.get_order();
-            var pay_line = order.selected_paymentline;
-            var client = order.partner;
-            var clientId = 'anonymous';
-            if (client){
-                clientId = client.id;  
+        } catch (error) {
+            if (this.remaining_polls !== 0) {
+                this.remaining_polls--;
+            } else {
+                reject();
+                this.poll_error_order = this.pos.get_order();
+                this._showError(_t('Error de conexión con Paylands.'), "Paylands error");
+                return;
             }
-            var data = {
-                "client": clientId,
-                "amount": pay_line.amount,
-                "order": code
-                //"articles": articles
-            };
+            console.error("Error polling for response:", error);
+        }
+    }
 
-            return rpc.query({
-                model: 'pos.payment.method',
-                method: 'paylands',
-                args: [this.pos.config.id, order.name, JSON.stringify(data)],
-            })
-            .then(function(ret){
-                console.log(ret);
-                if (!ret['ok']) {
-                    Gui.showPopup("ErrorPopup", {title: "Error "+ret['code'], body: ret['message'],});
-                    return false;    
-                }
-                return self._paylands_handle_response(data);
-            },function(type, err){
-                Gui.showPopup("ErrorPopup", {title: "Error 20", body: "No puedo procesar el pago.",});
+    start_get_status_polling() {
+        return new Promise((resolve, reject) => {
+            clearTimeout(this.polling);
+            this._poll_for_response(resolve, reject);
+            this.polling = setInterval(() => {
+                this._poll_for_response(resolve, reject);
+            }, 5500);
+        }).finally(() => {
+            this._reset_state();
+        });
+    }
+
+    pending_paylands_line() {
+        const order = this.pos.get_order();
+        if (!order) return null;
+        return order.paymentlines.find(
+            paymentLine => paymentLine.payment_method.use_payment_terminal === 'paylands_payment' && (!paymentLine.is_done())
+        );
+    }
+
+    async _paylands_handle_response(response) {
+        const line = this.pending_paylands_line();
+
+        if (response.error && response.error.status_code === 401) {
+            this._showError(_t('Authentication failed. Please check your Paylands credentials.'), "Paylands error");
+            if (line) line.set_payment_status('force_done');
+            return Promise.resolve();
+        }
+
+        if (response && response.SaleToPOIRequest && response.SaleToPOIRequest.EventNotification && response.SaleToPOIRequest.EventNotification.EventToNotify === 'Reject') {
+            console.error('error from Paylands', response);
+            let msg = '';
+            if (response.SaleToPOIRequest.EventNotification) {
+                const params = new URLSearchParams(response.SaleToPOIRequest.EventNotification.EventDetails);
+                msg = params.get('message');
+            }
+            this._showError(msg, "Paylands error");
+            if (line) line.set_payment_status('force_done');
+            return Promise.resolve();
+        } else {
+            if (line) line.set_payment_status('waitingCard');
+            return this.start_get_status_polling();
+        }
+    }
+
+    async _doSend(code) {
+        const order = this.pos.get_order();
+        const pay_line = order.get_selected_paymentline();
+        
+        if (!pay_line) {
+            this._showError(_t("No payment line selected"), "Paylands Error");
+            return false;
+        }
+        
+        const client = order.partner;
+        const clientId = client ? client.id : 'anonymous';
+
+        const data = {
+            "client": clientId,
+            "amount": pay_line.amount,
+            "order": code
+        };
+
+        try {
+            const ret = await this.pos.data.silentCall(
+                'pos.payment.method',
+                'paylands',
+                [this.pos.config.id, order.name, JSON.stringify(data)]
+            );
+
+            if (!ret['ok']) {
+                this._showError(ret['message'], `Error ${ret['code']}`);
                 return false;
+            }
+            return await this._paylands_handle_response(data);
+        } catch (error) {
+            this._showError(_t("No puedo procesar el pago."), "Error 20");
+            console.error("Error in _doSend:", error);
+            return false;
+        }
+    }
+
+    async _paylands_pay() {
+        const order = this.pos.get_order();
+        const pay_line = order.get_selected_paymentline();
+        
+        if (!pay_line) {
+            this._showError(_t("No payment line selected"), "Paylands Error");
+            return false;
+        }
+
+        if (pay_line.amount > 0) {
+            return await this._doSend(false);
+        } else {
+            const { confirmed, payload: code } = await this.env.services.dialog.add(TextInputPopup, {
+                title: _t('Número de pedido (Order) original'),
+                body: _t('Ej.: 00001-051-0001.'),
             });
-
-            return false;
-        },
-
-        _paylands_pay: function() { 
-            var order = this.pos.get_order();
-            var pay_line = order.selected_paymentline;
-
-
-            if (pay_line.amount > 0){
-                return this._doSend( false );
+            if (confirmed && code) {
+                console.log("return: " + code);
+                return await this._doSend(code);
             }
-            else {
-                return Gui.showPopup('TextInputPopup', {
-                   title: 'Número de pedido (Order) original',
-                   body: 'Ej.: 00001-051-0001.',
-                }).then(({ confirmed, payload: code }) => {
-                    if (code){
-                        console.log("return: "+code);
-                        return this._doSend(code);
-                    }
-                });
-            }
-            return false;
+        }
+        return false;
+    }
 
-        },
-    });
-    return PaylandsPayment;
-});
+    _showError(msg, title) {
+        if (!title) {
+            title = _t("Paylands Error");
+        }
+        this.env.services.dialog.add(AlertDialog, {
+            title: title,
+            body: msg,
+        });
+    }
+}

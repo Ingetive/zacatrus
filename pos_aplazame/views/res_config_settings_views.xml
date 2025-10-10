@@ -6,8 +6,8 @@
         <field name="priority" eval="95"/>
         <field name="inherit_id" ref="base.res_config_settings_view_form" />
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('settings')]" position="inside">
-                <div class="app_settings_block" data-string="Aplazame" string="Aplazame" data-key="pos_aplazame" groups="point_of_sale.group_pos_manager">
+            <xpath expr="//form" position="inside">
+                <app data-string="Aplazame" string="Aplazame" name="pos_aplazame">
                     <h2>Aplazame</h2>
                     <div class="row mt16 o_settings_container" name="aplazame_setting_container">
                         <div class="col-12 col-lg-6 o_setting_box"
@@ -63,7 +63,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </app>
             </xpath>
         </field>
     </record>

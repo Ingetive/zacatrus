@@ -25,6 +25,7 @@ class FichaQueue(models.Model):
 	msg = fields.Char(string='msg')
 	spent = fields.Float(string='spent')
 	attempts = fields.Integer(string='attempts')
+	create_date = fields.Datetime(string='Fecha de creación', default=fields.Datetime.now)
 
 class Zacasocios(models.Model):
 	_name = 'zacasocios.zacasocios'

@@ -113,7 +113,7 @@ class Adyen(models.Model):
 
             posStatementId = False
             for sessionOriStr in posSessions:
-                m = re.search("([0-9A-Z\/]+) \(([0-9A-Z\/]+)\)", sessionOriStr)
+                m = re.search(r"([0-9A-Z\/]+) \(([0-9A-Z\/]+)\)", sessionOriStr)
                 if m:
                     sessionNewStr = f"{m.group(2)} {orderDate.strftime('%Y/%m/%d')}"
                 else:

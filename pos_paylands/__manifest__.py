@@ -1,6 +1,6 @@
 {
     "name": "POS Paylands Payment",
-    "version": "16.0.0.0.1",
+    "version": "18.0.0.0.1",
     "category": "Point Of Sale",
     "summary": "Point of sale: supports Paylands payment",
     'author': "Zacatrus",
@@ -19,8 +19,7 @@
     ],
     "installable": True,
     'assets': {
-       'point_of_sale.assets': [
-           'pos_paylands/views/pos_config.xml',
+       'point_of_sale._assets_pos': [
            'pos_paylands/static/src/js/payment_terminal.js',
            'pos_paylands/static/src/js/models.js',
        ],

@@ -1,6 +1,6 @@
 {
     "name": "POS Tarjezaca Payment",
-    "version": "16.0.0.0.1",
+    "version": "18.0.0.0.1",
     "category": "Point Of Sale",
     "summary": "Point of sale: support Tarjezaca payment",
     'author': "Zacatrus",
@@ -18,7 +18,7 @@
     ],
     "installable": True,
     'assets': {
-       'point_of_sale.assets': [
+       'point_of_sale._assets_pos': [
            'pos_tarjezaca/static/src/js/payment_terminal.js',
            'pos_tarjezaca/static/src/js/models.js',
        ],

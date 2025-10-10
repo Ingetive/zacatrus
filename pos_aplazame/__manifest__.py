@@ -1,6 +1,6 @@
 {
     "name": "POS Aplazame Payment",
-    "version": "16.0.0.0.1",
+    "version": "18.0.0.0.1",
     "category": "Point Of Sale",
     "summary": "Point of sale: supports Aplazame payment",
     'author': "Zacatrus",
